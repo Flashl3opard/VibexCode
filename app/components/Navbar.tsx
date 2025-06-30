@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="flex items-center">
         <img
           src="/assets/logo.png"
-          alt="LeetCode Logo"
+          alt="LeetCode-Logo"
           className="h-10 w-auto object-contain"
         />
       </div>
