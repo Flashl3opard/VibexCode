@@ -37,19 +37,20 @@ const Navbar = () => {
             Practice
           </Link>
           <Link
-            href="/Dashboard"
+            href="Dashboard"
             className="hover:text-purple-600 transition-all"
           >
             Explore
           </Link>
           <Link
-            href="/Dashboard"
+            href="Dashboard"
             className="hover:text-purple-600 transition-all"
           >
             Dashboard
           </Link>
         </div>
 
+        {/* Auth Buttons */}
         <div className="flex items-center gap-3">
           <Link
             href="/login"
@@ -72,6 +73,7 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div className="absolute top-full left-0 w-full md:hidden flex flex-col gap-3 bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] rounded-b-lg p-4 shadow-md z-40">
           <Link
@@ -81,13 +83,13 @@ const Navbar = () => {
             Practice
           </Link>
           <Link
-            href="/profile"
+            href="Dashboard"
             className="text-left text-gray-800 font-medium hover:text-purple-600 transition-all"
           >
             Explore
           </Link>
           <Link
-            href="/profile"
+            href="Dashboard"
             className="text-left text-gray-800 font-medium hover:text-purple-600 transition-all"
           >
             Dashboard
