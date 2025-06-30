@@ -12,7 +12,6 @@ const Navbar = () => {
 
   return (
     <nav className="w-full py-4 px-8 flex justify-between items-center bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc]">
-      {/* Logo */}
       <div className="flex items-center">
         <img
           src="/assets/logo.png"
@@ -21,7 +20,6 @@ const Navbar = () => {
         />
       </div>
 
-      {/* Nav links */}
       <div className="hidden md:flex gap-8 text-gray-800 font-medium">
         <button className="hover:text-purple-600 transition-all">
           Practice
@@ -34,7 +32,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-4">
         <button className="text-purple-600 font-medium hover:underline">
           Log In
