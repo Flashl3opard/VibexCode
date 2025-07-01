@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
   const router = useRouter();
@@ -51,7 +52,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Auth Buttons - visible from 500px and up */}
+        {/* Auth Buttons and Theme Toggle */}
         <div className="hidden min-[500px]:flex items-center gap-3">
           <Link
             href="/login"
@@ -71,6 +72,9 @@ const Navbar = () => {
           >
             Start Vibing
           </button>
+
+          {/* ✅ Theme Toggle Button */}
+          <ThemeToggle />
         </div>
       </div>
 
@@ -96,7 +100,7 @@ const Navbar = () => {
             Dashboard
           </Link>
 
-          {/* Auth buttons - only show in mobile menu when screen is below 500px */}
+          {/* Auth buttons - only for screen < 500px */}
           <div className="max-[499px]:flex hidden flex-col items-start gap-3">
             <Link
               href="/login"
@@ -116,6 +120,9 @@ const Navbar = () => {
             >
               Start Vibing
             </button>
+
+            {/* ✅ Theme Toggle in mobile */}
+            <ThemeToggle />
           </div>
         </div>
       )}

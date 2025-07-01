@@ -5,7 +5,8 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen w-full bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] flex flex-col justify-center px-8 md:px-24 py-10">
+
+      <main className="min-h-screen w-full  text-black dark:bg-black dark:text-white  flex flex-col justify-center px-8 md:px-24 py-10">
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 h-full">
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
