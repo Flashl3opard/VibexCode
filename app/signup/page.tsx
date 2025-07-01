@@ -1,26 +1,29 @@
 import React from "react";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
+import { FaFacebook } from "react-icons/fa";
 
 const page = () => {
   return (
     
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 font-sans">
-      <div className="max-w-6xl w-full bg-white rounded-3xl shadow-xl flex flex-col md:flex-row overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center ">
+      {/* <div className="max-w-6xl w-full bg-white rounded-3xl shadow-xl flex flex-col md:flex-row overflow-hidden"> */}
         
         {/* Left Section  */}
-        <div className="md:w-1/3 relative hidden md:block bg-[#f8f6ff] flex items-center justify-center">
+        <div className="scale-100 relative hidden md:block h-183 ">
           <img src="/assets/guy1.png" alt="Student" className="h-full object-cover" />
 
         </div>
 
         {/*  Form */}
-        <div className="w-full md:w-1/2 p-10">
+        <div className="w-full md:w-1/4 p-10 bg-amber-50 border-0 rounded-xl m-20">
           <div className="flex justify-between items-center mb-6">
-            <div className="text-3xl font-semibold text-purple-600">VIBE <span className="text-gray-700">x</span><span className="text-purple-700"> CODE</span></div>
+            <div className="text-2xl font-semibold text-purple-600">VIBE <span className="text-gray-700">x</span><span className="text-purple-700"> CODE</span></div>
             <div className="flex gap-4 text-sm text-gray-600 hidden md:flex">
-              <a href="#" className="hover:text-purple-500">Practice</a>
-              <a href="#" className="hover:text-purple-500">Explore</a>
-              <a href="#" className="text-purple-300">Log In</a>
-              <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-1 rounded-full">Sign Up</button>
+              {/* <a href="#" className="hover:text-purple-500">Practice</a>
+              <a href="#" className="hover:text-purple-500">Explore</a> */}
+              <a href="#" className="text-purple-300 m-1">Log In</a>
+              <button className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-full">Sign Up</button>
             </div>
           </div>
 
@@ -49,10 +52,12 @@ const page = () => {
           </div>
 
           <div className="text-center text-sm text-gray-500 mb-3">Or you can signup with</div>
-          <div className="flex justify-center gap-6">
-            <img src="/assets/google.png" alt="Google" className="h-6 cursor-pointer" />
-            <img src="/assets/git.png" alt="GitHub" className="h-6 cursor-pointer" />
-            <img src="/assets/fb.png" alt="Facebook" className="h-6 cursor-pointer" />
+          <div className="flex justify-center gap-10">
+            <FcGoogle className="scale-200 cursor-pointer" />
+            <FaGithub className="scale-200 cursor-pointer"/>
+            <FaFacebook className="scale-200 text-blue-500 cursor-pointer"/>
+            
+
           </div>
 
           <p className="mt-6 text-[10px] text-center text-gray-400">
@@ -61,7 +66,7 @@ const page = () => {
             <a href="#" className="text-purple-500"> Terms of Service </a> apply.
           </p>
         </div>
-      </div>
+      
     </div>
   
   );
