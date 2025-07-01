@@ -14,8 +14,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full py-4 px-6 md:px-8 bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] relative z-50">
-      <div className="flex items-center justify-between">
+    <nav className="w-full py-4 px-6 md:px-8 relative z-50 dark:bg-blue-950 ">
+      <div className="flex items-center justify-between ">
         {/* Logo and Mobile Menu Button */}
         <div className="flex items-center gap-3">
           <button
@@ -31,7 +31,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex gap-8 text-gray-800 font-medium items-center">
+        <div className="hidden md:flex gap-8 text-gray-800 font-medium items-center dark:text-teal-300">
           <Link
             href="/playground"
             className="hover:text-purple-600 transition-all cursor-pointer"
@@ -53,7 +53,7 @@ const Navbar = () => {
         </div>
 
         {/* Auth Buttons and Theme Toggle */}
-        <div className="hidden min-[500px]:flex items-center gap-3">
+        <div className="hidden min-[500px]:flex items-center gap-3 ">
           <Link
             href="/login"
             className="text-purple-600 font-medium hover:underline cursor-pointer"
