@@ -38,13 +38,13 @@ const Navbar = () => {
             Practice
           </Link>
           <Link
-            href="/dashboard"
+            href="/Dashboard"
             className="hover:text-purple-600 transition-all cursor-pointer"
           >
             Explore
           </Link>
           <Link
-            href="/dashboard"
+            href="/Dashboard"
             className="hover:text-purple-600 transition-all cursor-pointer"
           >
             Dashboard
@@ -84,13 +84,13 @@ const Navbar = () => {
             Practice
           </Link>
           <Link
-            href="/dashboard"
+            href="/Dashboard"
             className="text-gray-800 font-medium hover:text-purple-600 transition-all cursor-pointer"
           >
             Explore
           </Link>
           <Link
-            href="/dashboard"
+            href="/Dashboard"
             className="text-gray-800 font-medium hover:text-purple-600 transition-all cursor-pointer"
           >
             Dashboard
