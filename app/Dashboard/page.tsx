@@ -6,11 +6,12 @@ import { FaClipboardList } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { CgProfile } from "react-icons/cg";
 
+
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] text-gray-800">
       <Navbar />
-
       <main className="p-4 md:p-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
