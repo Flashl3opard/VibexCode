@@ -16,7 +16,7 @@ const page = () => {
         </div>
 
         {/*  Form */}
-        <div className="w-full md:w-1/4 p-10 bg-amber-50 border-0 rounded-xl m-20">
+        <div className="w-full md:w-1/4 p-10 bg-amber-50 border-0 rounded-xl m-10">
           <div className="flex justify-between items-center mb-6">
             <div className="text-2xl font-semibold text-purple-600">VIBE <span className="text-gray-700">x</span><span className="text-purple-700"> CODE</span></div>
             <div className="flex gap-4 text-sm text-gray-600 hidden md:flex">
