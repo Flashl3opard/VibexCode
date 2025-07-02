@@ -1,4 +1,3 @@
-// components/ThemeToggle.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -24,9 +23,10 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full border bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
+      aria-label="Toggle Dark Mode"
+      className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-800 text-xl transition-transform duration-300 hover:rotate-180 shadow-md hover:shadow-lg"
     >
-      {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+      {darkMode ? "🌞" : "🌙"}
     </button>
   );
 }
