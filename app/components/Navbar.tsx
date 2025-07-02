@@ -31,6 +31,12 @@ const Navbar = () => {
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-8 text-gray-800 font-medium items-center dark:text-teal-300">
           <Link
+            href="/"
+            className="hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
+          >
+            Home
+          </Link>
+          <Link
             href="/playground"
             className="hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
           >
