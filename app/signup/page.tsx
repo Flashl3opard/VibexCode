@@ -8,7 +8,7 @@ import Logo from "../components/Logo";
 export default function App() {
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center p-4  dark:bg-black transition-all">
+      <div className="min-h-screen flex items-center justify-around p-4  dark:bg-black transition-all">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl w-full items-center">
           {/* Left Section */}
           <div className="hidden flex-col items-center justify-center lg:flex">
