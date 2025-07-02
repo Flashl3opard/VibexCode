@@ -1,11 +1,8 @@
-import Navbar from "./components/Navbar";
 import Image from "next/image";
 
 export default function Home() {
   return (
     <>
-      <Navbar />
-
       <main className="min-h-screen w-full text-black dark:text-white dark:bg-black flex flex-col justify-center px-8 md:px-24 py-10 transition-colors duration-300">
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 h-full">
           {/* Left Text Section */}

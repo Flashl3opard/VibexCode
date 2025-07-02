@@ -3,14 +3,14 @@
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
-import Navbar from "../components/Navbar";
+import Link from "next/link";
+import Logo from "../components/Logo";
 
 const Page = () => {
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#fdfbfb] to-[#ebedee] dark:from-gray-900 dark:to-gray-800 transition-all duration-300">
-        <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden max-w-5xl w-full">
+      <div className="min-h-screen flex items-center justify-center px-4 py-10 dark:bg-black  transition-all duration-300">
+        <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden max-w-5xl w-full ">
           {/* Left Section */}
           <div className="hidden md:block w-1/2">
             <img
@@ -24,16 +24,15 @@ const Page = () => {
           <div className="w-full md:w-1/2 p-10 space-y-6 text-zinc-800 dark:text-white">
             {/* Header */}
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-bold text-purple-600">
-                VIBE <span className="text-gray-700 dark:text-gray-300">x</span>{" "}
-                <span className="text-purple-700">CODE</span>
-              </h2>
-              <div className="flex gap-2">
+              <div className="scale-120 mx-3">
+                <Logo />
+              </div>
+              <div className="flex gap-5 items-center">
                 <a href="#" className="text-sm text-purple-300 hover:underline">
                   Log In
                 </a>
                 <button className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded-full">
-                  Sign Up
+                  <Link href="/signup">Sign Up</Link>
                 </button>
               </div>
             </div>
@@ -63,9 +62,6 @@ const Page = () => {
               <span className="cursor-pointer hover:underline">
                 Forgot Password?
               </span>
-              <a href="#" className="text-purple-600 font-medium">
-                Sign Up
-              </a>
             </div>
 
             {/* Social Login */}

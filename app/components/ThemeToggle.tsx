@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FaSun } from "react-icons/fa";
+import { FaMoon } from "react-icons/fa6";
 
 export default function ThemeToggle() {
   const [darkMode, setDarkMode] = useState(false);
@@ -24,9 +26,13 @@ export default function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label="Toggle Dark Mode"
-      className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-800 text-xl transition-transform duration-300 hover:rotate-180 shadow-md hover:shadow-lg"
+      className="w-10 h-10 flex items-center justify-center rounded-full     text-xl transition-transform duration-300 hover:rotate-180 scale-120 "
     >
-      {darkMode ? "🌞" : "🌙"}
+      {darkMode ? (
+        <FaSun className="text-yellow-400" />
+      ) : (
+        <FaMoon className="text-black" />
+      )}
     </button>
   );
 }

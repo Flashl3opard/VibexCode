@@ -1,17 +1,17 @@
 "use client";
 
 import React from "react";
-import { FaGoogle, FaFacebook, FaGithub } from "react-icons/fa";
-import Navbar from "../components/Navbar";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub, FaFacebook } from "react-icons/fa";
+import Logo from "../components/Logo";
 
 export default function App() {
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#e0c3fc] to-[#8ec5fc] dark:from-gray-900 dark:to-gray-800 transition-all">
+      <div className="min-h-screen flex items-center justify-center p-4  dark:bg-black transition-all">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl w-full items-center">
           {/* Left Section */}
-          <div className="flex flex-col items-center justify-center">
+          <div className="hidden flex-col items-center justify-center lg:flex">
             <img
               src="assets/guy.png"
               alt="Student"
@@ -29,10 +29,9 @@ export default function App() {
 
           {/* Right Section (Form) */}
           <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl w-full text-zinc-800 dark:text-white transition">
-            <h1 className="text-4xl font-bold text-purple-600 mb-6">
-              VIBE x{" "}
-              <span className="text-zinc-700 dark:text-zinc-300">Code</span>
-            </h1>
+            <div className="p-5 -mx-0 scale-105">
+              <Logo />
+            </div>
 
             <input
               type="email"
@@ -64,10 +63,10 @@ export default function App() {
             <div className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
               Or sign up with
             </div>
-            <div className="flex justify-center gap-6 mt-4">
-              <FaGoogle className="text-2xl text-red-500 hover:scale-110 cursor-pointer transition" />
-              <FaGithub className="text-2xl text-gray-800 dark:text-white hover:scale-110 cursor-pointer transition" />
-              <FaFacebook className="text-2xl text-blue-600 hover:scale-110 cursor-pointer transition" />
+            <div className="flex justify-center gap-6 mt-4 scale-200">
+              <FcGoogle className="cursor-pointer hover:scale-110 transition" />
+              <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
+              <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
             </div>
 
             <p className="mt-6 text-[10px] text-center text-gray-500 dark:text-gray-400">

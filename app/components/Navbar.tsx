@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
+import Logo from "./Logo";
 
 const Navbar = () => {
   const router = useRouter();
@@ -14,7 +15,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full py-4 px-6 md:px-8 relative z-50 bg-white dark:bg-zinc-900 shadow-md transition-all">
+    <nav className="w-full py-4 px-6 md:px-8 relative z-50 dark:bg-black  transition-all">
       <div className="flex items-center justify-between">
         {/* Logo and Menu Button */}
         <div className="flex items-center gap-3">
@@ -24,10 +25,7 @@ const Navbar = () => {
           >
             {menuOpen ? "✕" : "☰"}
           </button>
-          <div className="flex items-center text-2xl font-bold cursor-pointer">
-            <span className="text-pink-600">VibeX</span>
-            <span className="text-gray-800 dark:text-white">Code</span>
-          </div>
+          <Logo />
         </div>
 
         {/* Desktop Nav Links */}
