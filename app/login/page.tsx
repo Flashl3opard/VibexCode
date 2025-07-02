@@ -1,69 +1,100 @@
+"use client";
+
 import React from "react";
-import { FaGoogle, FaFacebook, FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub, FaFacebook } from "react-icons/fa";
+import Navbar from "../components/Navbar";
 
-export default function App() {
+const Page = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-100 to-pink-100 flex items-center justify-center p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
-
-        {/* Left Section */}
-        <div className="flex flex-col items-center justify-center">
-          <img
-            src="assets/guy.png" // replace with actual image if needed
-            alt="Student"
-            className="rounded-lg w-full max-w-sm mb-4"
-          />
-          <div className="flex flex-row gap-10">
-          <button className="bg-white px-6 py-2 rounded-full text-purple-600 font-semibold shadow-md ">
-            Sign In
-          </button>
-          <button className="bg-white px-6 py-2 rounded-full text-purple-600 font-semibold shadow-md">
-            Home
-          </button>
-          </div>
-        </div>
-
-        {/* Right Section (Form) */}
-        <div className="bg-white p-8 rounded-3xl shadow-lg w-full">
-          <h1 className="text-3xl font-bold text-purple-600 mb-6">VIBE x <span className="text-gray-700">Code</span></h1>
-
-          <input
-            type="email"
-            placeholder="Mail Id"
-            className="w-full mb-4 p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-          <input
-            type="text"
-            placeholder="Username"
-            className="w-full mb-4 p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full mb-6 p-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-
-          <button className="w-full bg-purple-500 text-white font-bold py-3 rounded-full hover:bg-purple-600 transition">
-            Register
-          </button>
-
-          <p className="text-center mt-4 text-sm">
-            Have an Account? <a href="#" className="text-purple-600 font-semibold">Log In</a>
-          </p>
-
-          <div className="mt-6 text-center text-gray-500 text-sm">Or you can Signup with</div>
-          <div className="flex justify-center gap-4 mt-4">
-            <FaGoogle className="text-2xl text-red-500 cursor-pointer" />
-            <FaGithub className="text-2xl text-gray-800 cursor-pointer" />
-            <FaFacebook className="text-2xl text-blue-600 cursor-pointer" />
+    <>
+      <Navbar />
+      <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#fdfbfb] to-[#ebedee] dark:from-gray-900 dark:to-gray-800 transition-all duration-300">
+        <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden max-w-5xl w-full">
+          {/* Left Section */}
+          <div className="hidden md:block w-1/2">
+            <img
+              src="/assets/guy1.png"
+              alt="Student"
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          <p className="mt-6 text-[10px] text-center text-gray-400">
-            This site is protected by reCAPTCHA and the Google <br />
-            <a href="#" className="underline">Privacy Policy</a> and <a href="#" className="underline">Terms of Service</a> apply.
-          </p>
+          {/* Form Section */}
+          <div className="w-full md:w-1/2 p-10 space-y-6 text-zinc-800 dark:text-white">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-purple-600">
+                VIBE <span className="text-gray-700 dark:text-gray-300">x</span>{" "}
+                <span className="text-purple-700">CODE</span>
+              </h2>
+              <div className="flex gap-2">
+                <a href="#" className="text-sm text-purple-300 hover:underline">
+                  Log In
+                </a>
+                <button className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded-full">
+                  Sign Up
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form className="space-y-4">
+              <input
+                type="email"
+                placeholder="EMail ID"
+                className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <button
+                type="submit"
+                className="w-full py-3 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
+              >
+                Log In
+              </button>
+            </form>
+
+            {/* Links */}
+            <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+              <span className="cursor-pointer hover:underline">
+                Forgot Password?
+              </span>
+              <a href="#" className="text-purple-600 font-medium">
+                Sign Up
+              </a>
+            </div>
+
+            {/* Social Login */}
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+              Or sign up with
+            </div>
+            <div className="flex justify-center gap-6 text-3xl mt-2">
+              <FcGoogle className="cursor-pointer hover:scale-110 transition" />
+              <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
+              <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
+            </div>
+
+            {/* Footer Note */}
+            <p className="mt-6 text-[10px] text-center text-gray-400 dark:text-gray-500 leading-snug">
+              This site is protected by reCAPTCHA and the Google{" "}
+              <a href="#" className="underline text-purple-500">
+                Privacy Policy
+              </a>{" "}
+              and{" "}
+              <a href="#" className="underline text-purple-500">
+                Terms of Service
+              </a>{" "}
+              apply.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
-}
+};
+
+export default Page;
