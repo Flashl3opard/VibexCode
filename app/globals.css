@@ -115,4 +115,7 @@
 body{
   background-color: #27272a;
 }
+html {
+  scroll-behavior: smooth;
+}
 
