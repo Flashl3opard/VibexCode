@@ -11,7 +11,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleRegister = async (e: any) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const res = await fetch("/api/register", {
@@ -21,9 +21,9 @@ const Signup = () => {
       });
 
       const data = await res.json();
-      setMessage(data.message);
-    } catch (err) {
-      console.error("Registration error:", err);
+      setMessage(data.message || "Registration successful!");
+    } catch (error) {
+      console.error("Registration error:", error);
       setMessage("Something went wrong");
     }
   };
