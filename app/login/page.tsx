@@ -1,53 +1,49 @@
 "use client";
-
+import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
-import Link from "next/link";
-import Logo from "../components/Logo";
 
 const Page = () => {
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center px-4 py-10 dark:bg-black  transition-all duration-300">
-        <div className="flex flex-col md:flex-row bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden max-w-5xl w-full ">
-          {/* Left Section */}
-          <div className="hidden md:block w-1/2">
-            <img
-              src="/assets/guy1.png"
-              alt="Student"
-              className="w-full h-full object-cover"
-            />
+    <div className="relative min-h-screen flex items-center px-4 py-10 dark:bg-[#020612] transition-all duration-300">
+      {/* Man's Image */}
+      <div className="hidden md:block absolute left-30 top-0 h-full">
+        <Image
+          src="/assets/guy1.png"
+          alt="Student"
+          width={500}
+          height={900}
+          className="h-full w-auto object-cover"
+        />
+      </div>
+
+      {/* Login Card */}
+      <div className="relative z-10 ml-auto mr-[15vw] max-w-md h-[580px] w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full">
+          {/* Logo */}
+          <div className="text-center">
+            <Link href="/">
+              <h1 className="text-3xl font-bold">
+                <span className="text-pink-600">VibeX</span>
+                <span className="text-gray-400 dark:text-white">Code</span>
+              </h1>
+            </Link>
           </div>
 
-          {/* Form Section */}
-          <div className="w-full md:w-1/2 p-10 space-y-6 text-zinc-800 dark:text-white">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-              <div className="scale-120 mx-3">
-                <Logo />
-              </div>
-              <div className="flex gap-5 items-center">
-                <a href="#" className="text-sm text-purple-300 hover:underline">
-                  Log In
-                </a>
-                <button className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded-full">
-                  <Link href="/signup">Sign Up</Link>
-                </button>
-              </div>
-            </div>
-
-            {/* Form */}
+          {/* Form + Links Grouped */}
+          <div className="space-y-3">
             <form className="space-y-4">
               <input
                 type="email"
                 placeholder="EMail ID"
-                className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
               />
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
               />
               <button
                 type="submit"
@@ -57,39 +53,44 @@ const Page = () => {
               </button>
             </form>
 
-            {/* Links */}
+            {/* Forgot Password and Sign Up */}
             <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
               <span className="cursor-pointer hover:underline">
                 Forgot Password?
               </span>
+              <span className="cursor-pointer text-purple-500 hover:underline">
+                Sign Up
+              </span>
             </div>
+          </div>
 
-            {/* Social Login */}
+          {/* Social Login */}
+          <div className="mt-[-20] space-y-2">
             <div className="text-center text-sm text-gray-500 dark:text-gray-400">
               Or sign up with
             </div>
-            <div className="flex justify-center gap-6 text-3xl mt-2">
+            <div className="flex justify-center gap-6 text-3xl">
               <FcGoogle className="cursor-pointer hover:scale-110 transition" />
               <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
               <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
             </div>
-
-            {/* Footer Note */}
-            <p className="mt-6 text-[10px] text-center text-gray-400 dark:text-gray-500 leading-snug">
-              This site is protected by reCAPTCHA and the Google{" "}
-              <a href="#" className="underline text-purple-500">
-                Privacy Policy
-              </a>{" "}
-              and{" "}
-              <a href="#" className="underline text-purple-500">
-                Terms of Service
-              </a>{" "}
-              apply.
-            </p>
           </div>
+
+          {/* Footer Note */}
+          <p className="text-[10px] text-center text-gray-400 dark:text-gray-500 leading-snug mt-3">
+            This site is protected by reCAPTCHA and the Google{" "}
+            <a href="#" className="underline text-purple-500">
+              Privacy Policy
+            </a>{" "}
+            and{" "}
+            <a href="#" className="underline text-purple-500">
+              Terms of Service
+            </a>{" "}
+            apply.
+          </p>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

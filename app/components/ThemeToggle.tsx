@@ -26,13 +26,24 @@ export default function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label="Toggle Dark Mode"
-      className="w-10 h-10 flex items-center justify-center rounded-full     text-xl transition-transform duration-300 hover:rotate-180 scale-120 "
+      className="w-10 h-10 flex items-center justify-center rounded-full text-xl transition-transform duration-500 ease-in-out hover: hover:scale-110"
     >
-      {darkMode ? (
-        <FaSun className="text-yellow-400" />
-      ) : (
-        <FaMoon className="text-black" />
-      )}
+      <span className="relative w-6 h-6 block">
+        <FaSun
+          className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+            darkMode
+              ? "opacity-100 rotate-0 scale-100 text-yellow-400"
+              : "opacity-0 -rotate-90 scale-75"
+          }`}
+        />
+        <FaMoon
+          className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+            darkMode
+              ? "opacity-0 rotate-90 scale-75"
+              : "opacity-100 rotate-0 scale-100 text-black"
+          }`}
+        />
+      </span>
     </button>
   );
 }
