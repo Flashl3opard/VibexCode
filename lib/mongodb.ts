@@ -1,20 +1,28 @@
+import { MongoClient } from 'mongodb';
 
-import mongoose from "mongoose";
+interface MongoCache {
+  conn: MongoClient | null;
+  promise: Promise<MongoClient> | null;
+}
 
-const MONGODB_URI = process.env.MONGODB_URI || "your_mongodb_connection_string";
+const globalWithMongo = globalThis as typeof globalThis & {
+  mongo?: MongoCache;
+};
 
-if (!MONGODB_URI) throw new Error("MONGODB_URI is missing");
+const cached: MongoCache = globalWithMongo.mongo ?? {
+  conn: null,
+  promise: null,
+};
 
-let cached = (global as any).mongoose || { conn: null, promise: null };
+globalWithMongo.mongo = cached;
 
 export async function connectToDB() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      dbName: "auth",
-      bufferCommands: false,
-    });
+    const uri = process.env.MONGODB_URI!;
+    const client = new MongoClient(uri);
+    cached.promise = client.connect();
   }
 
   cached.conn = await cached.promise;
