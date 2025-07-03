@@ -1,9 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <>
-      <main className="min-h-screen w-full text-black dark:text-white dark:bg-black flex flex-col justify-center px-8 md:px-24 py-10 transition-colors duration-300">
+      <main className="min-h-screen w-full text-black dark:text-white dark:bg-[#020612] flex flex-col justify-center px-8 md:px-24 py-10 transition-colors duration-300">
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 h-full">
           {/* Left Text Section */}
           <div className="flex-1 text-center md:text-left">
@@ -18,7 +19,7 @@ export default function Home() {
               expand your knowledge and prepare for technical interviews.
             </p>
             <button className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all">
-              Create Account
+              <Link href="/signup">Create Account</Link>
             </button>
           </div>
 

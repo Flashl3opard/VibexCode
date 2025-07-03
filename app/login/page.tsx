@@ -1,6 +1,7 @@
 "use client";
-
+import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
 
@@ -8,8 +9,14 @@ const Page = () => {
   return (
     <div className="relative min-h-screen flex items-center px-4 py-10 dark:bg-[#020612] transition-all duration-300">
       {/* Man's Image */}
-      <div className="hidden md:block absolute left-40 top-1/2 transform -translate-y-1/2 z-0">
-        <img src="/assets/guy1.png" alt="Student" className="h-[700px]" />
+      <div className="hidden md:block absolute left-30 top-0 h-full">
+        <Image
+          src="/assets/guy1.png"
+          alt="Student"
+          width={500}
+          height={900}
+          className="h-full w-auto object-cover"
+        />
       </div>
 
       {/* Login Card */}
@@ -17,10 +24,12 @@ const Page = () => {
         <div className="p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full">
           {/* Logo */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold">
-              <span className="text-pink-600">VibeX</span>
-              <span className="text-gray-400 dark:text-white">Code</span>
-            </h1>
+            <Link href="/">
+              <h1 className="text-3xl font-bold">
+                <span className="text-pink-600">VibeX</span>
+                <span className="text-gray-400 dark:text-white">Code</span>
+              </h1>
+            </Link>
           </div>
 
           {/* Form + Links Grouped */}
