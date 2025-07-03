@@ -28,7 +28,29 @@ const Navbar = () => {
           <Logo />
         </div>
 
-        {/* Right Section: Auth Buttons + ThemeToggle (always visible) */}
+        {/* Middle Section: Nav Links (Desktop Only) */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link
+            href="/playground"
+            className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
+          >
+            Practice
+          </Link>
+          <Link
+            href="/Dashboard"
+            className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
+          >
+            Explore
+          </Link>
+          <Link
+            href="/Dashboard"
+            className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
+          >
+            Dashboard
+          </Link>
+        </div>
+
+        {/* Right Section: Auth Buttons + ThemeToggle */}
         <div className="flex items-center gap-3">
           <div className="hidden min-[500px]:flex items-center gap-3">
             <Link
@@ -51,7 +73,6 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* ThemeToggle: always visible on the right */}
           <ThemeToggle />
         </div>
       </div>
