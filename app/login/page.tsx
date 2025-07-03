@@ -37,7 +37,7 @@ const Page = () => {
             <form className="space-y-4">
               <input
                 type="email"
-                placeholder="EMail ID"
+                placeholder="Mail ID"
                 className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
               />
               <input
