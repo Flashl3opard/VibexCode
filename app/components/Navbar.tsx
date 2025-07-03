@@ -15,7 +15,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full py-4 px-6 md:px-8 relative z-50 dark:bg-black  transition-all">
+    <nav className="w-full py-4 px-6 md:px-8 relative z-50 dark:bg-[#020612] transition-all">
       <div className="flex items-center justify-between">
         {/* Logo and Menu Button */}
         <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ const Navbar = () => {
 
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
-        <div className="absolute top-full left-0 w-full md:hidden flex flex-col items-start gap-3 bg-gradient-to-r from-[#fdfbfb] to-[#ebedee] dark:from-zinc-900 dark:to-zinc-800 rounded-b-lg p-4 shadow-md z-40 transition-all">
+        <div className="absolute top-full left-0 w-full md:hidden flex flex-col items-start gap-3 bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:from-zinc-900 dark:to-zinc-800 rounded-b-lg p-4 shadow-md z-40 transition-all">
           <Link
             href="/playground"
             className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
