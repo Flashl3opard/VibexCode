@@ -2,15 +2,18 @@ import React from "react";
 import { FaRegPlayCircle } from "react-icons/fa";
 import { FaStepForward } from "react-icons/fa";
 import { FaBackwardStep } from "react-icons/fa6";
+import Image from "next/image";
 
 const SoundBoard = () => {
   return (
     <div className="w-64 bg-zinc-900 rounded-2xl shadow-lg p-4 flex flex-col items-center gap-4">
       <div className="w-full aspect-square overflow-hidden rounded-xl">
-        <img
+        <Image
           src="/assets/song1.png"
-          alt="Song Thumbnail"
           className="object-cover w-full h-full"
+          alt="helo"
+          height={300}
+          width={600}
         />
       </div>
 
