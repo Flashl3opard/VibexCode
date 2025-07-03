@@ -17,7 +17,7 @@ const Navbar = () => {
   return (
     <nav className="w-full py-4 px-6 md:px-8 relative z-50 dark:bg-[#020612] transition-all">
       <div className="flex items-center justify-between">
-        {/* Logo and Menu Button */}
+        {/* Left Section: Menu + Logo */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -28,56 +28,30 @@ const Navbar = () => {
           <Logo />
         </div>
 
-        {/* Desktop Nav Links */}
-        <div className="hidden md:flex gap-8 text-gray-800 font-medium items-center dark:text-teal-300">
-          <Link
-            href="/"
-            className="hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
-          >
-            Home
-          </Link>
-          <Link
-            href="/playground"
-            className="hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
-          >
-            Practice
-          </Link>
-          <Link
-            href="/Dashboard"
-            className="hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
-          >
-            Explore
-          </Link>
-          <Link
-            href="/Dashboard"
-            className="hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer"
-          >
-            Dashboard
-          </Link>
-        </div>
+        {/* Right Section: Auth Buttons + ThemeToggle (always visible) */}
+        <div className="flex items-center gap-3">
+          <div className="hidden min-[500px]:flex items-center gap-3">
+            <Link
+              href="/login"
+              className="text-purple-600 dark:text-teal-300 font-medium hover:underline cursor-pointer"
+            >
+              Log In
+            </Link>
+            <Link
+              href="/signup"
+              className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-2 rounded-full font-semibold shadow hover:opacity-90 transition-all text-sm cursor-pointer"
+            >
+              Sign Up
+            </Link>
+            <button
+              onClick={handleVibeClick}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 animate-pulse text-white text-sm font-semibold shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition-all duration-300 cursor-pointer"
+            >
+              Start Vibing
+            </button>
+          </div>
 
-        {/* Auth Buttons and Theme Toggle */}
-        <div className="hidden min-[500px]:flex items-center gap-3">
-          <Link
-            href="/login"
-            className="text-purple-600 dark:text-teal-300 font-medium hover:underline cursor-pointer"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/signup"
-            className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-2 rounded-full font-semibold shadow hover:opacity-90 transition-all text-sm cursor-pointer"
-          >
-            Sign Up
-          </Link>
-          <button
-            onClick={handleVibeClick}
-            className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 animate-pulse text-white text-sm font-semibold shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition-all duration-300 cursor-pointer"
-          >
-            Start Vibing
-          </button>
-
-          {/* Theme Toggle Button */}
+          {/* ThemeToggle: always visible on the right */}
           <ThemeToggle />
         </div>
       </div>
@@ -124,9 +98,6 @@ const Navbar = () => {
             >
               Start Vibing
             </button>
-
-            {/* Mobile Theme Toggle */}
-            <ThemeToggle />
           </div>
         </div>
       )}
