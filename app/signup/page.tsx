@@ -1,17 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
-import Logo from "../components/Logo";
 
-export default function Signup() {
+const Signup = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleRegister = async () => {
+  const handleRegister = async (e: any) => {
+    e.preventDefault();
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -28,89 +29,102 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-around p-4 dark:bg-black transition-all">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl w-full items-center">
-        {/* Left Section */}
-        <div className="hidden flex-col items-center justify-center lg:flex">
-          <img
-            src="/assets/guy.png"
-            alt="Student"
-            className="rounded-2xl w-full max-w-xs mb-6 shadow-lg dark:shadow-none"
-          />
-          <div className="flex gap-6">
-            <button className="bg-white dark:bg-zinc-700 dark:text-white px-6 py-2 rounded-full text-purple-600 font-semibold shadow-md hover:scale-105 transition">
-              Sign In
-            </button>
-            <button className="bg-white dark:bg-zinc-700 dark:text-white px-6 py-2 rounded-full text-purple-600 font-semibold shadow-md hover:scale-105 transition">
-              Home
-            </button>
-          </div>
-        </div>
+    <div className="relative min-h-screen flex items-center px-4 py-10 dark:bg-[#020612] transition-all duration-300">
+      {/* Man's Image */}
+      <div className="hidden md:block absolute left-30 top-0 h-full">
+        <Image
+          src="/assets/guy1.png"
+          alt="Student"
+          width={500}
+          height={900}
+          className="h-full w-auto object-cover"
+        />
+      </div>
 
-        {/* Right Section */}
-        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-xl w-full text-zinc-800 dark:text-white transition">
-          <div className="p-5 -mx-0 scale-105">
-            <Logo />
+      {/* Signup Card */}
+      <div className="relative z-10 ml-auto mr-[15vw] max-w-md h-[650px] w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full">
+          {/* Logo */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold">
+              <span className="text-pink-600">VibeX</span>
+              <span className="text-gray-400 dark:text-white">Code</span>
+            </h1>
           </div>
 
-          <input
-            type="email"
-            placeholder="Mail Id"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full mb-4 p-3 bg-white dark:bg-zinc-800 border border-purple-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full mb-4 p-3 bg-white dark:bg-zinc-800 border border-purple-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full mb-6 p-3 bg-white dark:bg-zinc-800 border border-purple-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
+          {/* Form + Links */}
+          <div className="space-y-3">
+            <form onSubmit={handleRegister} className="space-y-4">
+              <input
+                type="email"
+                placeholder="Email ID"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full py-3 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
+              >
+                Register
+              </button>
+            </form>
 
-          <button
-            onClick={handleRegister}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-full transition"
-          >
-            Register
-          </button>
+            {/* Message */}
+            {message && (
+              <p className="text-center text-sm mt-2 text-purple-500 dark:text-purple-300">
+                {message}
+              </p>
+            )}
 
-          {message && (
-            <p className="mt-4 text-center text-sm text-purple-500 dark:text-purple-300">
-              {message}
-            </p>
-          )}
-
-          <p className="text-center mt-4 text-sm text-zinc-700 dark:text-zinc-300">
-            Have an Account?{" "}
-            <a href="#" className="text-purple-600 font-semibold">
-              Log In
-            </a>
-          </p>
-
-          <div className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Or sign up with
+            {/* Sign In Redirect */}
+            <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+              <span className="cursor-pointer hover:underline">
+                Already have an account?
+              </span>
+              <span className="cursor-pointer text-purple-500 hover:underline">
+                Log In
+              </span>
+            </div>
           </div>
-          <div className="flex justify-center gap-6 mt-4 scale-200">
-            <FcGoogle className="cursor-pointer hover:scale-110 transition" />
-            <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
-            <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
+
+          {/* Social Signup */}
+          <div className="mt-4 space-y-2">
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+              Or sign up with
+            </div>
+            <div className="flex justify-center gap-6 text-3xl">
+              <FcGoogle className="cursor-pointer hover:scale-110 transition" />
+              <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
+              <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
+            </div>
           </div>
 
-          <p className="mt-6 text-[10px] text-center text-gray-500 dark:text-gray-400">
-            This site is protected by reCAPTCHA and the Google <br />
-            <a href="#" className="underline">
+          {/* Footer Note */}
+          <p className="text-[10px] text-center text-gray-400 dark:text-gray-500 leading-snug mt-3">
+            This site is protected by reCAPTCHA and the Google{" "}
+            <a href="#" className="underline text-purple-500">
               Privacy Policy
             </a>{" "}
             and{" "}
-            <a href="#" className="underline">
+            <a href="#" className="underline text-purple-500">
               Terms of Service
             </a>{" "}
             apply.
@@ -119,4 +133,6 @@ export default function Signup() {
       </div>
     </div>
   );
-}
+};
+
+export default Signup;
