@@ -100,7 +100,7 @@ const historyData = [
   { title: "Generate Parentheses", time: "16 days ago" },
 ];
 
-const Page = () => {
+const page = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentFriendIndex, setCurrentFriendIndex] = useState(0);
   const [currentHistoryPage, setCurrentHistoryPage] = useState(1);
@@ -434,4 +434,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default page;
