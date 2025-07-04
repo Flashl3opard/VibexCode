@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen w-full text-black dark:text-white dark:bg-[#020612] px-8 md:px-24 pb-10 transition-colors duration-300 relative overflow-hidden">
+      <main className="h-screen w-full text-black dark:text-white dark:bg-[#020612] px-8 md:px-24 pb-0 transition-colors duration-300 relative overflow-hidden">
         {/* Hanging Headphones */}
         <div className="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none animate-float-in-top">
           <Image
@@ -22,6 +22,7 @@ export default function Home() {
           />
         </div>
 
+        {/* Floating Laptop */}
         <div className="fixed bottom-0 right-20 z-40 pointer-events-none animate-enter-up">
           <div className="animate-levitate">
             <Image
@@ -39,7 +40,7 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 h-screen pt-[220px] relative z-20">
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 h-full pt-24 relative z-20">
           {/* Left Text Section */}
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
@@ -59,7 +60,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Right Section with Circles */}
+          {/* Decorative Circles */}
           <div className="flex-1 relative flex flex-col justify-end items-end h-full">
             <div className="absolute w-28 h-28 rounded-full border-8 border-purple-300 dark:border-purple-700 top-24 left-20 md:left-36 opacity-50 z-0"></div>
             <div className="absolute w-20 h-20 rounded-full border-8 border-purple-300 dark:border-purple-700 bottom-4 right-10 opacity-50 z-0"></div>
