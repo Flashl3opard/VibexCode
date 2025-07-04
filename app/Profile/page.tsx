@@ -64,7 +64,9 @@ const players = [
   },
 ];
 
-const getStatusColor = (status: any) => {
+const getStatusColor = (
+  status: "Online" | "Idle" | "Busy" | "Offline" | string
+): string => {
   switch (status) {
     case "Online":
       return "bg-green-500";
@@ -100,7 +102,7 @@ const historyData = [
   { title: "Generate Parentheses", time: "16 days ago" },
 ];
 
-const page = () => {
+const Page = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentFriendIndex, setCurrentFriendIndex] = useState(0);
   const [currentHistoryPage, setCurrentHistoryPage] = useState(1);
@@ -127,8 +129,8 @@ const page = () => {
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all">
       <div className="grid grid-cols-12 gap-6 min-h-screen p-6">
-        {/* Friends Online */}
-        <aside className="col-span-2  bg-white dark:bg-zinc-800 rounded-xl shadow p-4 space-y-4 flex flex-col">
+        {/* Friends List Sidebar */}
+        <aside className="col-span-2 bg-white dark:bg-zinc-800 rounded-xl shadow p-4 space-y-4 flex flex-col">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Friends Online</h2>
             <div className="flex gap-1">
@@ -154,6 +156,7 @@ const page = () => {
               </button>
             </div>
           </div>
+
           <div className="space-y-3 flex-1">
             {players
               .slice(currentFriendIndex, currentFriendIndex + friendsPerView)
@@ -198,9 +201,9 @@ const page = () => {
           </div>
         </aside>
 
-        {/* Main & Profile Combined */}
+        {/* Main Content and Profile */}
         <div className="col-span-10 flex gap-6">
-          {/* Main Content */}
+          {/* Main */}
           <main className="flex-1 space-y-6 flex flex-col">
             {/* Questions */}
             <section className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
@@ -239,6 +242,7 @@ const page = () => {
                   </button>
                 </div>
               </div>
+
               <div className="grid grid-cols-3 gap-4">
                 {[...Array(questionsPerView)].map((_, index) => {
                   const questionNum = currentQuestionIndex + index + 1;
@@ -311,15 +315,14 @@ const page = () => {
             </section>
           </main>
 
-          {/* Profile Sidebar - Now no scroll and aligned */}
+          {/* Profile Sidebar */}
           <aside className="w-[25%] bg-white dark:bg-zinc-800 rounded-xl shadow p-6 space-y-6 flex flex-col">
-            {/* Profile Picture */}
             <div className="flex flex-col items-center">
               <div className="relative">
                 <div className="w-24 h-24 rounded-full border-4 border-blue-500 flex items-center justify-center mb-3 bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
                   C
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-zinc-800"></div>
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-zinc-800" />
               </div>
               <h4 className="text-lg font-semibold">Chamar</h4>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -327,7 +330,6 @@ const page = () => {
               </p>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-3 text-white text-center">
                 <Trophy className="w-5 h-5 mx-auto mb-1" />
@@ -351,7 +353,6 @@ const page = () => {
               </div>
             </div>
 
-            {/* Profile Info */}
             <div className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4 space-y-3">
               <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -377,7 +378,7 @@ const page = () => {
                     Status:
                   </span>
                   <span className="flex items-center gap-1 font-medium text-green-600">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
                     Online
                   </span>
                 </div>
@@ -390,7 +391,6 @@ const page = () => {
               </div>
             </div>
 
-            {/* Progress Bar */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -408,7 +408,6 @@ const page = () => {
               </div>
             </div>
 
-            {/* Recent Achievements */}
             <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-zinc-700 dark:to-zinc-600 rounded-lg p-4 space-y-2">
               <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
                 Recent Achievement
@@ -434,4 +433,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
