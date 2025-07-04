@@ -117,6 +117,10 @@ body{
 }
 html {
   scroll-behavior: smooth;
+
+}
+
+.feature{
   height: 100%;
   overflow: hidden;
 }

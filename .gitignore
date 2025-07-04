@@ -41,4 +41,3 @@ yarn-error.log*
 next-env.d.ts
 
 
-MONGODB_URI = mongodb+srv://YashSheorey:Yash1234@fl4shx.z9s3i8q.mongodb.net/VibeXcode?retryWrites=true&w=majority&appName=Fl4shX
