@@ -1,30 +1,20 @@
-  import { MongoClient } from 'mongodb';
 
-  interface MongoCache {
-    conn: MongoClient | null;
-    promise: Promise<MongoClient> | null;
-  }
+import mongoose from "mongoose";
+const DB_URI = process.env.MONGODB_URI;
+if (!DB_URI){
 
-  const globalWithMongo = globalThis as typeof globalThis & {
-    mongo?: MongoCache;
-  };
+    throw new Error ("Please define mongo environment in env local")
+}
 
-  const cached: MongoCache = globalWithMongo.mongo ?? {
-    conn: null,
-    promise: null,
-  };
-
-  globalWithMongo.mongo = cached;
-
-  export async function connectToDB() {
-    if (cached.conn) return cached.conn;
-
-    if (!cached.promise) {
-      const uri = "mongodb+srv://agrawalmrinal21:bkIRryqZyWVoIW5h@vibexcode.zg2l2ek.mongodb.net/?retryWrites=true&w=majority&appName=VibeXCode";
-      const client = new MongoClient(uri);
-      cached.promise = client.connect();
+async function connectDB() {
+    if (mongoose.connection.readyState===1 ) {
+        return mongoose;
     }
+    const opts =  {
+        bufferCommands: false,       
+    }
+    await mongoose.connect(DB_URI!,opts);
+    return mongoose;
+}
 
-    cached.conn = await cached.promise;
-    return cached.conn;
-  }
+export default connectDB

@@ -1,32 +1,45 @@
-import { NextResponse } from "next/server";
-import { connectToDB } from "@/lib/mongodb";
-import Users from "@/models/Users";
+import connectDB from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
+import Users from "@/models/Users";
 
-export async function POST(req: Request) {
+
+
+export async function POST(request: Request) {
   try {
-    console.log("✅ API hit: /api/signup");
+    const { email, username, password } = await request.json();
 
-    const body = await req.json();
-    const { email, username, password } = body;
-    console.log("📥 Received body:", body);
 
     if (!email || !username || !password) {
-      console.log("⚠️ Missing fields");
-      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
     }
 
-    await connectToDB();
-    console.log("🔗 Connected to DB");
-
-    const userExists = await Users.findOne({ email });
-    console.log("👀 Existing user?", userExists);
-
-    if (userExists) {
-      return NextResponse.json({ message: "User already exists" }, { status: 409 });
+    if (password.length < 8) {
+      return NextResponse.json(
+        { message: "Password must be at least 8 characters" },
+        { status: 400 }
+      );
     }
+
+
+    await connectDB();
+
+  
+    const existingUser = await Users.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        { message: "User already exists" },
+        { status: 400 }
+      );
+    }
+
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+
     const newUser = new Users({
       email,
       username,
@@ -36,9 +49,15 @@ export async function POST(req: Request) {
     await newUser.save();
     console.log("✅ New user saved");
 
-    return NextResponse.json({ message: "User registered successfully" }, { status: 201 });
-  } catch (error: any) {
-    console.error("❌ Server Error in /api/signup:", error.message);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "User created successfully" },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Registration error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
