@@ -51,7 +51,7 @@ const Navbar = () => {
             Practice
           </Link>
           <Link
-            href="/Dashboard"
+            href="/Explore"
             className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"
           >
             Explore
@@ -123,7 +123,7 @@ const Navbar = () => {
             Practice
           </Link>
           <Link
-            href="/Dashboard"
+            href="/Explore"
             className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"
           >
             Explore

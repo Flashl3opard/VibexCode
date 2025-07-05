@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { BsFillBarChartFill } from "react-icons/bs";
 import { FaClipboardList } from "react-icons/fa";
-
 import { CgProfile } from "react-icons/cg";
 import Navbar from "../components/Navbar";
 
@@ -11,7 +10,7 @@ export default function LandingPage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] text-gray-800 dark:from-gray-900 dark:to-gray-800 dark:text-white transition-all">
+      <div className="min-h-screen text-gray-800 dark:bg-[#020612] dark:text-white transition-all">
         <main className="p-4 md:p-10">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
@@ -56,7 +55,7 @@ export default function LandingPage() {
                   ].map((test, index) => (
                     <div
                       key={index}
-                      className="relative w-full md:w-64 h-40 rounded-xl overflow-hidden shadow-lg"
+                      className="relative w-full md:w-64 h-40 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]"
                     >
                       <Image
                         src={test.src}
@@ -90,7 +89,7 @@ export default function LandingPage() {
                   ].map((quiz, i) => (
                     <div
                       key={i}
-                      className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6 text-center"
+                      className="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]"
                     >
                       <h4 className="text-md font-medium">{quiz.title}</h4>
                       <div className="text-4xl mt-4 mb-2">📅</div>
@@ -107,7 +106,7 @@ export default function LandingPage() {
 
               {/* Achievements */}
               <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6">
+                <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]">
                   <div className="flex items-center text-purple-600 font-bold text-xl mb-2">
                     <FaClipboardList className="mr-2" /> 32
                   </div>
@@ -116,7 +115,7 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6">
+                <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]">
                   <div className="flex items-center text-purple-600 font-bold text-xl mb-2">
                     <BsFillBarChartFill className="mr-2" /> 80%
                   </div>
@@ -130,7 +129,7 @@ export default function LandingPage() {
             {/* Leaderboard */}
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">Leaderboard</h3>
-              <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6 space-y-4 overflow-y-auto max-h-[600px]">
+              <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 space-y-4 overflow-y-auto max-h-[600px] shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.02] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]">
                 {[
                   {
                     name: "Player 1",
