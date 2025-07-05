@@ -1,30 +1,20 @@
-import { MongoClient } from 'mongodb';
 
-interface MongoCache {
-  conn: MongoClient | null;
-  promise: Promise<MongoClient> | null;
+import mongoose from "mongoose";
+const DB_URI = process.env.MONGODB_URI;
+if (!DB_URI){
+
+    throw new Error ("Please define mongo environment in env local")
 }
 
-const globalWithMongo = globalThis as typeof globalThis & {
-  mongo?: MongoCache;
-};
-
-const cached: MongoCache = globalWithMongo.mongo ?? {
-  conn: null,
-  promise: null,
-};
-
-globalWithMongo.mongo = cached;
-
-export async function connectToDB() {
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    const uri = process.env.MONGODB_URI!;
-    const client = new MongoClient(uri);
-    cached.promise = client.connect();
-  }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
+async function connectDB() {
+    if (mongoose.connection.readyState===1 ) {
+        return mongoose;
+    }
+    const opts =  {
+        bufferCommands: false,       
+    }
+    await mongoose.connect(DB_URI!,opts);
+    return mongoose;
 }
+
+export default connectDB
