@@ -1,7 +1,22 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import { Trophy, Star, Target, Award, Calendar, Clock } from "lucide-react";
 
 const ProfileSection = () => {
+  const [username, setUsername] = useState("User");
+
+  useEffect(() => {
+    try {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    } catch (err) {
+      console.error("Error reading from localStorage:", err);
+    }
+  }, []);
+
   const completed = 7;
   const total = 10;
   const percent = (completed / total) * 100;
@@ -11,13 +26,14 @@ const ProfileSection = () => {
       <div className="flex flex-col items-center">
         <div className="relative">
           <div className="w-24 h-24 rounded-full border-4 border-blue-500 flex items-center justify-center mb-3 bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
-            C
+            {username.charAt(0).toUpperCase()}
           </div>
           <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-zinc-800" />
         </div>
-        <h4 className="text-lg font-semibold">Chamar</h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400">@chamar_dev</p>
+        <h4 className="text-lg font-semibold">{username}</h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400">@{username}</p>
       </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-3 text-white text-center">
           <Trophy className="w-5 h-5 mx-auto mb-1" />
@@ -40,6 +56,7 @@ const ProfileSection = () => {
           <p className="text-lg font-bold">8</p>
         </div>
       </div>
+
       <div className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4 space-y-3">
         <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
           <Calendar className="w-4 h-4" />
@@ -69,6 +86,7 @@ const ProfileSection = () => {
           </div>
         </div>
       </div>
+
       <div className="space-y-3">
         <h4 className="text-sm font-semibold flex items-center gap-2">
           <Clock className="w-4 h-4" />
@@ -85,6 +103,7 @@ const ProfileSection = () => {
           <span>{total - completed} remaining</span>
         </div>
       </div>
+
       <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-zinc-700 dark:to-zinc-600 rounded-lg p-4 space-y-2">
         <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
           Recent Achievement

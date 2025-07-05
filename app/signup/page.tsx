@@ -26,9 +26,10 @@ const Signup = () => {
       const data = await res.json();
 
       if (res.ok) {
+        localStorage.setItem("username", username); // ✅ Store username
         setMessage("Registration successful!");
         setTimeout(() => {
-          router.push("/login"); // redirect after 1s
+          router.push("/login");
         }, 1000);
       } else {
         setMessage(data.message || "Signup failed");
@@ -43,7 +44,6 @@ const Signup = () => {
     <>
       <Navbar />
       <div className="relative min-h-screen flex items-center px-4 py-10 dark:bg-[#020612] transition-all duration-300">
-        {/* Man's Image */}
         <div className="hidden md:block absolute left-30 top-0 h-full">
           <Image
             src="/assets/guy1.png"
@@ -54,10 +54,8 @@ const Signup = () => {
           />
         </div>
 
-        {/* Signup Card */}
         <div className="relative z-10 ml-auto mr-[15vw] max-w-md h-[650px] w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
           <div className="p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full">
-            {/* Logo */}
             <div className="text-center">
               <h1 className="text-3xl font-bold">
                 <span className="text-pink-600">VibeX</span>
@@ -65,7 +63,6 @@ const Signup = () => {
               </h1>
             </div>
 
-            {/* Form + Links */}
             <div className="space-y-3">
               <form onSubmit={handleRegister} className="space-y-4">
                 <input
@@ -73,24 +70,24 @@ const Signup = () => {
                   placeholder="Email ID"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                   required
+                  className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
                 <input
                   type="text"
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                   required
+                  className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
                 <input
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                   required
+                  className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
                 <button
                   type="submit"
@@ -100,14 +97,12 @@ const Signup = () => {
                 </button>
               </form>
 
-              {/* Message */}
               {message && (
                 <p className="text-center text-sm mt-2 text-purple-500 dark:text-purple-300">
                   {message}
                 </p>
               )}
 
-              {/* Sign In Redirect */}
               <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                 <span className="cursor-pointer hover:underline">
                   Already have an account?
@@ -118,7 +113,6 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Social Signup */}
             <div className="mt-4 space-y-2">
               <div className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Or sign up with
@@ -130,7 +124,6 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Footer Note */}
             <p className="text-[10px] text-center text-gray-400 dark:text-gray-500 leading-snug mt-3">
               This site is protected by reCAPTCHA and the Google{" "}
               <a href="#" className="underline text-purple-500">
