@@ -111,7 +111,7 @@ const Page = () => {
   const total = 10;
   const percent = (completed / total) * 100;
 
-  const questionsPerView = 3;
+  const [questionsPerView, setQuestionsPerView] = useState(3);
   const friendsPerView = 4;
   const historyPerPage = 10;
 
@@ -125,309 +125,320 @@ const Page = () => {
     const endIndex = startIndex + historyPerPage;
     return historyData.slice(startIndex, endIndex);
   };
+  React.useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setQuestionsPerView(1);
+      } else if (width < 1024) {
+        setQuestionsPerView(2);
+      } else {
+        setQuestionsPerView(3);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const FriendsSection = () => (
+    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-4 space-y-4 flex flex-col">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Friends Online</h2>
+        <div className="flex gap-1">
+          <button
+            onClick={() =>
+              setCurrentFriendIndex(Math.max(0, currentFriendIndex - 1))
+            }
+            disabled={currentFriendIndex === 0}
+            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={() =>
+              setCurrentFriendIndex(
+                Math.min(maxFriendIndex, currentFriendIndex + 1)
+              )
+            }
+            disabled={currentFriendIndex >= maxFriendIndex}
+            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-3 flex-1">
+        {players
+          .slice(currentFriendIndex, currentFriendIndex + friendsPerView)
+          .map((player, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+            >
+              <div className="relative">
+                <div
+                  className={`w-10 h-10 rounded-full ${player.color} flex items-center justify-center text-white font-bold text-sm`}
+                >
+                  {player.avatar}
+                </div>
+                <div
+                  className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white dark:border-zinc-800 ${getStatusColor(
+                    player.status
+                  )}`}
+                >
+                  {player.status === "Busy" && (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                    </div>
+                  )}
+                  {player.status === "Idle" && (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full opacity-60" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{player.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {player.activity}
+                </p>
+              </div>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+
+  const ProfileSection = () => (
+    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow p-6 space-y-6 flex flex-col">
+      <div className="flex flex-col items-center">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full border-4 border-blue-500 flex items-center justify-center mb-3 bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
+            C
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-zinc-800" />
+        </div>
+        <h4 className="text-lg font-semibold">Chamar</h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400">@chamar_dev</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-3 text-white text-center">
+          <Trophy className="w-5 h-5 mx-auto mb-1" />
+          <p className="text-xs font-medium">Rank</p>
+          <p className="text-lg font-bold">#42</p>
+        </div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-3 text-white text-center">
+          <Star className="w-5 h-5 mx-auto mb-1" />
+          <p className="text-xs font-medium">Rating</p>
+          <p className="text-lg font-bold">1547</p>
+        </div>
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-3 text-white text-center">
+          <Target className="w-5 h-5 mx-auto mb-1" />
+          <p className="text-xs font-medium">Streak</p>
+          <p className="text-lg font-bold">15</p>
+        </div>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-3 text-white text-center">
+          <Award className="w-5 h-5 mx-auto mb-1" />
+          <p className="text-xs font-medium">Badges</p>
+          <p className="text-lg font-bold">8</p>
+        </div>
+      </div>
+
+      <div className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4 space-y-3">
+        <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+          <Calendar className="w-4 h-4" />
+          Profile Info
+        </h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600 dark:text-gray-300">Level:</span>
+            <span className="font-medium">Intermediate</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600 dark:text-gray-300">Completed:</span>
+            <span className="font-medium">
+              {completed}/{total} Questions
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600 dark:text-gray-300">Status:</span>
+            <span className="flex items-center gap-1 font-medium text-green-600">
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              Online
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600 dark:text-gray-300">Joined:</span>
+            <span className="font-medium">Jan 2024</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          Progress
+        </h4>
+        <div className="w-full h-4 bg-gray-300 dark:bg-zinc-600 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300">
+          <span>{percent.toFixed(0)}% Completed</span>
+          <span>{total - completed} remaining</span>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-zinc-700 dark:to-zinc-600 rounded-lg p-4 space-y-2">
+        <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+          Recent Achievement
+        </h4>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+            <Trophy className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+              Problem Solver
+            </p>
+            <p className="text-xs text-yellow-600 dark:text-yellow-300">
+              Solved 5 problems in a row
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all">
-      <div className="grid grid-cols-12 gap-6 min-h-screen p-6">
-        {/* Friends List Sidebar */}
-        <aside className="col-span-2 bg-white dark:bg-zinc-800 rounded-xl shadow p-4 space-y-4 flex flex-col">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Friends Online</h2>
-            <div className="flex gap-1">
-              <button
-                onClick={() =>
-                  setCurrentFriendIndex(Math.max(0, currentFriendIndex - 1))
-                }
-                disabled={currentFriendIndex === 0}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                onClick={() =>
-                  setCurrentFriendIndex(
-                    Math.min(maxFriendIndex, currentFriendIndex + 1)
-                  )
-                }
-                disabled={currentFriendIndex >= maxFriendIndex}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-3 flex-1">
-            {players
-              .slice(currentFriendIndex, currentFriendIndex + friendsPerView)
-              .map((player, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
-                >
-                  <div className="relative">
-                    <div
-                      className={`w-10 h-10 rounded-full ${player.color} flex items-center justify-center text-white font-bold text-sm`}
-                    >
-                      {player.avatar}
-                    </div>
-                    <div
-                      className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white dark:border-zinc-800 ${getStatusColor(
-                        player.status
-                      )}`}
-                    >
-                      {player.status === "Busy" && (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                        </div>
-                      )}
-                      {player.status === "Idle" && (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-white rounded-full opacity-60" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
-                      {player.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {player.activity}
-                    </p>
-                  </div>
-                </div>
-              ))}
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-screen p-4 lg:p-6">
+        {/* Sidebar - Profile first, then Friends */}
+        <aside className="lg:col-span-3 space-y-6">
+          <ProfileSection />
+          <FriendsSection />
         </aside>
 
-        {/* Main Content and Profile */}
-        <div className="col-span-10 flex gap-6">
-          {/* Main */}
-          <main className="flex-1 space-y-6 flex flex-col">
-            {/* Questions */}
-            <section className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">Questions</h3>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      setCurrentQuestionIndex(
-                        Math.max(0, currentQuestionIndex - 1)
-                      )
-                    }
-                    disabled={currentQuestionIndex === 0}
-                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 min-w-[100px] text-center">
-                    {currentQuestionIndex + 1}-
-                    {Math.min(
-                      currentQuestionIndex + questionsPerView,
-                      totalQuestions
-                    )}{" "}
-                    of {totalQuestions}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setCurrentQuestionIndex(
-                        Math.min(maxQuestionIndex, currentQuestionIndex + 1)
-                      )
-                    }
-                    disabled={currentQuestionIndex >= maxQuestionIndex}
-                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
+        {/* Main Content */}
+        <main className="lg:col-span-9 space-y-6 flex flex-col">
+          {/* Questions */}
+          <section className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg lg:text-xl font-semibold">Questions</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    setCurrentQuestionIndex(
+                      Math.max(0, currentQuestionIndex - 1)
+                    )
+                  }
+                  disabled={currentQuestionIndex === 0}
+                  className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 min-w-[80px] lg:min-w-[100px] text-center">
+                  {currentQuestionIndex + 1}-
+                  {Math.min(
+                    currentQuestionIndex + questionsPerView,
+                    totalQuestions
+                  )}{" "}
+                  of {totalQuestions}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentQuestionIndex(
+                      Math.min(maxQuestionIndex, currentQuestionIndex + 1)
+                    )
+                  }
+                  disabled={currentQuestionIndex >= maxQuestionIndex}
+                  className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                {[...Array(questionsPerView)].map((_, index) => {
-                  const questionNum = currentQuestionIndex + index + 1;
-                  if (questionNum > totalQuestions) return null;
-                  return (
-                    <div
-                      key={index}
-                      className="rounded-xl shadow-md hover:scale-105 transition-transform bg-gradient-to-tr from-purple-500 via-blue-500 to-indigo-500"
-                    >
-                      <div className="p-4 h-32 flex items-center justify-center text-center text-lg font-semibold">
-                        Question {questionNum}
-                      </div>
-                      <div className="bg-white/10 px-4 py-2 text-sm flex justify-between border-t border-white/10">
-                        <span>Level: Easy</span>
-                        <span>{questionNum * 10}%</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* History */}
-            <section className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-6 flex-1 flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">Recent Activity</h3>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Page {currentHistoryPage} of {totalHistoryPages}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() =>
-                        setCurrentHistoryPage(
-                          Math.max(1, currentHistoryPage - 1)
-                        )
-                      }
-                      disabled={currentHistoryPage === 1}
-                      className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setCurrentHistoryPage(
-                          Math.min(totalHistoryPages, currentHistoryPage + 1)
-                        )
-                      }
-                      disabled={currentHistoryPage === totalHistoryPages}
-                      className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="divide-y divide-gray-200 dark:divide-zinc-700 flex-1">
-                {getCurrentHistoryItems().map((item, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(questionsPerView)].map((_, index) => {
+                const questionNum = currentQuestionIndex + index + 1;
+                if (questionNum > totalQuestions) return null;
+                return (
                   <div
                     key={index}
-                    className="flex justify-between items-center px-2 py-3 hover:bg-gray-100 dark:hover:bg-zinc-700 transition rounded-md"
+                    className="rounded-xl shadow-md hover:scale-105 transition-transform bg-gradient-to-tr from-purple-500 via-blue-500 to-indigo-500"
                   >
-                    <p className="truncate max-w-[80%] text-sm">{item.title}</p>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                      {item.time}
-                    </span>
+                    <div className="p-4 h-24 lg:h-32 flex items-center justify-center text-center text-base lg:text-lg font-semibold text-white">
+                      Question {questionNum}
+                    </div>
+                    <div className="bg-white/10 px-4 py-2 text-xs lg:text-sm flex justify-between border-t border-white/10 text-white">
+                      <span>Level: Easy</span>
+                      <span>{questionNum * 10}%</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </section>
-          </main>
-
-          {/* Profile Sidebar */}
-          <aside className="w-[25%] bg-white dark:bg-zinc-800 rounded-xl shadow p-6 space-y-6 flex flex-col">
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-full border-4 border-blue-500 flex items-center justify-center mb-3 bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-2xl">
-                  C
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-zinc-800" />
-              </div>
-              <h4 className="text-lg font-semibold">Chamar</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                @chamar_dev
-              </p>
+                );
+              })}
             </div>
+          </section>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-3 text-white text-center">
-                <Trophy className="w-5 h-5 mx-auto mb-1" />
-                <p className="text-xs font-medium">Rank</p>
-                <p className="text-lg font-bold">#42</p>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-3 text-white text-center">
-                <Star className="w-5 h-5 mx-auto mb-1" />
-                <p className="text-xs font-medium">Rating</p>
-                <p className="text-lg font-bold">1547</p>
-              </div>
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-3 text-white text-center">
-                <Target className="w-5 h-5 mx-auto mb-1" />
-                <p className="text-xs font-medium">Streak</p>
-                <p className="text-lg font-bold">15</p>
-              </div>
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg p-3 text-white text-center">
-                <Award className="w-5 h-5 mx-auto mb-1" />
-                <p className="text-xs font-medium">Badges</p>
-                <p className="text-lg font-bold">8</p>
-              </div>
-            </div>
-
-            <div className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4 space-y-3">
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Profile Info
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">
-                    Level:
-                  </span>
-                  <span className="font-medium">Intermediate</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">
-                    Completed:
-                  </span>
-                  <span className="font-medium">
-                    {completed}/{total} Questions
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">
-                    Status:
-                  </span>
-                  <span className="flex items-center gap-1 font-medium text-green-600">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    Online
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">
-                    Joined:
-                  </span>
-                  <span className="font-medium">Jan 2024</span>
+          {/* History */}
+          <section className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-4 lg:p-6 flex-1 flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg lg:text-xl font-semibold">
+                Recent Activity
+              </h3>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <span className="text-xs lg:text-sm text-gray-500 dark:text-gray-400">
+                  Page {currentHistoryPage} of {totalHistoryPages}
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() =>
+                      setCurrentHistoryPage(Math.max(1, currentHistoryPage - 1))
+                    }
+                    disabled={currentHistoryPage === 1}
+                    className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCurrentHistoryPage(
+                        Math.min(totalHistoryPages, currentHistoryPage + 1)
+                      )
+                    }
+                    disabled={currentHistoryPage === totalHistoryPages}
+                    className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Progress
-              </h4>
-              <div className="w-full h-4 bg-gray-300 dark:bg-zinc-600 rounded-full overflow-hidden">
+            <div className="divide-y divide-gray-200 dark:divide-zinc-700 flex-1">
+              {getCurrentHistoryItems().map((item, index) => (
                 <div
-                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300">
-                <span>{percent.toFixed(0)}% Completed</span>
-                <span>{total - completed} remaining</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-zinc-700 dark:to-zinc-600 rounded-lg p-4 space-y-2">
-              <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
-                Recent Achievement
-              </h4>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <Trophy className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                    Problem Solver
+                  key={index}
+                  className="flex justify-between items-center px-2 py-3 hover:bg-gray-100 dark:hover:bg-zinc-700 transition rounded-md"
+                >
+                  <p className="truncate max-w-[70%] lg:max-w-[80%] text-sm">
+                    {item.title}
                   </p>
-                  <p className="text-xs text-yellow-600 dark:text-yellow-300">
-                    Solved 5 problems in a row
-                  </p>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    {item.time}
+                  </span>
                 </div>
-              </div>
+              ))}
             </div>
-          </aside>
-        </div>
+          </section>
+        </main>
       </div>
     </div>
   );
