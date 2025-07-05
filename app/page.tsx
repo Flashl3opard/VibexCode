@@ -52,7 +52,7 @@ export default function Home() {
                 <span className="text-purple-500">Learn</span>
               </h1>
               <p className="mt-6 text-gray-700 dark:text-gray-300 text-lg max-w-lg mx-auto md:mx-0">
-                LeetCode is the best platform to help you enhance your skills,
+                VibexCode is the best platform to help you enhance your skills,
                 expand your knowledge and prepare for technical interviews.
               </p>
               <Link href="/signup">
