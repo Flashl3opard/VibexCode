@@ -59,7 +59,7 @@ const QuestionsSection = ({
               <div className="p-4 h-24 lg:h-32 flex items-center justify-center text-center text-base lg:text-lg font-semibold text-white">
                 Question {questionNum}
               </div>
-              <div className="bg-white/10 px-4 py-2 text-xs lg:text-sm flex justify-between border-t border-white/10 text-white">
+              <div className="bg-white/10 px-4 py-2 text-xs lg:text-sm flex justify-between border-t border-white/10 text-white rounded-b-xl">
                 <span>Level: Easy</span>
                 <span>{questionNum * 10}%</span>
               </div>
