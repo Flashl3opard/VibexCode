@@ -42,7 +42,7 @@ const LoginPage = () => {
         localStorage.setItem("token", "logged-in");
         setSuccessMsg("Login successful!");
         setTimeout(() => {
-          router.push("/profile");
+          router.push("/Profile");
         }, 500); // Short delay for better UX
       } else {
         setErrorMsg(data.message || "Login failed");

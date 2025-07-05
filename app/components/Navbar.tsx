@@ -71,7 +71,7 @@ const Navbar = () => {
             {isLoggedIn ? (
               <>
                 <Link
-                  href="/profile"
+                  href="/Profile"
                   className="text-purple-600 dark:text-teal-300 font-medium hover:underline cursor-pointer"
                 >
                   Profile
@@ -140,7 +140,7 @@ const Navbar = () => {
             {isLoggedIn ? (
               <>
                 <Link
-                  href="/profile"
+                  href="/Profile"
                   className="text-purple-600 dark:text-teal-300 font-medium hover:underline"
                 >
                   Profile
