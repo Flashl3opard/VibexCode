@@ -1,12 +1,53 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSuccessMsg("Login successful!");
+        setTimeout(() => {
+          router.push("/profile");
+        }, 1000);
+      } else {
+        setErrorMsg(data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrorMsg("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -35,24 +76,39 @@ const Page = () => {
               </Link>
             </div>
 
-            {/* Form + Links Grouped */}
+            {/* Form + Messages */}
             <div className="space-y-3">
-              <form className="space-y-4">
+              {errorMsg && (
+                <div className="text-red-500 text-sm text-center">
+                  {errorMsg}
+                </div>
+              )}
+              {successMsg && (
+                <div className="text-green-500 text-sm text-center">
+                  {successMsg}
+                </div>
+              )}
+              <form className="space-y-4" onSubmit={handleLogin}>
                 <input
                   type="email"
                   placeholder="Mail ID"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
                 <input
                   type="password"
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
+                  disabled={loading}
+                  className="w-full py-3 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50"
                 >
-                  Log In
+                  {loading ? "Logging in..." : "Log In"}
                 </button>
               </form>
 
@@ -61,9 +117,11 @@ const Page = () => {
                 <span className="cursor-pointer hover:underline">
                   Forgot Password?
                 </span>
-                <span className="cursor-pointer text-purple-500 hover:underline">
-                  Sign Up
-                </span>
+                <Link href="/signup">
+                  <span className="cursor-pointer text-purple-500 hover:underline">
+                    Sign Up
+                  </span>
+                </Link>
               </div>
             </div>
 
