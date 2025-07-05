@@ -5,8 +5,10 @@ import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
 import Navbar from "../components/Navbar";
+import { useRouter } from "next/navigation";
 
 const Signup = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +24,15 @@ const Signup = () => {
       });
 
       const data = await res.json();
-      setMessage(data.message || "Registration successful!");
+
+      if (res.ok) {
+        setMessage("Registration successful!");
+        setTimeout(() => {
+          router.push("/login"); // redirect after 1s
+        }, 1000);
+      } else {
+        setMessage(data.message || "Signup failed");
+      }
     } catch (error) {
       console.error("Registration error:", error);
       setMessage("Something went wrong");
