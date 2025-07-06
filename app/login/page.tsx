@@ -58,8 +58,9 @@ const LoginPage = () => {
   return (
     <>
       <Navbar />
-      <div className="relative min-h-screen flex items-center px-4 py-10 dark:bg-[#020612] transition-all duration-300">
-        <div className="hidden md:block absolute left-30 top-0 h-full">
+      <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
+        {/* Background Image - Hidden on mobile, visible on larger screens */}
+        <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full">
           <Image
             src="/assets/guy1.png"
             alt="Student"
@@ -69,35 +70,41 @@ const LoginPage = () => {
           />
         </div>
 
-        <div className="relative z-10 ml-auto mr-[15vw] max-w-md h-[580px] w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full">
-            <div className="text-center">
+        {/* Login Form Container */}
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] h-auto min-h-[580px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full min-h-[580px]">
+            {/* Header */}
+            <div className="text-center mb-6 sm:mb-8">
               <Link href="/">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-2xl sm:text-3xl font-bold">
                   <span className="text-pink-600">VibeX</span>
                   <span className="text-gray-400 dark:text-white">Code</span>
                 </h1>
               </Link>
             </div>
 
-            <div className="space-y-3">
+            {/* Form Section */}
+            <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
+              {/* Error/Success Messages */}
               {errorMsg && (
-                <div className="text-red-500 text-sm text-center">
+                <div className="text-red-500 text-sm text-center px-2">
                   {errorMsg}
                 </div>
               )}
               {successMsg && (
-                <div className="text-green-500 text-sm text-center">
+                <div className="text-green-500 text-sm text-center px-2">
                   {successMsg}
                 </div>
               )}
-              <form className="space-y-4" onSubmit={handleLogin}>
+
+              {/* Login Form */}
+              <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin}>
                 <input
                   type="email"
                   placeholder="Mail ID"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700"
+                  className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                   required
                 />
                 <input
@@ -105,18 +112,20 @@ const LoginPage = () => {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700"
+                  className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                   required
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50"
+                  className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Logging in..." : "Log In"}
                 </button>
               </form>
-              <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+
+              {/* Links */}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <span className="cursor-pointer hover:underline">
                   Forgot Password?
                 </span>
@@ -128,13 +137,16 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-              Or sign up with
-            </div>
-            <div className="flex justify-center gap-6 text-3xl">
-              <FcGoogle className="cursor-pointer hover:scale-110 transition" />
-              <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
-              <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
+            {/* Social Login Section */}
+            <div className="mt-6 sm:mt-8 space-y-4">
+              <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                Or sign up with
+              </div>
+              <div className="flex justify-center gap-4 sm:gap-6 text-2xl sm:text-3xl">
+                <FcGoogle className="cursor-pointer hover:scale-110 transition" />
+                <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
+                <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
+              </div>
             </div>
           </div>
         </div>
