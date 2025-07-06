@@ -9,6 +9,7 @@ import { BsFillBarChartFill } from "react-icons/bs";
 import { FaClipboardList } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function LandingPage() {
   useEffect(() => {
@@ -212,6 +213,7 @@ export default function LandingPage() {
             </div>
           </div>
         </main>
+        <Footer />
       </div>
     </>
   );

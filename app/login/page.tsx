@@ -39,11 +39,15 @@ const LoginPage = () => {
       const data = await res.json();
 
       if (res.ok) {
+        // ✅ FIX: Store both token AND user data in localStorage
         localStorage.setItem("token", "logged-in");
+        localStorage.setItem("email", data.user.email); // <-- needed by /profile
+        localStorage.setItem("username", data.user.username); // optional
+
         setSuccessMsg("Login successful!");
         setTimeout(() => {
-          router.push("/Profile");
-        }, 500); // Short delay for better UX
+          router.push("/profile");
+        }, 500);
       } else {
         setErrorMsg(data.message || "Login failed");
       }
@@ -59,7 +63,6 @@ const LoginPage = () => {
     <>
       <Navbar />
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
-        {/* Background Image - Hidden on mobile, visible on larger screens */}
         <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full">
           <Image
             src="/assets/guy1.png"
@@ -70,10 +73,8 @@ const LoginPage = () => {
           />
         </div>
 
-        {/* Login Form Container */}
         <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] h-auto min-h-[580px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
           <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full min-h-[580px]">
-            {/* Header */}
             <div className="text-center mb-6 sm:mb-8">
               <Link href="/">
                 <h1 className="text-2xl sm:text-3xl font-bold">
@@ -83,9 +84,7 @@ const LoginPage = () => {
               </Link>
             </div>
 
-            {/* Form Section */}
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
-              {/* Error/Success Messages */}
               {errorMsg && (
                 <div className="text-red-500 text-sm text-center px-2">
                   {errorMsg}
@@ -97,7 +96,6 @@ const LoginPage = () => {
                 </div>
               )}
 
-              {/* Login Form */}
               <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin}>
                 <input
                   type="email"
@@ -124,7 +122,6 @@ const LoginPage = () => {
                 </button>
               </form>
 
-              {/* Links */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <span className="cursor-pointer hover:underline">
                   Forgot Password?
@@ -137,7 +134,6 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Social Login Section */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign up with

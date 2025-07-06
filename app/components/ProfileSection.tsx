@@ -4,17 +4,38 @@ import { useEffect, useState } from "react";
 import { Trophy, Star, Target, Award, Calendar, Clock } from "lucide-react";
 
 const ProfileSection = () => {
-  const [username, setUsername] = useState("User");
+  const [username, setUsername] = useState("Loading...");
 
   useEffect(() => {
-    try {
-      const storedUsername = localStorage.getItem("username");
-      if (storedUsername) {
-        setUsername(storedUsername);
+    const fetchUsername = async () => {
+      try {
+        const email = localStorage.getItem("email"); // Make sure you store this on login
+        if (!email) {
+          setUsername("Guest");
+          return;
+        }
+
+        const res = await fetch("/api/getUser", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          setUsername(data.username);
+        } else {
+          console.error("Fetch error:", data.error);
+          setUsername("Unknown");
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUsername("Error");
       }
-    } catch (err) {
-      console.error("Error reading from localStorage:", err);
-    }
+    };
+
+    fetchUsername();
   }, []);
 
   const completed = 7;
