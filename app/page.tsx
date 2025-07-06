@@ -1,15 +1,31 @@
+"use client";
+
+import { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
 
 export default function Home() {
+  useEffect(() => {
+    AOS.init({
+      duration: 1000, // animation duration
+      once: true, // only animate once
+    });
+  }, []);
+
   return (
     <>
-      <div className="h-screen overflow-hidden ">
+      <div className="h-screen overflow-hidden">
         <Navbar />
         <main className="h-full w-full text-black dark:text-white dark:bg-[#020612] px-8 md:px-24 pb-0 transition-colors duration-300 relative overflow-hidden">
           {/* Hanging Headphones */}
-          <div className="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none animate-float-in-top">
+          <div
+            className="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none animate-float-in-top"
+            data-aos="fade-down"
+          >
             <Image
               src="/assets/headphones1.png"
               alt="Hanging Headphones"
@@ -24,7 +40,10 @@ export default function Home() {
           </div>
 
           {/* Floating Laptop */}
-          <div className="fixed bottom-0 right-20 z-40 pointer-events-none animate-enter-up">
+          <div
+            className="fixed bottom-0 right-20 z-40 pointer-events-none animate-enter-up"
+            data-aos="fade-up"
+          >
             <div className="animate-levitate">
               <Image
                 src="/assets/lap2.png"
@@ -44,7 +63,10 @@ export default function Home() {
           {/* Main Content */}
           <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10 h-full pt-24 relative z-20">
             {/* Left Text Section */}
-            <div className="flex-1 text-center md:text-left">
+            <div
+              className="flex-1 text-center md:text-left"
+              data-aos="fade-right"
+            >
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                 <span className="text-purple-600">A</span>{" "}
                 <span className="text-gray-900 dark:text-white">New Way</span>{" "}
@@ -63,7 +85,10 @@ export default function Home() {
             </div>
 
             {/* Decorative Circles */}
-            <div className="flex-1 relative flex flex-col justify-end items-end h-full">
+            <div
+              className="flex-1 relative flex flex-col justify-end items-end h-full"
+              data-aos="fade-left"
+            >
               <div className="absolute w-28 h-28 rounded-full border-8 border-purple-300 dark:border-purple-700 top-24 left-20 md:left-36 opacity-50 z-0"></div>
               <div className="absolute w-20 h-20 rounded-full border-8 border-purple-300 dark:border-purple-700 bottom-4 right-10 opacity-50 z-0"></div>
               <div className="absolute w-16 h-16 rounded-full border-4 border-purple-400 dark:border-purple-600 top-10 right-16 opacity-40 z-0"></div>

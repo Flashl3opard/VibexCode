@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Sora, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Load Sora for main text
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
+// Load Geist Mono for code blocks
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -23,11 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:bg-black min-h-screen ${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <>{children}</>
+    <html lang="en" className={`${sora.variable} ${geistMono.variable}`}>
+      <body className="bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:bg-black min-h-screen antialiased">
+        {children}
       </body>
     </html>
   );
