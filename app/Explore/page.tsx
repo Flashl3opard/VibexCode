@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+
 import Image from "next/image";
 import { BsFillBarChartFill } from "react-icons/bs";
 import { FaClipboardList } from "react-icons/fa";
@@ -7,13 +11,20 @@ import { CgProfile } from "react-icons/cg";
 import Navbar from "../components/Navbar";
 
 export default function LandingPage() {
+  useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+  }, []);
+
   return (
     <>
       <Navbar />
       <div className="min-h-screen text-gray-800 dark:bg-[#020612] dark:text-white transition-all">
         <main className="p-4 md:p-10">
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          <div
+            className="flex flex-col md:flex-row justify-between items-start gap-4"
+            data-aos="fade-down"
+          >
             <div>
               <h2 className="text-3xl font-bold">Welcome!</h2>
               <p className="text-gray-600 dark:text-gray-400">
@@ -36,7 +47,7 @@ export default function LandingPage() {
             {/* Left Content */}
             <div className="lg:col-span-2 space-y-10">
               {/* Recent Tests */}
-              <section>
+              <section data-aos="fade-up">
                 <h3 className="text-xl font-semibold mb-4">Recent Tests</h3>
                 <div className="flex flex-col md:flex-row gap-6">
                   {[
@@ -56,6 +67,8 @@ export default function LandingPage() {
                     <div
                       key={index}
                       className="relative w-full md:w-64 h-40 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]"
+                      data-aos="zoom-in"
+                      data-aos-delay={index * 200}
                     >
                       <Image
                         src={test.src}
@@ -79,7 +92,7 @@ export default function LandingPage() {
               </section>
 
               {/* Upcoming Quizzes */}
-              <section>
+              <section data-aos="fade-up">
                 <h3 className="text-xl font-semibold mb-4">Upcoming Quizzes</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
@@ -90,6 +103,8 @@ export default function LandingPage() {
                     <div
                       key={i}
                       className="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]"
+                      data-aos="flip-up"
+                      data-aos-delay={i * 200}
                     >
                       <h4 className="text-md font-medium">{quiz.title}</h4>
                       <div className="text-4xl mt-4 mb-2">📅</div>
@@ -105,7 +120,10 @@ export default function LandingPage() {
               </section>
 
               {/* Achievements */}
-              <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <section
+                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+                data-aos="fade-up"
+              >
                 <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.03] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]">
                   <div className="flex items-center text-purple-600 font-bold text-xl mb-2">
                     <FaClipboardList className="mr-2" /> 32
@@ -127,7 +145,7 @@ export default function LandingPage() {
             </div>
 
             {/* Leaderboard */}
-            <div className="space-y-4">
+            <div className="space-y-4" data-aos="fade-left">
               <h3 className="text-xl font-semibold">Leaderboard</h3>
               <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 space-y-4 overflow-y-auto max-h-[600px] shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.02] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]">
                 {[
@@ -171,6 +189,8 @@ export default function LandingPage() {
                   <div
                     key={index}
                     className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-600 pb-2 last:border-none"
+                    data-aos="fade-up"
+                    data-aos-delay={index * 100}
                   >
                     <div className="flex items-center gap-4">
                       <div
