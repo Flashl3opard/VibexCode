@@ -24,6 +24,49 @@ export default function Page() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const questionsData = [
+    {
+      name: "Arrays",
+      questionCount: 3,
+      progress: 60,
+      questions: [
+        "Find the maximum subarray sum",
+        "Rotate the array by k positions",
+        "Check if two arrays are equal after sorting",
+      ],
+    },
+    {
+      name: "Recursion",
+      questionCount: 2,
+      progress: 30,
+      questions: [
+        "Find factorial using recursion",
+        "Print all subsets of a string",
+      ],
+    },
+    {
+      name: "Graphs",
+      questionCount: 2,
+      progress: 90,
+      questions: [
+        "Detect cycle in a directed graph",
+        "Find number of connected components",
+      ],
+    },
+    {
+      name: "Stacks",
+      questionCount: 1,
+      progress: 100,
+      questions: ["Implement min stack with O(1) getMin"],
+    },
+    {
+      name: "Trees",
+      questionCount: 2,
+      progress: 50,
+      questions: ["Inorder traversal", "Check if a tree is balanced"],
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all">
       <Navbar />
@@ -37,6 +80,7 @@ export default function Page() {
             questionsPerView={questionsPerView}
             currentQuestionIndex={currentQuestionIndex}
             setCurrentQuestionIndex={setCurrentQuestionIndex}
+            questionsData={questionsData}
           />
           <HistorySection historyData={historyData} />
         </main>
