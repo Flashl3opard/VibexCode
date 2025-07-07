@@ -3,14 +3,14 @@ import connectDB from "@/lib/mongodb";
 import { notFound } from "next/navigation";
 import Category from "@/models/Categories _temp";
 
-// ✅ Correct type based on dynamic route [topicName]
-interface TopicPageProps {
+// ✅ Renamed to avoid collision with any global PageProps
+interface TopicParams {
   params: {
     topicName: string;
   };
 }
 
-export default async function TopicPage({ params }: TopicPageProps) {
+export default async function TopicPage({ params }: TopicParams) {
   const { topicName } = params;
 
   await connectDB();
