@@ -2,13 +2,14 @@ import connectDB from "@/lib/mongodb";
 import { notFound } from "next/navigation";
 import Category from "@/models/Categories _temp";
 
-interface TopicPageProps {
+// ✅ Properly typed using Next.js App Router conventions
+type PageProps = {
   params: {
     topicName: string;
   };
-}
+};
 
-export default async function TopicPage({ params }: TopicPageProps) {
+export default async function TopicPage({ params }: PageProps) {
   const { topicName } = params;
 
   await connectDB();

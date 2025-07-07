@@ -16,7 +16,7 @@ const Dashboard = () => {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen p-6 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+      <main className="min-h-screen p-6  dark:bg-gray-900 text-gray-900 dark:text-white">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column - Leaderboard */}
           <div className="lg:col-span-1">
