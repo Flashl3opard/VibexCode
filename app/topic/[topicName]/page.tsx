@@ -1,15 +1,16 @@
+// app/topic/[topicName]/page.tsx
 import connectDB from "@/lib/mongodb";
 import { notFound } from "next/navigation";
 import Category from "@/models/Categories _temp";
 
-// ✅ Properly typed using Next.js App Router conventions
-type PageProps = {
+// ✅ Correct type based on dynamic route [topicName]
+interface TopicPageProps {
   params: {
     topicName: string;
   };
-};
+}
 
-export default async function TopicPage({ params }: PageProps) {
+export default async function TopicPage({ params }: TopicPageProps) {
   const { topicName } = params;
 
   await connectDB();
