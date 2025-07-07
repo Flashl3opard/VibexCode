@@ -3,15 +3,16 @@ import connectDB from "@/lib/mongodb";
 import { notFound } from "next/navigation";
 import Category from "@/models/Categories _temp";
 
-// ✅ Renamed to avoid collision with any global PageProps
-interface TopicParams {
-  params: {
+// ✅ Updated type for Next.js 15 - params is now a Promise
+interface TopicPageProps {
+  params: Promise<{
     topicName: string;
-  };
+  }>;
 }
 
-export default async function TopicPage({ params }: TopicParams) {
-  const { topicName } = params;
+export default async function TopicPage({ params }: TopicPageProps) {
+  // ✅ Await the params before destructuring
+  const { topicName } = await params;
 
   await connectDB();
 
