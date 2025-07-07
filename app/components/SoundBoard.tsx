@@ -9,7 +9,6 @@ import {
 import { FaBackwardStep } from "react-icons/fa6";
 import Image from "next/image";
 
-// 🎵 Song List
 const songs = [
   {
     title: "Baawe",
@@ -79,12 +78,11 @@ const SoundBoard = () => {
     setIsPlaying(true);
   };
 
-  // 🔁 Load new audio when song index changes
   useEffect(() => {
     const song = new Audio(currentSong.audio);
     audioRef.current?.pause();
     audioRef.current = song;
-    song.volume = 1; // optional: set to max volume
+    song.volume = 1;
 
     const updateProgress = () => {
       if (song.ended) {
@@ -111,9 +109,9 @@ const SoundBoard = () => {
   }, [currentSong.audio, isPlaying]);
 
   return (
-    <div className="w-80 bg-zinc-900 rounded-2xl shadow-lg p-4 flex flex-col items-center gap-4 text-white">
+    <div className="w-full h-full flex flex-col bg-zinc-900 rounded-2xl shadow-md p-4 gap-3 text-white overflow-hidden">
       {/* 🎵 Album Cover */}
-      <div className="w-full aspect-square overflow-hidden rounded-xl">
+      <div className="w-full aspect-square overflow-hidden rounded-lg">
         <Image
           src={currentSong.image}
           className="object-cover w-full h-full"
@@ -140,12 +138,12 @@ const SoundBoard = () => {
       </div>
 
       {/* 📝 Title */}
-      <h3 className="text-white text-lg font-semibold text-center">
+      <h3 className="text-white text-base font-semibold text-center truncate">
         {currentSong.title}
       </h3>
 
       {/* 🎚 Controls */}
-      <div className="flex items-center justify-center gap-6 text-3xl">
+      <div className="flex items-center justify-center gap-6 text-2xl">
         <button className="hover:text-zinc-400" onClick={goToPrevSong}>
           <FaBackwardStep />
         </button>
@@ -158,23 +156,21 @@ const SoundBoard = () => {
       </div>
 
       {/* 📋 Playlist */}
-      <div className="w-full mt-4">
-        <h4 className="text-sm font-semibold text-gray-300 mb-2">Playlist</h4>
-        <div className="max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-          <ul className="text-sm text-gray-200 space-y-1">
-            {songs.map((song, index) => (
-              <li
-                key={index}
-                onClick={() => playFromPlaylist(index)}
-                className={`cursor-pointer p-1 rounded-md hover:bg-zinc-700 transition ${
-                  index === currentSongIndex ? "bg-green-600 text-white" : ""
-                }`}
-              >
-                {song.title}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="w-full overflow-y-auto flex-1 mt-2">
+        <h4 className="text-sm font-semibold text-gray-300 mb-1">Playlist</h4>
+        <ul className="text-sm text-gray-200 space-y-1 max-h-32 overflow-y-auto pr-1">
+          {songs.map((song, index) => (
+            <li
+              key={index}
+              onClick={() => playFromPlaylist(index)}
+              className={`cursor-pointer p-1 rounded-md hover:bg-zinc-700 transition text-ellipsis overflow-hidden whitespace-nowrap ${
+                index === currentSongIndex ? "bg-green-600 text-white" : ""
+              }`}
+            >
+              {song.title}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
