@@ -1,32 +1,220 @@
-import React from "react";
-import { FaRegPlayCircle } from "react-icons/fa";
-import { FaStepForward } from "react-icons/fa";
+'use client'
+
+import React, { useRef, useState, useEffect } from "react";
+import { FaRegPlayCircle, FaRegPauseCircle, FaStepForward } from "react-icons/fa";
 import { FaBackwardStep } from "react-icons/fa6";
 import Image from "next/image";
 
+// 🎵 Song List
+const songs = [
+  {
+    title: "Baawe",
+    audio: "/assets/audio/audio1.mp3",
+    image: "/assets/audio1.jpg",
+  },
+  {
+    title: "Ik Kudi",
+    audio: "/assets/audio/audio2.mp3",
+    image: "/assets/audio2.jpg",
+  },
+  {
+    title: "Sapphire",
+    audio: "/assets/audio/audio3.mp3",
+    image: "/assets/audio3.jpg",
+  },
+  // Add more songs here...
+];
+
 const SoundBoard = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1); // Default full volume
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const currentSong = songs[currentSongIndex];
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  const toggleSound = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.error("Play error:", err));
+    }
+  };
+
+  const goToNextSong = () => {
+    setCurrentSongIndex((prev) =>
+      prev === songs.length - 1 ? 0 : prev + 1
+    );
+    setIsPlaying(true);
+  };
+
+  const goToPrevSong = () => {
+    setCurrentSongIndex((prev) =>
+      prev === 0 ? songs.length - 1 : prev - 1
+    );
+    setIsPlaying(true);
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = value;
+      setCurrentTime(value);
+    }
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    setVolume(value);
+    localStorage.setItem("playerVolume", value.toString());
+    if (audioRef.current) {
+      audioRef.current.volume = value;
+    }
+  };
+
+  const playFromPlaylist = (index: number) => {
+    setCurrentSongIndex(index);
+    setIsPlaying(true);
+  };
+
+  // 🔁 Load new audio when song index changes
+  useEffect(() => {
+    const song = new Audio(currentSong.audio);
+    audioRef.current?.pause();
+    audioRef.current = song;
+    song.volume = volume;
+
+    const updateProgress = () => {
+      if (song.ended) {
+        goToNextSong();
+        return;
+      }
+      setCurrentTime(song.currentTime);
+      setDuration(song.duration || 0);
+      requestAnimationFrame(updateProgress);
+    };
+
+    song.addEventListener("loadedmetadata", () => {
+      setDuration(song.duration);
+    });
+
+    if (isPlaying) {
+      song.play().catch((err) => console.error("Play error:", err));
+      requestAnimationFrame(updateProgress);
+    }
+
+    return () => {
+      song.pause();
+    };
+  }, [currentSongIndex, isPlaying]); // ✅ Volume removed from dependency
+
+  // Load saved volume on first mount
+  useEffect(() => {
+    const savedVolume = localStorage.getItem("playerVolume");
+    if (savedVolume) {
+      const v = parseFloat(savedVolume);
+      setVolume(v);
+    }
+  }, []);
+
+  // Apply volume change to audioRef directly
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
   return (
-    <div className="w-64 bg-zinc-900 rounded-2xl shadow-lg p-4 flex flex-col items-center gap-4">
+    <div className="w-80 bg-zinc-900 rounded-2xl shadow-lg p-4 flex flex-col items-center gap-4 text-white">
+      {/* 🎵 Album Cover */}
       <div className="w-full aspect-square overflow-hidden rounded-xl">
         <Image
-          src="/assets/song1.png"
+          src={currentSong.image}
           className="object-cover w-full h-full"
-          alt="helo"
+          alt={currentSong.title}
           height={300}
           width={600}
         />
       </div>
 
-      <div className="flex items-center justify-center gap-6 text-white text-3xl">
-        <button className="hover:text-zinc-400 transition">
+      {/* ⏱ Timeline */}
+      <div className="w-full flex flex-col gap-1">
+        <input
+          type="range"
+          min={0}
+          max={isNaN(duration) ? 0 : duration}
+          value={isNaN(currentTime) ? 0 : currentTime}
+          onChange={handleSeek}
+          className="w-full h-1 accent-green-500 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between text-xs text-gray-400 px-1">
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
+      </div>
+
+      {/* 🔊 Volume Slider */}
+      <div className="w-full">
+        <label className="text-xs text-gray-400 px-1">Volume</label>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          onChange={handleVolumeChange}
+          className="w-full h-1 accent-green-500 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+        />
+      </div>
+
+      {/* 📝 Title */}
+      <h3 className="text-white text-lg font-semibold text-center">
+        {currentSong.title}
+      </h3>
+
+      {/* 🎚 Controls */}
+      <div className="flex items-center justify-center gap-6 text-3xl">
+        <button className="hover:text-zinc-400" onClick={goToPrevSong}>
           <FaBackwardStep />
         </button>
-        <button className="hover:text-green-400 transition">
-          <FaRegPlayCircle />
+        <button className="hover:text-green-400" onClick={toggleSound}>
+          {isPlaying ? <FaRegPauseCircle /> : <FaRegPlayCircle />}
         </button>
-        <button className="hover:text-zinc-400 transition">
+        <button className="hover:text-zinc-400" onClick={goToNextSong}>
           <FaStepForward />
         </button>
+      </div>
+
+      {/* 📋 Playlist - Scrollable */}
+      <div className="w-full mt-4">
+        <h4 className="text-sm font-semibold text-gray-300 mb-2">Playlist</h4>
+        <div className="max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+          <ul className="text-sm text-gray-200 space-y-1">
+            {songs.map((song, index) => (
+              <li
+                key={index}
+                onClick={() => playFromPlaylist(index)}
+                className={`cursor-pointer p-1 rounded-md hover:bg-zinc-700 transition ${
+                  index === currentSongIndex ? "bg-green-600 text-white" : ""
+                }`}
+              >
+                {song.title}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
