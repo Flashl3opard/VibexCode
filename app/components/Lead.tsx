@@ -2,7 +2,7 @@ import React from "react";
 
 const Lead = () => {
   return (
-    <div className="space-y-4" data-aos="fade-left">
+    <div className="space-y-4">
       <h3 className="text-xl font-semibold">Leaderboard</h3>
       <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 space-y-4 overflow-y-auto max-h-[600px] shadow-[0_4px_20px_rgba(128,0,255,0.4)] transition duration-300 hover:scale-[1.02] hover:shadow-[0_6px_30px_rgba(128,0,255,0.6)]">
         {[

@@ -3,22 +3,12 @@ import React from "react";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 import Navbar from "../components/Navbar";
+import PersonalTODO from "../components/PersonalTODO";
 
 // Placeholder components
 const CommunityConnect = () => (
   <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 h-full flex items-center justify-center">
     <h2 className="text-2xl font-semibold">Community Connect</h2>
-  </div>
-);
-
-const PersonalTODO = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 h-full">
-    <h3 className="text-lg font-semibold mb-2">Personal TODO</h3>
-    <ul className="list-disc list-inside text-sm">
-      <li>Complete daily challenge</li>
-      <li>Review marked questions</li>
-      <li>Push GitHub commits</li>
-    </ul>
   </div>
 );
 
