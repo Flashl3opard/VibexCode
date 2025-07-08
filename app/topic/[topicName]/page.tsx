@@ -11,7 +11,6 @@ interface TopicPageProps {
 }
 
 export default async function TopicPage({ params }: TopicPageProps) {
-  // ✅ Await the params before destructuring
   const { topicName } = await params;
 
   await connectDB();
