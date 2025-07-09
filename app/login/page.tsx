@@ -63,9 +63,9 @@ const LoginPage = () => {
     <>
       <Navbar />
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
-        <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full">
+        <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full scale-90 -translate-x-15 -translate-y-10">
           <Image
-            src="/assets/guy1.png"
+            src="/assets/login.svg"
             alt="Student"
             width={500}
             height={900}
