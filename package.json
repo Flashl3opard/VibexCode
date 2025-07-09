@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.8.2",
+    "@tinymce/tinymce-react": "^6.2.1",
     "ace-builds": "^1.43.0",
     "aos": "^2.3.4",
+    "appwrite": "^18.1.1",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.0",
+    "html-react-parser": "^5.2.5",
     "lucide-react": "^0.523.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.1",
@@ -25,6 +29,8 @@
     "react-ace": "^14.0.1",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.6.3",
     "sharp": "^0.34.2",
     "tailwind-merge": "^3.3.1"
   },
