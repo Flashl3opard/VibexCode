@@ -115,10 +115,13 @@
 body{
   background-color: #27272a;
   font-family: var(--font-sora)
+  
 }
 html {
   scroll-behavior: smooth;
-
+  @media (max-width: 768px) {
+  overflow: auto;
+  }
 }
 
 .feature{
