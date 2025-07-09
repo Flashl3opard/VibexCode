@@ -68,7 +68,7 @@ export default function Page() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all">
+    <div className="min-h-screen   dark:bg-[#020612]  text-gray-800 dark:text-white transition-all">
       <Navbar />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-screen p-4 lg:p-6">
         <aside className="lg:col-span-3 space-y-6">

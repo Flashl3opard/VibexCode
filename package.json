@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "ace-builds": "^1.43.0",
     "aos": "^2.3.4",
     "axios": "^1.10.0",
