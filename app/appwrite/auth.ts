@@ -1,8 +1,8 @@
-import { Client, Account } from 'appwrite';
-import { useId } from 'react';
+import { Client, Account, ID } from 'appwrite';
+
 
 class AuthService {
-    id = useId();
+
     private client: Client;
     private account: Account;
 
@@ -18,7 +18,7 @@ class AuthService {
    // Sign Up, Sign In, Logout, and Check User methods
     async signUp(email: string, password: string, name: string) {
         try {
-            return await this.account.create(this.id, email, password, name);
+            return await this.account.create(ID.unique(), email, password, name);
         } catch (error) {
             console.error('Sign Up Error:', error);
             throw error;

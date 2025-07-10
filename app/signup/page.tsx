@@ -7,45 +7,87 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import  authservice  from "../appwrite/auth";
+import { login } from "../store/authSlice";
 
-const Signup = () => {
+ 
+export default function page() {
+
+  // Define the form type for TypeScript
+  type Hform = {
+    email: string;
+    password: string;
+    name: string;
+  }
+
+
+  //Trying out hook form and redux for state management
+  const [error, setError] = useState<string>("");
+  const dispatch = useDispatch<AppDispatch>();
+  const { register, handleSubmit } = useForm<Hform>();
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-
+  // Function to handle form submission
+  const onSubmit = async (data: Hform) => {
+    setError(""); // Reset error message
     try {
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem("username", username); // ✅ Store username
-        setMessage("Registration successful!");
-        setTimeout(() => {
-          router.push("/login");
-        }, 1000);
-      } else {
-        setMessage(data.message || "Signup failed");
+      setLoading(true);
+      const session = await authservice.signUp(data.email, data.password, data.name);
+      if(session){
+        const userData = await authservice.checkUser();
+        if (userData) dispatch(login({ status: true, userData }));
+        setError("Sign up successful! Redirecting...");
+        setLoading(false)
+        router.push("/");
+        
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      setMessage("Something went wrong");
-    } finally {
-      setLoading(false);
+      console.error("Error during registration:", error);
+      setError("Registration failed. Please try again.");
     }
-  };
+  }
+
+  
+  // const [email, setEmail] = useState("");
+  // const [username, setUsername] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [message, setMessage] = useState("");
+  // 
+
+  // const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setMessage("");
+
+  //   try {
+  //     const res = await fetch("/api/signup", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ email, username, password }),
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (res.ok) {
+  //       localStorage.setItem("username", username); // ✅ Store username
+  //       setMessage("Registration successful!");
+  //       setTimeout(() => {
+  //         router.push("/login");
+  //       }, 1000);
+  //     } else {
+  //       setMessage(data.message || "Signup failed");
+  //     }
+  //   } catch (error) {
+  //     console.error("Registration error:", error);
+  //     setMessage("Something went wrong");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <>
@@ -79,36 +121,30 @@ const Signup = () => {
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
               {/* Registration Form */}
               <form
-                onSubmit={handleRegister}
+                onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 sm:space-y-5"
               >
                 <input
                   type="email"
                   placeholder="Email ID"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  {...register("email", { required: true })}
                   className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                 />
                 <input
                   type="text"
                   placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
+                  {...register("name", { required: true })}
                   className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                 />
                 <input
                   type="password"
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  {...register("password", { required: true })}
                   className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                 />
                 <button
                   type="submit"
-                  disabled={loading}
+                  
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Creating Account..." : "Register"}
@@ -116,9 +152,9 @@ const Signup = () => {
               </form>
 
               {/* Success/Error Message */}
-              {message && (
+              {error && (
                 <p className="text-center text-sm px-2 text-purple-500 dark:text-purple-300">
-                  {message}
+                  {error}
                 </p>
               )}
 
@@ -172,4 +208,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+

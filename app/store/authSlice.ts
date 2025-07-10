@@ -1,10 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+//Defining the type for user data
+interface UserData {
+    email: string;
+    name: string;
+}
+
 //Defining the type for initial state
 interface AuthState {
     status: boolean,
-    userData: null,
+    userData: UserData | null, // userData can be null if not logged in,
 }
 
 const initialState: AuthState = {
@@ -17,7 +23,7 @@ const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        login: (state, action: PayloadAction<{ status: Boolean ; userData: null }>) => {
+        login: (state, action: PayloadAction<{ status: Boolean ; userData: UserData | null}>) => {
             state.status = true;
             state.userData = action.payload.userData;
         },
