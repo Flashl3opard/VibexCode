@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
@@ -10,17 +10,16 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
-import  authservice  from "../appwrite/auth";
+import authservice from "../appwrite/auth";
 import { login } from "../store/authSlice";
 
-export default function page() {
+export default function Page() {
   // Define the form type for TypeScript
   type Hform = {
     email: string;
     password: string;
     name: string;
-  }
-
+  };
 
   //Trying out hook form and redux for state management
   const [error, setError] = useState<string>("");
@@ -35,24 +34,19 @@ export default function page() {
     try {
       setLoading(true);
       const session = await authservice.signIn(data.email, data.password);
-      if(session){
+      if (session) {
         const userData = await authservice.checkUser();
         if (userData) dispatch(login({ status: true, userData }));
         setError("Sign In successful! Redirecting...");
-        setLoading(false)
+        setLoading(false);
         router.push("/");
-        
       }
     } catch (error) {
       console.error("Error during registration:", error);
       setError("Sign In failed. Please try again.");
     }
-  }
-  
-  
-  
-  
-  
+  };
+
   // const [email, setEmail] = useState("");
   // const [password, setPassword] = useState("");
   // const [errorMsg, setErrorMsg] = useState("");
@@ -139,7 +133,10 @@ export default function page() {
                 </div>
               )}
 
-              <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              <form
+                className="space-y-4 sm:space-y-5"
+                onSubmit={handleSubmit(onSubmit)}
+              >
                 <input
                   type="email"
                   placeholder="Mail ID"
@@ -156,7 +153,6 @@ export default function page() {
                 />
                 <button
                   type="submit"
-                  
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Logging in..." : "Log In"}
@@ -190,4 +186,4 @@ export default function page() {
       </div>
     </>
   );
-};
+}

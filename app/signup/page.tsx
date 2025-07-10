@@ -10,19 +10,16 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
-import  authservice  from "../appwrite/auth";
+import authservice from "../appwrite/auth";
 import { login } from "../store/authSlice";
 
- 
-export default function page() {
-
+export default function Page() {
   // Define the form type for TypeScript
   type Hform = {
     email: string;
     password: string;
     name: string;
-  }
-
+  };
 
   //Trying out hook form and redux for state management
   const [error, setError] = useState<string>("");
@@ -34,31 +31,33 @@ export default function page() {
   // Function to handle form submission
   const onSubmit = async (data: Hform) => {
     setError("");
-    setLoading(true) // Reset error message
+    setLoading(true); // Reset error message
     try {
       setLoading(true);
-      const session = await authservice.signUp(data.email, data.password, data.name);
-      if(session){
+      const session = await authservice.signUp(
+        data.email,
+        data.password,
+        data.name
+      );
+      if (session) {
         const userData = await authservice.checkUser();
         if (userData) dispatch(login({ status: true, userData }));
         setError("Sign up successful! Redirecting...");
-        setLoading(false)
+        setLoading(false);
         router.push("/");
-        
       }
     } catch (error) {
       setLoading(false);
       console.error("Error during registration:", error);
       setError("Registration failed. Please try again.");
     }
-  }
+  };
 
-  
   // const [email, setEmail] = useState("");
   // const [username, setUsername] = useState("");
   // const [password, setPassword] = useState("");
   // const [message, setMessage] = useState("");
-  // 
+  //
 
   // const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
@@ -146,7 +145,6 @@ export default function page() {
                 />
                 <button
                   type="submit"
-                  
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Creating Account..." : "Register"}
@@ -208,6 +206,4 @@ export default function page() {
       </div>
     </>
   );
-};
-
-
+}
