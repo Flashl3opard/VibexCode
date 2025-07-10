@@ -33,7 +33,8 @@ export default function page() {
 
   // Function to handle form submission
   const onSubmit = async (data: Hform) => {
-    setError(""); // Reset error message
+    setError("");
+    setLoading(true) // Reset error message
     try {
       setLoading(true);
       const session = await authservice.signUp(data.email, data.password, data.name);
@@ -46,6 +47,7 @@ export default function page() {
         
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error during registration:", error);
       setError("Registration failed. Please try again.");
     }

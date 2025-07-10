@@ -6,6 +6,10 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import { login } from "../store/authSlice";
+import authservice from "../appwrite/auth";
 
 const menuItemVariants = {
   hidden: { opacity: 0, x: -10 },
@@ -19,30 +23,68 @@ const menuItemVariants = {
 const Navbar = () => {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
+
+
+  //Checking if user is logged in
+  const dispatch = useDispatch<AppDispatch>();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(()=>{
+    const checkUser = async ()=>{
+      try {
+        const userData = await authservice.checkUser();
+        if (userData) {
+          setIsLoggedIn(true);
+          dispatch(login({ status: true, userData }));
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) { 
+        console.error("Error checking user:", error);
+        setIsLoggedIn(false);
+      }
+    }
+    checkUser();
+  }, [dispatch])
+
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   setIsLoggedIn(!!token);
+  // }, []);
 
   const handleVibeClick = () => {
     setMenuOpen(false); // close menu on mobile
     router.push("/playground");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    setMenuOpen(false);
-    router.push("/");
-    router.refresh();
-  };
+  // const handleLogout = () => {
+  //   localStorage.removeItem("token");
+  //   setIsLoggedIn(false);
+  //   setMenuOpen(false);
+  //   router.push("/");
+  //   router.refresh();
+  // };
 
   const handleMobileNavClick = (path: string) => {
     setMenuOpen(false);
     router.push(path);
   };
+
+  const handleLogout = async () => {
+    try {
+      await authservice.logout();
+      setIsLoggedIn(false);
+      dispatch(login({ status: false, userData: null }));
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
+  }
+
 
   return (
     <nav className="w-full py-4 px-6 md:px-8 relative z-30 bg-transparent dark:bg-[#020612] transition-all">

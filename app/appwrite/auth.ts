@@ -32,7 +32,7 @@ class AuthService {
     }
     async logout() {
         try {
-            await this.account.deleteSession('current');
+            await this.account.deleteSessions();
         } catch (error) {
             console.error('Logout Error:', error);
             throw error;
