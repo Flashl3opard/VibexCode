@@ -1,5 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+// app/store/authSlice.ts
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 //Defining the type for user data
 interface UserData {
@@ -7,23 +7,22 @@ interface UserData {
     name: string;
 }
 
-//Defining the type for initial state
+/** Slice state */
 interface AuthState {
     status: boolean,
-    userData: UserData | null, // userData can be null if not logged in,
+    userData: UserData | null,
 }
 
 const initialState: AuthState = {
-    status: false,
-    userData: null, 
-    
+  status: false,
+  userData: null,
 };
 
 const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        login: (state, action: PayloadAction<{ status: Boolean ; userData: UserData | null}>) => {
+        login: (state, action: PayloadAction<{ status: Boolean ; userData: UserData | null }>) => {
             state.status = true;
             state.userData = action.payload.userData;
         },
@@ -35,5 +34,4 @@ const authSlice = createSlice({
 });
 
 export const { login, logout } = authSlice.actions;
-
 export default authSlice.reducer;

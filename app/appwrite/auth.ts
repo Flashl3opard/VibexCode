@@ -1,16 +1,14 @@
+// app/appwrite/auth.ts
 import { Client, Account, ID } from 'appwrite';
 
-
 class AuthService {
-
     private client: Client;
     private account: Account;
 
-    constructor() {
-        this.client = new Client();
-        this.client
-            .setEndpoint(process.env.NEXT_PUBLIC_API_ENDPOINT!) // Your Appwrite endpoint
-            .setProject(process.env.NEXT_PUBLIC_PROJECT_ID!); // Your Appwrite project ID
+  constructor() {
+    this.client = new Client()
+      .setEndpoint(process.env.NEXT_PUBLIC_API_ENDPOINT as string)
+      .setProject(process.env.NEXT_PUBLIC_PROJECT_ID as string);
 
         this.account = new Account(this.client);
     }
