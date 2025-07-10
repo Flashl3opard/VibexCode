@@ -1,18 +1,16 @@
 // app/store/authSlice.ts
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-/** Describe whatever you actually store for a user. */
-export interface UserData {
-  id: string;
-  email: string;
-  name: string;
-  // add more fields as needed
+//Defining the type for user data
+interface UserData {
+    email: string;
+    name: string;
 }
 
 /** Slice state */
 interface AuthState {
-  status: boolean;   // 🔧 primitive type
-  userData: UserData | null;
+    status: boolean,
+    userData: UserData | null,
 }
 
 const initialState: AuthState = {
@@ -21,21 +19,18 @@ const initialState: AuthState = {
 };
 
 const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-    login: (
-      state,
-      action: PayloadAction<{ userData: UserData }>
-    ) => {
-      state.status = true;
-      state.userData = action.payload.userData;
-    },
-    logout: (state) => {
-      state.status = false;
-      state.userData = null;
-    },
-  },
+    name: "auth",
+    initialState,
+    reducers: {
+        login: (state, action: PayloadAction<{ status: Boolean ; userData: UserData | null }>) => {
+            state.status = true;
+            state.userData = action.payload.userData;
+        },
+        logout: (state)=>{
+            state.status = false;
+            state.userData = null;
+        }
+    }
 });
 
 export const { login, logout } = authSlice.actions;
