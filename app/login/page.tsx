@@ -7,57 +7,100 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import  authservice  from "../appwrite/auth";
+import { login } from "../store/authSlice";
 
-const LoginPage = () => {
+export default function page() {
+  // Define the form type for TypeScript
+  type Hform = {
+    email: string;
+    password: string;
+    name: string;
+  }
+
+
+  //Trying out hook form and redux for state management
+  const [error, setError] = useState<string>("");
+  const dispatch = useDispatch<AppDispatch>();
+  const { register, handleSubmit } = useForm<Hform>();
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token === "logged-in") {
-      router.push("/profile");
-    }
-  }, [router]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg("");
-    setSuccessMsg("");
-
+  // Function to handle form submission
+  const onSubmit = async (data: Hform) => {
+    setError(""); // Reset error message
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // ✅ FIX: Store both token AND user data in localStorage
-        localStorage.setItem("token", "logged-in");
-        localStorage.setItem("email", data.user.email); // <-- needed by /profile
-        localStorage.setItem("username", data.user.username); // optional
-
-        setSuccessMsg("Login successful!");
-        setTimeout(() => {
-          router.push("/profile");
-        }, 500);
-      } else {
-        setErrorMsg(data.message || "Login failed");
+      setLoading(true);
+      const session = await authservice.signIn(data.email, data.password);
+      if(session){
+        const userData = await authservice.checkUser();
+        if (userData) dispatch(login({ status: true, userData }));
+        setError("Sign In successful! Redirecting...");
+        setLoading(false)
+        router.push("/");
+        
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setErrorMsg("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+      console.error("Error during registration:", error);
+      setError("Sign In failed. Please try again.");
     }
-  };
+  }
+  
+  
+  
+  
+  
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [errorMsg, setErrorMsg] = useState("");
+  // const [successMsg, setSuccessMsg] = useState("");
+  // const [loading, setLoading] = useState(false);
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token === "logged-in") {
+  //     router.push("/profile");
+  //   }
+  // }, [router]);
+
+  // const handleLogin = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setErrorMsg("");
+  //   setSuccessMsg("");
+
+  //   try {
+  //     const res = await fetch("/api/login", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ email, password }),
+  //     });
+
+  //     const data = await res.json();
+
+  //     if (res.ok) {
+  //       // ✅ FIX: Store both token AND user data in localStorage
+  //       localStorage.setItem("token", "logged-in");
+  //       localStorage.setItem("email", data.user.email); // <-- needed by /profile
+  //       localStorage.setItem("username", data.user.username); // optional
+
+  //       setSuccessMsg("Login successful!");
+  //       setTimeout(() => {
+  //         router.push("/profile");
+  //       }, 500);
+  //     } else {
+  //       setErrorMsg(data.message || "Login failed");
+  //     }
+  //   } catch (error) {
+  //     console.error("Login error:", error);
+  //     setErrorMsg("Something went wrong. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <>
@@ -85,37 +128,35 @@ const LoginPage = () => {
             </div>
 
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
-              {errorMsg && (
+              {error && (
                 <div className="text-red-500 text-sm text-center px-2">
-                  {errorMsg}
+                  {error}
                 </div>
               )}
-              {successMsg && (
+              {error && (
                 <div className="text-green-500 text-sm text-center px-2">
-                  {successMsg}
+                  {error}
                 </div>
               )}
 
-              <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin}>
+              <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit(onSubmit)}>
                 <input
                   type="email"
                   placeholder="Mail ID"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email", { required: true })}
                   className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                   required
                 />
                 <input
                   type="password"
                   placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password", { required: true })}
                   className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                   required
                 />
                 <button
                   type="submit"
-                  disabled={loading}
+                  
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Logging in..." : "Log In"}
@@ -150,5 +191,3 @@ const LoginPage = () => {
     </>
   );
 };
-
-export default LoginPage;
