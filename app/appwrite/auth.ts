@@ -1,54 +1,35 @@
-import { Client, Account } from 'appwrite';
-import { useId } from 'react';
+// app/appwrite/auth.ts
+import { Client, Account, ID } from 'appwrite';             // 🔧 add ID
+// ❌  useId removed – hooks can’t be used in a class
 
 class AuthService {
-    id = useId();
-    private client: Client;
-    private account: Account;
+  private client: Client;
+  private account: Account;
 
-    constructor() {
-        this.client = new Client();
-        this.client
-            .setEndpoint(process.env.NEXT_PUBLIC_API_ENDPOINT!) // Your Appwrite endpoint
-            .setProject(process.env.NEXT_PUBLIC_PROJECT_ID!); // Your Appwrite project ID
+  constructor() {
+    this.client = new Client()
+      .setEndpoint(process.env.NEXT_PUBLIC_API_ENDPOINT as string)
+      .setProject(process.env.NEXT_PUBLIC_PROJECT_ID as string);
 
-        this.account = new Account(this.client);
-    }
-   
-   // Sign Up, Sign In, Logout, and Check User methods
-    async signUp(email: string, password: string, name: string) {
-        try {
-            return await this.account.create(this.id, email, password, name);
-        } catch (error) {
-            console.error('Sign Up Error:', error);
-            throw error;
-        }
-    }
-    async signIn(email: string, password: string) {
-        try {
-            return await this.account.createEmailPasswordSession(email, password);
-        } catch (error) {
-            console.error('Sign In Error:', error);
-            throw error;
-        }
-    }
-    async logout() {
-        try {
-            await this.account.deleteSession('current');
-        } catch (error) {
-            console.error('Logout Error:', error);
-            throw error;
-        }
-    }
-    async checkUser(){
-        try {
-            return await this.account.get();
-        } catch (error) {
-            console.error('Check User Error:', error);
-            throw error;
-        }
-    }
+    this.account = new Account(this.client);
+  }
 
+  // 🔧 signUp now uses ID.unique() instead of useId()
+  async signUp(email: string, password: string, name: string) {
+    return await this.account.create(ID.unique(), email, password, name);
+  }
+
+  async signIn(email: string, password: string) {
+    return await this.account.createEmailPasswordSession(email, password);
+  }
+
+  async logout() {
+    await this.account.deleteSession('current');
+  }
+
+  async checkUser() {
+    return await this.account.get();
+  }
 }
 
 const authservice = new AuthService();
