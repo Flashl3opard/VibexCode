@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 import Navbar from "../components/Navbar";
-import { set } from "mongoose";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -55,18 +54,23 @@ export default function Page() {
             <div className="flex  justify-between items-center mb-2">
               <h2 className="text-lg font-semibold">💻 Compiler</h2>
               <select name="" id="" className="dark:bg-gray-800">
-                {
-                  lang.map((l)=>(
-                    <option key={l} value={l} onChange={(v)=>{setLanguage(v.toString())}}>{l}</option>
-                  ))
-                }
+                {lang.map((l) => (
+                  <option
+                    key={l}
+                    value={l}
+                    onChange={(v) => {
+                      setLanguage(v.toString());
+                    }}
+                  >
+                    {l}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="flex-1">
               <MonacoEditor
                 height="100%"
-                
                 language={language}
                 value={code}
                 theme="vs-dark"
