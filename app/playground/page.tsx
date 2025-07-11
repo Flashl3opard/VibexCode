@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 import Navbar from "../components/Navbar";
+import { set } from "mongoose";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -13,6 +14,9 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 export default function Page() {
   const [code, setCode] = useState("// Write your code here");
   const [output, setOutput] = useState("");
+  const [language, setLanguage] = useState("Javascript");
+
+  const lang = ["Javascript", "Python", "Java", "C++"];
 
   const handleRun = () => {
     setOutput("✅ Code ran successfully!\nOutput: Hello World");
@@ -48,11 +52,22 @@ export default function Page() {
         {/* ---------- Center ---------- */}
         <div className="w-full md:w-2/4 flex flex-col gap-4 overflow-hidden">
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[600px] overflow-hidden flex flex-col gap-y-2">
-            <h2 className="text-lg font-semibold">💻 Compiler</h2>
+            <div className="flex  justify-between items-center mb-2">
+              <h2 className="text-lg font-semibold">💻 Compiler</h2>
+              <select name="" id="" className="dark:bg-gray-800">
+                {
+                  lang.map((l)=>(
+                    <option key={l} value={l} onChange={(v)=>{setLanguage(v.toString())}}>{l}</option>
+                  ))
+                }
+              </select>
+            </div>
+
             <div className="flex-1">
               <MonacoEditor
                 height="100%"
-                defaultLanguage="javascript"
+                
+                language={language}
                 value={code}
                 theme="vs-dark"
                 onChange={(value) => setCode(value || "")}

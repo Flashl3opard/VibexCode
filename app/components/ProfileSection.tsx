@@ -2,40 +2,61 @@
 
 import { useEffect, useState } from "react";
 import { Trophy, Star, Target, Award, Calendar, Clock } from "lucide-react";
+import authservice from "../appwrite/auth";
 
 const ProfileSection = () => {
   const [username, setUsername] = useState("Loading...");
-
+  const [email, setEmail] = useState("Loading...");
   useEffect(() => {
-    const fetchUsername = async () => {
+    // const fetchUsername = async () => {
+    //   try {
+    //     const email = localStorage.getItem("email"); // Make sure you store this on login
+    //     if (!email) {
+    //       setUsername("Guest");
+    //       return;
+    //     }
+
+    //     const res = await fetch("/api/getUser", {
+    //       method: "POST",
+    //       headers: { "Content-Type": "application/json" },
+    //       body: JSON.stringify({ email }),
+    //     });
+
+    //     const data = await res.json();
+
+    //     if (res.ok) {
+    //       setUsername(data.username);
+    //     } else {
+    //       console.error("Fetch error:", data.error);
+    //       setUsername("Unknown");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching user:", error);
+    //     setUsername("Error");
+    //   }
+    // };
+    // fetchUsername();
+    const fetchUsername = async ()=>{
+      setUsername("");
+      setEmail("")
       try {
-        const email = localStorage.getItem("email"); // Make sure you store this on login
-        if (!email) {
+        const userData = await authservice.checkUser();
+        if(userData && userData.name && userData.email) {
+          setUsername(userData.name)
+          setEmail(userData.email);
+        }else{
           setUsername("Guest");
-          return;
-        }
-
-        const res = await fetch("/api/getUser", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          setUsername(data.username);
-        } else {
-          console.error("Fetch error:", data.error);
-          setUsername("Unknown");
+          setEmail("guest@guest.com");
         }
       } catch (error) {
         console.error("Error fetching user:", error);
-        setUsername("Error");
+        setUsername("Guest");
+        setEmail("guest@guest.com");
       }
-    };
+    }
 
     fetchUsername();
+
   }, []);
 
   const completed = 7;
@@ -52,7 +73,7 @@ const ProfileSection = () => {
           <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-white dark:border-zinc-800" />
         </div>
         <h4 className="text-lg font-semibold">{username}</h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400">@{username}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{email}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
