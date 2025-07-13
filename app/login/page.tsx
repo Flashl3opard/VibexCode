@@ -1,105 +1,55 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaFacebook } from "react-icons/fa";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../store/store";
 import authservice from "../appwrite/auth";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { AppDispatch } from "../store/store";
 import { login } from "../store/authSlice";
+import { FaFacebook, FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Page() {
-  // Define the form type for TypeScript
-  type Hform = {
-    email: string;
-    password: string;
-    name: string;
-  };
+  // ---------------- Types -----------------
+  type Hform = { email: string; password: string };
 
-  //Trying out hook form and redux for state management
-  const [error, setError] = useState<string>("");
-  const dispatch = useDispatch<AppDispatch>();
+  // ---------------- Hooks -----------------
+  const [banner, setBanner] = useState<{ msg: string; type: "error" | "ok" }>();
   const { register, handleSubmit } = useForm<Hform>();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // Function to handle form submission
+  // -------------- Submit ------------------
   const onSubmit = async (data: Hform) => {
-    setError(""); // Reset error message
+    setBanner(undefined);
     try {
       setLoading(true);
       const session = await authservice.signIn(data.email, data.password);
       if (session) {
         const userData = await authservice.checkUser();
         if (userData) dispatch(login({ status: true, userData }));
-        setError("Sign In successful! Redirecting...");
-        setLoading(false);
+        setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
         router.push("/");
       }
-    } catch (error) {
-      console.error("Error during registration:", error);
-      setError("Sign In failed. Please try again.");
+    } catch (err) {
+      console.error("Sign‑in error:", err);
+      setBanner({ msg: "Sign‑in failed. Please try again.", type: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [errorMsg, setErrorMsg] = useState("");
-  // const [successMsg, setSuccessMsg] = useState("");
-  // const [loading, setLoading] = useState(false);
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (token === "logged-in") {
-  //     router.push("/profile");
-  //   }
-  // }, [router]);
-
-  // const handleLogin = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setErrorMsg("");
-  //   setSuccessMsg("");
-
-  //   try {
-  //     const res = await fetch("/api/login", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ email, password }),
-  //     });
-
-  //     const data = await res.json();
-
-  //     if (res.ok) {
-  //       // ✅ FIX: Store both token AND user data in localStorage
-  //       localStorage.setItem("token", "logged-in");
-  //       localStorage.setItem("email", data.user.email); // <-- needed by /profile
-  //       localStorage.setItem("username", data.user.username); // optional
-
-  //       setSuccessMsg("Login successful!");
-  //       setTimeout(() => {
-  //         router.push("/profile");
-  //       }, 500);
-  //     } else {
-  //       setErrorMsg(data.message || "Login failed");
-  //     }
-  //   } catch (error) {
-  //     console.error("Login error:", error);
-  //     setErrorMsg("Something went wrong. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+  // -------------- UI ----------------------
   return (
     <>
       <Navbar />
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
+        {/* Illustration */}
         <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full scale-90 -translate-x-15 -translate-y-10">
           <Image
             src="/assets/login.svg"
@@ -110,8 +60,10 @@ export default function Page() {
           />
         </div>
 
-        <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] h-auto min-h-[580px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full min-h-[580px]">
+        {/* Card */}
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] min-h-[580px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between min-h-[580px]">
+            {/* Logo */}
             <div className="text-center mb-6 sm:mb-8">
               <Link href="/">
                 <h1 className="text-2xl sm:text-3xl font-bold">
@@ -121,16 +73,16 @@ export default function Page() {
               </Link>
             </div>
 
+            {/* Form */}
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
-              {error && (
-                <div className="text-red-500 text-sm text-center px-2">
-                  {error}
-                </div>
-              )}
-              {error && (
-                <div className="text-green-500 text-sm text-center px-2">
-                  {error}
-                </div>
+              {banner && (
+                <p
+                  className={`text-center text-sm px-2 ${
+                    banner.type === "error" ? "text-red-500" : "text-green-500"
+                  }`}
+                >
+                  {banner.msg}
+                </p>
               )}
 
               <form
@@ -155,14 +107,17 @@ export default function Page() {
                   type="submit"
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
-                  {loading ? "Logging in..." : "Log In"}
+                  {loading ? "Logging in…" : "Log In"}
                 </button>
               </form>
 
+              {/* Links under inputs */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                <span className="cursor-pointer hover:underline">
-                  Forgot Password?
-                </span>
+                <Link href="/forgot-password">
+                  <span className="cursor-pointer hover:underline">
+                    Forgot password?
+                  </span>
+                </Link>
                 <Link href="/signup">
                   <span className="cursor-pointer text-purple-500 hover:underline">
                     Sign Up
@@ -171,6 +126,7 @@ export default function Page() {
               </div>
             </div>
 
+            {/* Social auth */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign up with
