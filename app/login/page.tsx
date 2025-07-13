@@ -1,17 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaFacebook } from "react-icons/fa";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../store/store";
 import authservice from "../appwrite/auth";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import { AppDispatch } from "../store/store";
 import { login } from "../store/authSlice";
+import { FaFacebook, FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Page() {
   // ---------------- Types -----------------
