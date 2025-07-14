@@ -31,64 +31,66 @@ export default function Page() {
   // Function to handle form submission
   const onSubmit = async (data: Hform) => {
     setError("");
-    setLoading(true); // Reset error message
+    setLoading(true);
+
     try {
-      setLoading(true);
-      const session = await authservice.signUp(
+      // Step 1: Create the user account
+      const newUser = await authservice.signUp(
         data.email,
         data.password,
         data.name
       );
-      if (session) {
-        const userData = await authservice.checkUser();
-        if (userData) dispatch(login({ status: true, userData }));
-        setError("Sign up successful! Redirecting...");
-        setLoading(false);
-        router.push("/");
+
+      if (newUser) {
+        // Step 2: Sign in the user to create a session
+        try {
+          const session = await authservice.signIn(data.email, data.password);
+
+          if (session) {
+            // Step 3: Now we can safely get user data since we have a session
+            const userData = await authservice.checkUser();
+
+            if (userData) {
+              dispatch(login({ status: true, userData }));
+              setError("Sign up successful! Redirecting...");
+
+              // Small delay to show success message
+              setTimeout(() => {
+                router.push("/");
+              }, 1000);
+            }
+          }
+        } catch (signInError) {
+          console.error("Auto sign-in after signup failed:", signInError);
+          setError("Account created successfully! Please log in.");
+
+          // Redirect to login page after showing message
+          setTimeout(() => {
+            router.push("/login");
+          }, 2000);
+        }
       }
-    } catch (error) {
-      setLoading(false);
+    } catch (error: any) {
       console.error("Error during registration:", error);
-      setError("Registration failed. Please try again.");
+
+      // Handle specific Appwrite errors
+      if (error.message) {
+        if (error.message.includes("user_already_exists")) {
+          setError("An account with this email already exists. Please log in.");
+        } else if (error.message.includes("password")) {
+          setError("Password must be at least 8 characters long.");
+        } else if (error.message.includes("email")) {
+          setError("Please enter a valid email address.");
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
-
-  // const [email, setEmail] = useState("");
-  // const [username, setUsername] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [message, setMessage] = useState("");
-  //
-
-  // const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setMessage("");
-
-  //   try {
-  //     const res = await fetch("/api/signup", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ email, username, password }),
-  //     });
-
-  //     const data = await res.json();
-
-  //     if (res.ok) {
-  //       localStorage.setItem("username", username); // ✅ Store username
-  //       setMessage("Registration successful!");
-  //       setTimeout(() => {
-  //         router.push("/login");
-  //       }, 1000);
-  //     } else {
-  //       setMessage(data.message || "Signup failed");
-  //     }
-  //   } catch (error) {
-  //     console.error("Registration error:", error);
-  //     setMessage("Something went wrong");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   return (
     <>
@@ -128,23 +130,45 @@ export default function Page() {
                 <input
                   type="email"
                   placeholder="Email ID"
-                  {...register("email", { required: true })}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
                   className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  disabled={loading}
                 />
                 <input
                   type="text"
                   placeholder="Username"
-                  {...register("name", { required: true })}
+                  {...register("name", {
+                    required: "Username is required",
+                    minLength: {
+                      value: 2,
+                      message: "Username must be at least 2 characters",
+                    },
+                  })}
                   className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  disabled={loading}
                 />
                 <input
                   type="password"
                   placeholder="Password"
-                  {...register("password", { required: true })}
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                  })}
                   className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  disabled={loading}
                 />
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Creating Account..." : "Register"}
@@ -153,9 +177,16 @@ export default function Page() {
 
               {/* Success/Error Message */}
               {error && (
-                <p className="text-center text-sm px-2 text-purple-500 dark:text-purple-300">
+                <div
+                  className={`text-center text-sm px-2 ${
+                    error.includes("successful") ||
+                    error.includes("Redirecting")
+                      ? "text-green-500 dark:text-green-400"
+                      : "text-red-500 dark:text-red-400"
+                  }`}
+                >
                   {error}
-                </p>
+                </div>
               )}
 
               {/* Links */}

@@ -11,26 +11,24 @@ import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { RootState } from "./store/store";
 
-
 export default function Home() {
-  
   const [loggedIn, setLoggedIn] = useState(false);
   const value = useSelector((state: RootState) => state.auth.status);
 
-  useEffect( () => {
+  useEffect(() => {
     AOS.init({
       duration: 1000,
       once: true,
     });
-    const checkUser = async()=>{
+    const checkUser = async () => {
       try {
         const result = await authservice.checkUser();
-        if(result) setLoggedIn(true);
+        if (result) setLoggedIn(true);
       } catch (error) {
         console.error("Error checking user authentication:", error);
         setLoggedIn(false);
       }
-    }
+    };
     checkUser();
   }, [value]);
 
@@ -83,59 +81,63 @@ export default function Home() {
           {/* Main Content */}
           <div className="flex flex-col-reverse md:flex-row items-center md:justify-between justify-start gap-10 min-h-[calc(100vh-4rem)] pt-12 md:pt-24 relative z-20">
             {/* Left Text Section with Framer Motion */}
-            {loggedIn ? <motion.div
-              className="flex-1 text-center md:text-left"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                <span className="text-purple-600">A</span>{" "}
-                <span className="text-gray-900 dark:text-white">New Way</span>{" "}
-                <span className="text-purple-600">To</span>{" "}
-                <span className="text-purple-500">Learn</span>
-              </h1>
-              <p className="mt-6 text-gray-700 dark:text-gray-300 text-lg max-w-lg mx-auto md:mx-0">
-                VibexCode is the best platform to help you enhance your skills,
-                expand your knowledge and prepare for technical interviews.
-              </p>
-              <Link href="/playground">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all"
-                >
-                  Begin Coding
-                </motion.button>
-              </Link>
-            </motion.div>
-            : <motion.div
-              className="flex-1 text-center md:text-left"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                <span className="text-purple-600">A</span>{" "}
-                <span className="text-gray-900 dark:text-white">New Way</span>{" "}
-                <span className="text-purple-600">To</span>{" "}
-                <span className="text-purple-500">Learn</span>
-              </h1>
-              <p className="mt-6 text-gray-700 dark:text-gray-300 text-lg max-w-lg mx-auto md:mx-0">
-                VibexCode is the best platform to help you enhance your skills,
-                expand your knowledge and prepare for technical interviews.
-              </p>
-              <Link href="/signup">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all"
-                >
-                  Create Account
-                </motion.button>
-              </Link>
-            </motion.div>
-}
+            {loggedIn ? (
+              <motion.div
+                className="flex-1 text-center md:text-left"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                  <span className="text-purple-600">A</span>{" "}
+                  <span className="text-gray-900 dark:text-white">New Way</span>{" "}
+                  <span className="text-purple-600">To</span>{" "}
+                  <span className="text-purple-500">Learn</span>
+                </h1>
+                <p className="mt-6 text-gray-700 dark:text-gray-300 text-lg max-w-lg mx-auto md:mx-0">
+                  VibexCode is the best platform to help you enhance your
+                  skills, expand your knowledge and prepare for technical
+                  interviews.
+                </p>
+                <Link href="/playground">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all"
+                  >
+                    Begin Coding
+                  </motion.button>
+                </Link>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="flex-1 text-center md:text-left"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                  <span className="text-purple-600">A</span>{" "}
+                  <span className="text-gray-900 dark:text-white">New Way</span>{" "}
+                  <span className="text-purple-600">To</span>{" "}
+                  <span className="text-purple-500">Learn</span>
+                </h1>
+                <p className="mt-6 text-gray-700 dark:text-gray-300 text-lg max-w-lg mx-auto md:mx-0">
+                  VibexCode is the best platform to help you enhance your
+                  skills, expand your knowledge and prepare for technical
+                  interviews.
+                </p>
+                <Link href="/signup">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all"
+                  >
+                    Create Account
+                  </motion.button>
+                </Link>
+              </motion.div>
+            )}
             {/* Right Decorative Circles with Motion */}
             <motion.div
               className="flex-1 relative flex flex-col justify-end items-end h-full"
