@@ -12,6 +12,20 @@ import { AppDispatch } from "../store/store";
 import { login } from "../store/authSlice";
 import { FaFacebook, FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  FacebookAuthProvider,
+  type AuthProvider,
+} from "firebase/auth";
+import { app } from "@/lib/firebase";
+
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+const githubProvider = new GithubAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
 export default function Page() {
   // ---------------- Types -----------------
@@ -19,6 +33,9 @@ export default function Page() {
 
   // ---------------- Hooks -----------------
   const [banner, setBanner] = useState<{ msg: string; type: "error" | "ok" }>();
+  const [loadingSocial, setLoadingSocial] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -26,7 +43,64 @@ export default function Page() {
   } = useForm<Hform>();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+
+  // -------------- Social Login Handler ------------------
+  // Social Login Handler with better error handling
+  const handleSocialLogin = async (provider: AuthProvider) => {
+    if (loadingSocial) return;
+
+    setLoadingSocial(true);
+    setBanner(undefined);
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      console.log("Social login successful:", user);
+
+      // You can integrate this with your Appwrite auth here
+      // For now, just show success message
+      setBanner({
+        msg: `Welcome ${user.displayName || user.email}!`,
+        type: "ok",
+      });
+
+      // Redirect to dashboard after successful login
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Social login error:", error);
+
+      let errorMessage = "Social login failed. Please try again.";
+
+      if (error.code) {
+        switch (error.code) {
+          case "auth/cancelled-popup-request":
+            errorMessage = "Login cancelled.";
+            break;
+          case "auth/popup-closed-by-user":
+            errorMessage = "Login popup was closed.";
+            break;
+          case "auth/popup-blocked":
+            errorMessage = "Popup was blocked by browser. Please allow popups.";
+            break;
+          case "auth/operation-not-allowed":
+            errorMessage = "This sign-in method is not enabled.";
+            break;
+          case "auth/account-exists-with-different-credential":
+            errorMessage = "Account exists with different credentials.";
+            break;
+          default:
+            errorMessage = `Login failed: ${error.message}`;
+        }
+      }
+
+      setBanner({ msg: errorMessage, type: "error" });
+    } finally {
+      setLoadingSocial(false);
+    }
+  };
 
   // -------------- Submit ------------------
   const onSubmit = async (data: Hform) => {
@@ -220,9 +294,26 @@ export default function Page() {
                 Or sign in with
               </div>
               <div className="flex justify-center gap-4 sm:gap-6 text-2xl sm:text-3xl">
-                <FcGoogle className="cursor-pointer hover:scale-110 transition" />
-                <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
-                <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
+                <FcGoogle
+                  className={`cursor-pointer hover:scale-110 transition ${
+                    loadingSocial ? "pointer-events-none opacity-50" : ""
+                  }`}
+                  onClick={() => handleSocialLogin(googleProvider)}
+                />
+
+                <FaGithub
+                  className={`cursor-pointer hover:scale-110 transition dark:text-white ${
+                    loadingSocial ? "pointer-events-none opacity-50" : ""
+                  }`}
+                  onClick={() => handleSocialLogin(githubProvider)}
+                />
+
+                <FaFacebook
+                  className={`text-blue-500 cursor-pointer hover:scale-110 transition ${
+                    loadingSocial ? "pointer-events-none opacity-50" : ""
+                  }`}
+                  onClick={() => handleSocialLogin(facebookProvider)}
+                />
               </div>
             </div>
           </div>
