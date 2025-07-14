@@ -19,7 +19,11 @@ export default function Page() {
 
   // ---------------- Hooks -----------------
   const [banner, setBanner] = useState<{ msg: string; type: "error" | "ok" }>();
-  const { register, handleSubmit } = useForm<Hform>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Hform>();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -27,18 +31,71 @@ export default function Page() {
   // -------------- Submit ------------------
   const onSubmit = async (data: Hform) => {
     setBanner(undefined);
+    setLoading(true);
+
     try {
-      setLoading(true);
+      // Step 1: Sign in the user
       const session = await authservice.signIn(data.email, data.password);
+
       if (session) {
-        const userData = await authservice.checkUser();
-        if (userData) dispatch(login({ status: true, userData }));
-        setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
-        router.push("/");
+        // Step 2: Get user data - this should work since we have a session
+        try {
+          const userData = await authservice.checkUser();
+
+          if (userData) {
+            // Step 3: Update Redux state
+            dispatch(login({ status: true, userData }));
+            setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
+
+            // Small delay to show success message
+            setTimeout(() => {
+              router.push("/");
+            }, 1000);
+          } else {
+            // This shouldn't happen but let's handle it
+            setBanner({
+              msg: "Authentication failed. Please try again.",
+              type: "error",
+            });
+          }
+        } catch (userError) {
+          console.error("Error fetching user data:", userError);
+          setBanner({
+            msg: "Failed to load user data. Please try again.",
+            type: "error",
+          });
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Sign‑in error:", err);
-      setBanner({ msg: "Sign‑in failed. Please try again.", type: "error" });
+
+      // Handle specific authentication errors
+      if (err.message) {
+        if (
+          err.message.includes("invalid_credentials") ||
+          err.message.includes("Invalid credentials") ||
+          err.message.includes("user_invalid_credentials")
+        ) {
+          setBanner({
+            msg: "Invalid email or password. Please try again.",
+            type: "error",
+          });
+        } else if (err.message.includes("too_many_requests")) {
+          setBanner({
+            msg: "Too many login attempts. Please wait a moment and try again.",
+            type: "error",
+          });
+        } else if (err.message.includes("user_not_found")) {
+          setBanner({
+            msg: "No account found with this email. Please sign up first.",
+            type: "error",
+          });
+        } else {
+          setBanner({ msg: `Login failed: ${err.message}`, type: "error" });
+        }
+      } else {
+        setBanner({ msg: "Sign‑in failed. Please try again.", type: "error" });
+      }
     } finally {
       setLoading(false);
     }
@@ -76,35 +133,66 @@ export default function Page() {
             {/* Form */}
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
               {banner && (
-                <p
-                  className={`text-center text-sm px-2 ${
-                    banner.type === "error" ? "text-red-500" : "text-green-500"
+                <div
+                  className={`text-center text-sm px-2 py-2 rounded-md ${
+                    banner.type === "error"
+                      ? "text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                      : "text-green-500 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
                   }`}
                 >
                   {banner.msg}
-                </p>
+                </div>
               )}
 
               <form
                 className="space-y-4 sm:space-y-5"
                 onSubmit={handleSubmit(onSubmit)}
               >
-                <input
-                  type="email"
-                  placeholder="Mail ID"
-                  {...register("email", { required: true })}
-                  className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  {...register("password", { required: true })}
-                  className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  required
-                />
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Mail ID"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: "Invalid email address",
+                      },
+                    })}
+                    className="w-full p-3 sm:p-4 rounded-md border border-purple-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    disabled={loading}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 1,
+                        message: "Password is required",
+                      },
+                    })}
+                    className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    disabled={loading}
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full py-3 sm:py-4 rounded-full font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? "Logging in…" : "Log In"}
@@ -129,7 +217,7 @@ export default function Page() {
             {/* Social auth */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Or sign up with
+                Or sign in with
               </div>
               <div className="flex justify-center gap-4 sm:gap-6 text-2xl sm:text-3xl">
                 <FcGoogle className="cursor-pointer hover:scale-110 transition" />
