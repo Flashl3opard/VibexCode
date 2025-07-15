@@ -12,28 +12,16 @@ import { AppDispatch } from "../store/store";
 import { login } from "../store/authSlice";
 import { FaFacebook, FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-  FacebookAuthProvider,
-  type AuthProvider,
-} from "firebase/auth";
-import { app } from "@/lib/firebase";
 
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-const githubProvider = new GithubAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
+/* ─────────── Types ─────────── */
+type Hform = { email: string; password: string };
+type Banner = { msg: string; type: "error" | "ok" };
+type AppwriteErr = { message?: string };
 
+/* ─────────── Component ─────────── */
 export default function Page() {
-  // ---------------- Types -----------------
-  type Hform = { email: string; password: string };
-
-  // ---------------- Hooks -----------------
-  const [banner, setBanner] = useState<{ msg: string; type: "error" | "ok" }>();
-  const [loadingSocial, setLoadingSocial] = useState(false);
+  /* ─── Hooks & state ─── */
+  const [banner, setBanner] = useState<Banner>();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -41,143 +29,71 @@ export default function Page() {
     handleSubmit,
     formState: { errors },
   } = useForm<Hform>();
+
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  // -------------- Social Login Handler ------------------
-  // Social Login Handler with better error handling
-  const handleSocialLogin = async (provider: AuthProvider) => {
-    if (loadingSocial) return;
-
-    setLoadingSocial(true);
-    setBanner(undefined);
-
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      console.log("Social login successful:", user);
-
-      // You can integrate this with your Appwrite auth here
-      // For now, just show success message
-      setBanner({
-        msg: `Welcome ${user.displayName || user.email}!`,
-        type: "ok",
-      });
-
-      // Redirect to dashboard after successful login
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
-    } catch (error: any) {
-      console.error("Social login error:", error);
-
-      let errorMessage = "Social login failed. Please try again.";
-
-      if (error.code) {
-        switch (error.code) {
-          case "auth/cancelled-popup-request":
-            errorMessage = "Login cancelled.";
-            break;
-          case "auth/popup-closed-by-user":
-            errorMessage = "Login popup was closed.";
-            break;
-          case "auth/popup-blocked":
-            errorMessage = "Popup was blocked by browser. Please allow popups.";
-            break;
-          case "auth/operation-not-allowed":
-            errorMessage = "This sign-in method is not enabled.";
-            break;
-          case "auth/account-exists-with-different-credential":
-            errorMessage = "Account exists with different credentials.";
-            break;
-          default:
-            errorMessage = `Login failed: ${error.message}`;
-        }
-      }
-
-      setBanner({ msg: errorMessage, type: "error" });
-    } finally {
-      setLoadingSocial(false);
-    }
-  };
-
-  // -------------- Submit ------------------
+  /* ─── Handlers ─── */
   const onSubmit = async (data: Hform) => {
     setBanner(undefined);
     setLoading(true);
 
     try {
-      // Step 1: Sign in the user
+      /* Step 1 — sign‑in */
       const session = await authservice.signIn(data.email, data.password);
 
       if (session) {
-        // Step 2: Get user data - this should work since we have a session
-        try {
-          const userData = await authservice.checkUser();
+        /* Step 2 — fetch user */
+        const userData = await authservice.checkUser();
 
-          if (userData) {
-            // Step 3: Update Redux state
-            dispatch(login({ status: true, userData }));
-            setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
-
-            // Small delay to show success message
-            setTimeout(() => {
-              router.push("/");
-            }, 1000);
-          } else {
-            // This shouldn't happen but let's handle it
-            setBanner({
-              msg: "Authentication failed. Please try again.",
-              type: "error",
-            });
-          }
-        } catch (userError) {
-          console.error("Error fetching user data:", userError);
+        if (userData) {
+          /* Step 3 — store in Redux & redirect */
+          dispatch(login({ status: true, userData }));
+          setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
+          setTimeout(() => router.push("/"), 1_000);
+        } else {
           setBanner({
-            msg: "Failed to load user data. Please try again.",
+            msg: "Authentication failed. Please try again.",
             type: "error",
           });
         }
       }
-    } catch (err: any) {
-      console.error("Sign‑in error:", err);
+    } catch (err: unknown) {
+      /* ---------- typed error handling ---------- */
+      const { message } = (err as AppwriteErr) ?? {};
 
-      if (err.message) {
-        if (
-          err.message.includes("invalid_credentials") ||
-          err.message.includes("Invalid credentials") ||
-          err.message.includes("user_invalid_credentials")
-        ) {
-          setBanner({
-            msg: "Invalid email or password. Please try again.",
-            type: "error",
-          });
-        } else if (err.message.includes("too_many_requests")) {
-          setBanner({
-            msg: "Too many login attempts. Please wait a moment and try again.",
-            type: "error",
-          });
-        } else if (err.message.includes("user_not_found")) {
-          setBanner({
-            msg: "No account found with this email. Please sign up first.",
-            type: "error",
-          });
-        } else {
-          setBanner({ msg: `Login failed: ${err.message}`, type: "error" });
-        }
+      if (message?.includes("invalid_credentials")) {
+        setBanner({
+          msg: "Invalid email or password. Please try again.",
+          type: "error",
+        });
+      } else if (message?.includes("too_many_requests")) {
+        setBanner({
+          msg: "Too many login attempts. Please wait a moment and try again.",
+          type: "error",
+        });
+      } else if (message?.includes("user_not_found")) {
+        setBanner({
+          msg: "No account found with this email. Please sign up first.",
+          type: "error",
+        });
+      } else if (message) {
+        setBanner({ msg: `Login failed: ${message}`, type: "error" });
       } else {
         setBanner({ msg: "Sign‑in failed. Please try again.", type: "error" });
       }
+
+      console.error("Sign‑in error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // -------------- UI ----------------------
+  /* ─── UI ─── */
   return (
     <>
       <Navbar />
+
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
         {/* Illustration */}
         <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full scale-90 -translate-x-15 -translate-y-10">
@@ -221,6 +137,7 @@ export default function Page() {
                 className="space-y-4 sm:space-y-5"
                 onSubmit={handleSubmit(onSubmit)}
               >
+                {/* email */}
                 <div>
                   <input
                     type="email"
@@ -242,16 +159,14 @@ export default function Page() {
                   )}
                 </div>
 
+                {/* password */}
                 <div>
                   <input
                     type="password"
                     placeholder="Password"
                     {...register("password", {
                       required: "Password is required",
-                      minLength: {
-                        value: 8,
-                        message: "Password must be at least 8 characters",
-                      },
+                      minLength: { value: 1, message: "Password is required" },
                     })}
                     className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                     disabled={loading}
@@ -263,6 +178,7 @@ export default function Page() {
                   )}
                 </div>
 
+                {/* submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -272,7 +188,7 @@ export default function Page() {
                 </button>
               </form>
 
-              {/* Links under inputs */}
+              {/* links */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <Link href="/forgot-password">
                   <span className="cursor-pointer hover:underline">
@@ -287,32 +203,15 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Social auth */}
+            {/* social auth */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign in with
               </div>
               <div className="flex justify-center gap-4 sm:gap-6 text-2xl sm:text-3xl">
-                <FcGoogle
-                  className={`cursor-pointer hover:scale-110 transition ${
-                    loadingSocial ? "pointer-events-none opacity-50" : ""
-                  }`}
-                  onClick={() => handleSocialLogin(googleProvider)}
-                />
-
-                <FaGithub
-                  className={`cursor-pointer hover:scale-110 transition dark:text-white ${
-                    loadingSocial ? "pointer-events-none opacity-50" : ""
-                  }`}
-                  onClick={() => handleSocialLogin(githubProvider)}
-                />
-
-                <FaFacebook
-                  className={`text-blue-500 cursor-pointer hover:scale-110 transition ${
-                    loadingSocial ? "pointer-events-none opacity-50" : ""
-                  }`}
-                  onClick={() => handleSocialLogin(facebookProvider)}
-                />
+                <FcGoogle className="cursor-pointer hover:scale-110 transition" />
+                <FaGithub className="cursor-pointer hover:scale-110 transition dark:text-white" />
+                <FaFacebook className="text-blue-500 cursor-pointer hover:scale-110 transition" />
               </div>
             </div>
           </div>
