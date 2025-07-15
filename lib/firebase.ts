@@ -8,13 +8,13 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAcO3DEzmWKG7KvTOgDRbYuCCY_WAJZWg0",
-  authDomain: "vibexcode.firebaseapp.com",
-  projectId: "vibexcode",
-  storageBucket: "vibexcode.firebasestorage.app",
-  messagingSenderId: "172829447318",
-  appId: "1:172829447318:web:071dbdec7f8938d7cb5eb7",
-  measurementId: "G-GMZT6RY5N5",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
