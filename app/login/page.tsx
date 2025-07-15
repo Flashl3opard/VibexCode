@@ -13,98 +13,87 @@ import { login } from "../store/authSlice";
 import { FaFacebook, FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
-export default function Page() {
-  // ---------------- Types -----------------
-  type Hform = { email: string; password: string };
+/* ─────────── Types ─────────── */
+type Hform = { email: string; password: string };
+type Banner = { msg: string; type: "error" | "ok" };
+type AppwriteErr = { message?: string };
 
-  // ---------------- Hooks -----------------
-  const [banner, setBanner] = useState<{ msg: string; type: "error" | "ok" }>();
+/* ─────────── Component ─────────── */
+export default function Page() {
+  /* ─── Hooks & state ─── */
+  const [banner, setBanner] = useState<Banner>();
+  const [loading, setLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Hform>();
+
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
-  // -------------- Submit ------------------
+  /* ─── Handlers ─── */
   const onSubmit = async (data: Hform) => {
     setBanner(undefined);
     setLoading(true);
 
     try {
-      // Step 1: Sign in the user
+      /* Step 1 — sign‑in */
       const session = await authservice.signIn(data.email, data.password);
 
       if (session) {
-        // Step 2: Get user data - this should work since we have a session
-        try {
-          const userData = await authservice.checkUser();
+        /* Step 2 — fetch user */
+        const userData = await authservice.checkUser();
 
-          if (userData) {
-            // Step 3: Update Redux state
-            dispatch(login({ status: true, userData }));
-            setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
-
-            // Small delay to show success message
-            setTimeout(() => {
-              router.push("/");
-            }, 1000);
-          } else {
-            // This shouldn't happen but let's handle it
-            setBanner({
-              msg: "Authentication failed. Please try again.",
-              type: "error",
-            });
-          }
-        } catch (userError) {
-          console.error("Error fetching user data:", userError);
+        if (userData) {
+          /* Step 3 — store in Redux & redirect */
+          dispatch(login({ status: true, userData }));
+          setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
+          setTimeout(() => router.push("/"), 1_000);
+        } else {
           setBanner({
-            msg: "Failed to load user data. Please try again.",
+            msg: "Authentication failed. Please try again.",
             type: "error",
           });
         }
       }
-    } catch (err: any) {
-      console.error("Sign‑in error:", err);
+    } catch (err: unknown) {
+      /* ---------- typed error handling ---------- */
+      const { message } = (err as AppwriteErr) ?? {};
 
-      // Handle specific authentication errors
-      if (err.message) {
-        if (
-          err.message.includes("invalid_credentials") ||
-          err.message.includes("Invalid credentials") ||
-          err.message.includes("user_invalid_credentials")
-        ) {
-          setBanner({
-            msg: "Invalid email or password. Please try again.",
-            type: "error",
-          });
-        } else if (err.message.includes("too_many_requests")) {
-          setBanner({
-            msg: "Too many login attempts. Please wait a moment and try again.",
-            type: "error",
-          });
-        } else if (err.message.includes("user_not_found")) {
-          setBanner({
-            msg: "No account found with this email. Please sign up first.",
-            type: "error",
-          });
-        } else {
-          setBanner({ msg: `Login failed: ${err.message}`, type: "error" });
-        }
+      if (message?.includes("invalid_credentials")) {
+        setBanner({
+          msg: "Invalid email or password. Please try again.",
+          type: "error",
+        });
+      } else if (message?.includes("too_many_requests")) {
+        setBanner({
+          msg: "Too many login attempts. Please wait a moment and try again.",
+          type: "error",
+        });
+      } else if (message?.includes("user_not_found")) {
+        setBanner({
+          msg: "No account found with this email. Please sign up first.",
+          type: "error",
+        });
+      } else if (message) {
+        setBanner({ msg: `Login failed: ${message}`, type: "error" });
       } else {
         setBanner({ msg: "Sign‑in failed. Please try again.", type: "error" });
       }
+
+      console.error("Sign‑in error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // -------------- UI ----------------------
+  /* ─── UI ─── */
   return (
     <>
       <Navbar />
+
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
         {/* Illustration */}
         <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full scale-90 -translate-x-15 -translate-y-10">
@@ -148,6 +137,7 @@ export default function Page() {
                 className="space-y-4 sm:space-y-5"
                 onSubmit={handleSubmit(onSubmit)}
               >
+                {/* email */}
                 <div>
                   <input
                     type="email"
@@ -169,16 +159,14 @@ export default function Page() {
                   )}
                 </div>
 
+                {/* password */}
                 <div>
                   <input
                     type="password"
                     placeholder="Password"
                     {...register("password", {
                       required: "Password is required",
-                      minLength: {
-                        value: 1,
-                        message: "Password is required",
-                      },
+                      minLength: { value: 1, message: "Password is required" },
                     })}
                     className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
                     disabled={loading}
@@ -190,6 +178,7 @@ export default function Page() {
                   )}
                 </div>
 
+                {/* submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -199,7 +188,7 @@ export default function Page() {
                 </button>
               </form>
 
-              {/* Links under inputs */}
+              {/* links */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <Link href="/forgot-password">
                   <span className="cursor-pointer hover:underline">
@@ -214,7 +203,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Social auth */}
+            {/* social auth */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign in with

@@ -71,9 +71,9 @@ class AppwriteAuthService implements AuthServiceContract {
   async logout() {
     try {
       await this.account.deleteSessions();
-    } catch (error) {
+    } catch {
       // Ignore errors during logout - user might already be logged out
-      console.warn('Logout warning:', error);
+      console.warn("Logout warning: user may already be logged out");
     }
   }
 
@@ -83,7 +83,7 @@ class AppwriteAuthService implements AuthServiceContract {
     } catch (error) {
       if (error instanceof AppwriteException) {
         // If user is not authenticated, return null instead of throwing
-        if (error.code === 401 || error.message.includes('missing scope')) {
+        if (error.code === 401 || error.message.includes("missing scope")) {
           return null;
         }
       }
@@ -95,7 +95,7 @@ class AppwriteAuthService implements AuthServiceContract {
     try {
       const user = await this.checkUser();
       return user !== null;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

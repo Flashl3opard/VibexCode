@@ -13,28 +13,26 @@ import { AppDispatch } from "../store/store";
 import authservice from "../appwrite/auth";
 import { login } from "../store/authSlice";
 
-export default function Page() {
-  // Define the form type for TypeScript
-  type Hform = {
-    email: string;
-    password: string;
-    name: string;
-  };
+/* Type definitions */
+type Hform = {
+  email: string;
+  password: string;
+  name: string;
+};
+type ErrorWithMessage = { message?: string };
 
-  //Trying out hook form and redux for state management
+export default function Page() {
   const [error, setError] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
   const { register, handleSubmit } = useForm<Hform>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // Function to handle form submission
   const onSubmit = async (data: Hform) => {
     setError("");
     setLoading(true);
 
     try {
-      // Step 1: Create the user account
       const newUser = await authservice.signUp(
         data.email,
         data.password,
@@ -42,19 +40,15 @@ export default function Page() {
       );
 
       if (newUser) {
-        // Step 2: Sign in the user to create a session
         try {
           const session = await authservice.signIn(data.email, data.password);
 
           if (session) {
-            // Step 3: Now we can safely get user data since we have a session
             const userData = await authservice.checkUser();
 
             if (userData) {
               dispatch(login({ status: true, userData }));
               setError("Sign up successful! Redirecting...");
-
-              // Small delay to show success message
               setTimeout(() => {
                 router.push("/");
               }, 1000);
@@ -63,26 +57,25 @@ export default function Page() {
         } catch (signInError) {
           console.error("Auto sign-in after signup failed:", signInError);
           setError("Account created successfully! Please log in.");
-
-          // Redirect to login page after showing message
           setTimeout(() => {
             router.push("/login");
           }, 2000);
         }
       }
-    } catch (error: any) {
-      console.error("Error during registration:", error);
+    } catch (err: unknown) {
+      const message = (err as ErrorWithMessage)?.message;
 
-      // Handle specific Appwrite errors
-      if (error.message) {
-        if (error.message.includes("user_already_exists")) {
+      console.error("Error during registration:", err);
+
+      if (message) {
+        if (message.includes("user_already_exists")) {
           setError("An account with this email already exists. Please log in.");
-        } else if (error.message.includes("password")) {
+        } else if (message.includes("password")) {
           setError("Password must be at least 8 characters long.");
-        } else if (error.message.includes("email")) {
+        } else if (message.includes("email")) {
           setError("Please enter a valid email address.");
         } else {
-          setError(error.message);
+          setError(message);
         }
       } else {
         setError("Registration failed. Please try again.");
@@ -96,7 +89,7 @@ export default function Page() {
     <>
       <Navbar />
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
-        {/* Background Image - Hidden on mobile, visible on larger screens */}
+        {/* Background Image */}
         <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full scale-90 -translate-x-20 -translate-y-10">
           <Image
             src="/assets/signup.svg"
@@ -107,9 +100,9 @@ export default function Page() {
           />
         </div>
 
-        {/* Signup Form Container */}
-        <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] h-auto min-h-[650px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between h-full min-h-[650px]">
+        {/* Signup Form */}
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] min-h-[650px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between min-h-[650px]">
             {/* Header */}
             <div className="text-center mb-6 sm:mb-8">
               <Link href="/">
@@ -120,9 +113,8 @@ export default function Page() {
               </Link>
             </div>
 
-            {/* Form Section */}
+            {/* Form */}
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
-              {/* Registration Form */}
               <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 sm:space-y-5"
@@ -175,7 +167,7 @@ export default function Page() {
                 </button>
               </form>
 
-              {/* Success/Error Message */}
+              {/* Feedback */}
               {error && (
                 <div
                   className={`text-center text-sm px-2 ${
@@ -189,7 +181,7 @@ export default function Page() {
                 </div>
               )}
 
-              {/* Links */}
+              {/* Navigation Links */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <span className="cursor-pointer hover:underline">
                   Already have an account?
@@ -202,7 +194,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Social Login Section */}
+            {/* Social Sign Up */}
             <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign up with
@@ -214,7 +206,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Terms and Privacy */}
+            {/* Legal Footer */}
             <p className="text-[9px] sm:text-[10px] text-center text-gray-400 dark:text-gray-500 leading-snug mt-3 sm:mt-4 px-2">
               This site is protected by reCAPTCHA and the Google{" "}
               <a

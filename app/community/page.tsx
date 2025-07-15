@@ -2,7 +2,6 @@
 
 import ChatWindow from "../components/ChatWindow";
 import authservice from "../appwrite/auth";
-
 import { redirect } from "next/navigation";
 import type { Models } from "appwrite";
 

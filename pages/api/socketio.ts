@@ -52,8 +52,10 @@ export default async function handler(
           await Convo.findByIdAndUpdate(conversationId, {
             lastMessageAt: new Date(),
           });
-        } catch (err) {
-          console.warn("⚠️ Could not update Convo timestamp (OK if using static IDs)");
+        } catch {
+          console.warn(
+            "⚠️ Could not update Convo timestamp (OK if using static IDs)"
+          );
         }
 
         io.to(conversationId).emit("message", {
@@ -67,6 +69,7 @@ export default async function handler(
       });
     });
 
+    // store io instance so Next.js won't create multiple servers in dev
     res.socket.server.io = io;
     console.log("✅ Socket.IO server initialized");
   }
