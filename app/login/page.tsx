@@ -143,7 +143,6 @@ export default function Page() {
     } catch (err: any) {
       console.error("Sign‑in error:", err);
 
-      // Handle specific authentication errors
       if (err.message) {
         if (
           err.message.includes("invalid_credentials") ||
@@ -250,8 +249,8 @@ export default function Page() {
                     {...register("password", {
                       required: "Password is required",
                       minLength: {
-                        value: 1,
-                        message: "Password is required",
+                        value: 8,
+                        message: "Password must be at least 8 characters",
                       },
                     })}
                     className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
