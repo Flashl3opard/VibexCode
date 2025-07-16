@@ -23,15 +23,11 @@ const menuItemVariants = {
 const Navbar = () => {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  
-
-
-
-  //Checking if user is logged in
   const dispatch = useDispatch<AppDispatch>();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(()=>{
-    const checkUser = async ()=>{
+
+  useEffect(() => {
+    const checkUser = async () => {
       try {
         const userData = await authservice.checkUser();
         if (userData) {
@@ -40,33 +36,18 @@ const Navbar = () => {
         } else {
           setIsLoggedIn(false);
         }
-      } catch (error) { 
+      } catch (error) {
         console.error("Error checking user:", error);
         setIsLoggedIn(false);
       }
-    }
+    };
     checkUser();
-  }, [dispatch])
-
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   setIsLoggedIn(!!token);
-  // }, []);
+  }, [dispatch]);
 
   const handleVibeClick = () => {
-    setMenuOpen(false); // close menu on mobile
+    setMenuOpen(false);
     router.push("/playground");
   };
-
-  // const handleLogout = () => {
-  //   localStorage.removeItem("token");
-  //   setIsLoggedIn(false);
-  //   setMenuOpen(false);
-  //   router.push("/");
-  //   router.refresh();
-  // };
 
   const handleMobileNavClick = (path: string) => {
     setMenuOpen(false);
@@ -83,13 +64,14 @@ const Navbar = () => {
     } catch (error) {
       console.error("Logout Error:", error);
     }
-  }
+  };
 
+  const navItems = ["Practice", "Explore", "Dashboard", "Community"];
 
   return (
     <nav className="w-full py-4 px-6 md:px-8 relative z-30 bg-transparent dark:bg-[#020612] transition-all">
       <div className="flex items-center justify-between">
-        {/* Left Section: Logo + Menu Toggle */}
+        {/* Left Section */}
         <div className="flex items-center gap-3">
           <motion.button
             whileTap={{ scale: 0.9 }}
@@ -105,7 +87,6 @@ const Navbar = () => {
             </motion.span>
           </motion.button>
 
-          {/* Logo with entrance animation */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -115,16 +96,18 @@ const Navbar = () => {
           </motion.div>
         </div>
 
-        {/* Middle Nav Links (Desktop Only) */}
+        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
-          {["Practice", "Explore", "Dashboard"].map((item) => (
+          {navItems.map((item) => (
             <motion.div
               key={item}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href={`/${item === "Practice" ? "playground" : item}`}
+                href={`/${
+                  item === "Practice" ? "playground" : item.toLowerCase()
+                }`}
                 className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"
               >
                 {item}
@@ -135,7 +118,6 @@ const Navbar = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          {/* Auth Buttons (Desktop) */}
           <div className="hidden min-[500px]:flex items-center gap-3">
             {isLoggedIn ? (
               <>
@@ -174,7 +156,6 @@ const Navbar = () => {
                 </motion.div>
               </>
             )}
-
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -184,12 +165,11 @@ const Navbar = () => {
               Start Vibing
             </motion.button>
           </div>
-
           <ThemeToggle />
         </div>
       </div>
 
-      {/* BACKDROP OVERLAY */}
+      {/* Overlay */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -202,7 +182,7 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* MOBILE MENU */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.ul
@@ -212,7 +192,7 @@ const Navbar = () => {
             transition={{ duration: 0.4 }}
             className="absolute top-full left-0 w-full md:hidden bg-white dark:bg-zinc-900 rounded-b-xl p-6 shadow-xl z-30 space-y-4"
           >
-            {["Practice", "Explore", "Dashboard"].map((item, i) => (
+            {navItems.map((item, i) => (
               <motion.li
                 key={item}
                 custom={i}
@@ -224,7 +204,9 @@ const Navbar = () => {
                 <button
                   onClick={() =>
                     handleMobileNavClick(
-                      `/${item === "Practice" ? "playground" : item}`
+                      item === "Practice"
+                        ? "/playground"
+                        : `/${item.toLowerCase()}`
                     )
                   }
                   className="text-left w-full text-gray-800 dark:text-white text-base font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"

@@ -16,7 +16,7 @@ export default async function handler(
   if (!res.socket.server.io) {
     console.log("🟢 Initializing Socket.IO server...");
 
-    const httpServer: HTTPServer = res.socket.server as any;
+    const httpServer = res.socket.server as unknown as HTTPServer;
 
     const io = new IOServer(httpServer, {
       path: "/api/socketio",
@@ -39,7 +39,6 @@ export default async function handler(
       socket.on("message", async (data) => {
         const { conversationId, senderId, senderName, body } = data;
 
-        // ✅ Save message to DB
         try {
           await connectDB();
           const saved = await Message.create({
@@ -49,9 +48,7 @@ export default async function handler(
             body,
           });
 
-          // ✅ Broadcast to everyone in room (including sender)
           io.to(conversationId).emit("message", saved);
-
         } catch (err) {
           console.error("❌ Error saving/broadcasting message:", err);
         }

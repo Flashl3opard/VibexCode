@@ -82,21 +82,25 @@ export default function ChatWindow({
 
     console.log("📤 Sending message:", messageData);
 
-    // Emit to socket
     socket?.emit("message", messageData);
 
-    // Save to DB
     try {
       const res = await axios.post(
         `/api/messages/${conversationId}`,
         messageData
       );
       console.log("✅ Message saved to DB:", res.data);
-    } catch (err: any) {
-      console.error(
-        "❌ Failed to save message to DB:",
-        err.response?.data || err.message
-      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.error(
+          "❌ Failed to save message to DB:",
+          err.response?.data || err.message
+        );
+      } else if (err instanceof Error) {
+        console.error("❌ Failed to save message to DB:", err.message);
+      } else {
+        console.error("❌ Failed to save message to DB:", err);
+      }
     }
 
     setInput("");

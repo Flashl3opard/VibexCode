@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Sora, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "./store/provider";
-
+import RouteProgress from "./components/RouteProgress";
 
 // Load Sora for main text
 const sora = Sora({
@@ -30,9 +30,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sora.variable} ${geistMono.variable}`}>
       <body className="bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:bg-black min-h-screen antialiased">
-        <ReduxProvider>
-          {children}
-        </ReduxProvider>
+        <RouteProgress />
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );
