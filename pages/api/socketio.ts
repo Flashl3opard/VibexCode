@@ -1,8 +1,9 @@
-// pages/api/socketio.ts
-import type { NextApiRequest } from "next";
-import type { NextApiResponseServerIO } from "../../types/next";
 import { Server as IOServer } from "socket.io";
 import { Server as HTTPServer } from "http";
+import { NextApiRequest } from "next";
+import { NextApiResponseServerIO } from "../../types/next";
+import connectDB from "@/lib/mongodb";
+import Message from "@/models/Messages";
 
 export const config = {
   api: { bodyParser: false },
@@ -12,66 +13,52 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseServerIO
 ) {
-  if (!res.socket?.server.io) {
-    const httpServer = res.socket.server as HTTPServer;
+  if (!res.socket.server.io) {
+    console.log("🟢 Initializing Socket.IO server...");
+
+    const httpServer: HTTPServer = res.socket.server as any;
 
     const io = new IOServer(httpServer, {
       path: "/api/socketio",
-      cors: { origin: "*" },
+      addTrailingSlash: false,
     });
 
     io.on("connection", (socket) => {
-      console.log("🟢 New client connected");
+      console.log("👤 Client connected:", socket.id);
 
       socket.on("join", ({ conversationId }) => {
         socket.join(conversationId);
+        console.log(`📥 ${socket.id} joined ${conversationId}`);
       });
 
       socket.on("leave", ({ conversationId }) => {
         socket.leave(conversationId);
+        console.log(`📤 ${socket.id} left ${conversationId}`);
       });
 
-      socket.on("message", async (payload) => {
-        const { conversationId, senderId, senderName, body, image } = payload;
+      socket.on("message", async (data) => {
+        const { conversationId, senderId, senderName, body } = data;
 
-        const { default: connectDB } = await import("@/lib/mongodb");
-        const Message = (await import("@/models/Messages")).default;
-        const Convo = (await import("@/models/Convo")).default;
-
-        await connectDB();
-
-        const msgDoc = await Message.create({
-          conversation: conversationId,
-          sender: senderId,
-          senderName,
-          body,
-          image,
-        });
-
+        // ✅ Save message to DB
         try {
-          await Convo.findByIdAndUpdate(conversationId, {
-            lastMessageAt: new Date(),
+          await connectDB();
+          const saved = await Message.create({
+            conversation: conversationId,
+            sender: senderId,
+            senderName,
+            body,
           });
-        } catch {
-          console.warn(
-            "⚠️ Could not update Convo timestamp (OK if using static IDs)"
-          );
-        }
 
-        io.to(conversationId).emit("message", {
-          _id: msgDoc._id,
-          sender: senderId,
-          senderName,
-          body,
-          image,
-          createdAt: msgDoc.createdAt,
-        });
+          // ✅ Broadcast to everyone in room (including sender)
+          io.to(conversationId).emit("message", saved);
+
+        } catch (err) {
+          console.error("❌ Error saving/broadcasting message:", err);
+        }
       });
     });
 
-    // store io instance so Next.js won't create multiple servers in dev
     res.socket.server.io = io;
-    console.log("✅ Socket.IO server initialized");
   }
 
   res.end();

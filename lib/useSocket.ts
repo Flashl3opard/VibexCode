@@ -1,11 +1,32 @@
-import { useMemo } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
-export function useSocket() {
-  return useMemo(() => {
-    return io({
-      path: "/api/socketio",  // this must match
-      autoConnect: false,
-    });
+let socket: Socket;
+
+export const useSocket = (): Socket | null => {
+  const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    if (!socket) {
+      socket = io({
+        path: "/api/socketio", // ✅ Must match server
+      });
+
+      socket.on("connect", () => {
+        console.log("✅ Socket connected:", socket.id);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("❌ Socket disconnected");
+      });
+    }
+
+    setSocketInstance(socket);
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
-}
+
+  return socketInstance;
+};

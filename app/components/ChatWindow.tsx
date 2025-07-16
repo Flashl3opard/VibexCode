@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
-
 import { Input } from "@/src/components/ui/input";
 import { useSocket } from "@/lib/useSocket";
 import axios from "axios";
@@ -12,7 +10,7 @@ import axios from "axios";
 interface Props {
   conversationId: string;
   selfId: string;
-  selfName: string; // ✅ Added
+  selfName: string;
 }
 
 interface Message {
@@ -34,23 +32,26 @@ export default function ChatWindow({
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  // Fetch old messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const res = await axios.get(`/api/messages/${conversationId}`);
         setMessages(res.data);
       } catch (err) {
-        console.error("Error fetching messages:", err);
+        console.error("❌ Error fetching messages:", err);
       }
     };
 
     fetchMessages();
   }, [conversationId]);
 
+  // Handle real-time messages
   useEffect(() => {
     if (!socket) return;
 
     socket.emit("join", { conversationId });
+
     socket.on("message", (msg: Message) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -60,24 +61,51 @@ export default function ChatWindow({
     };
   }, [socket, conversationId]);
 
+  // Scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    socket?.emit("message", {
+  // Send new message
+  const handleSend = async () => {
+    if (!input.trim() || !selfId || !selfName || !conversationId) {
+      console.error("❌ Missing required message data");
+      return;
+    }
+
+    const messageData = {
       conversationId,
       senderId: selfId,
-      senderName: selfName, // ✅ Added
+      senderName: selfName,
       body: input.trim(),
-    });
+    };
+
+    console.log("📤 Sending message:", messageData);
+
+    // Emit to socket
+    socket?.emit("message", messageData);
+
+    // Save to DB
+    try {
+      const res = await axios.post(
+        `/api/messages/${conversationId}`,
+        messageData
+      );
+      console.log("✅ Message saved to DB:", res.data);
+    } catch (err: any) {
+      console.error(
+        "❌ Failed to save message to DB:",
+        err.response?.data || err.message
+      );
+    }
+
     setInput("");
   };
 
   return (
     <Card>
       <CardHeader className="text-lg font-semibold">Community Chat</CardHeader>
+
       <CardContent className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto">
         {messages.map((m) => (
           <div
@@ -96,6 +124,7 @@ export default function ChatWindow({
         ))}
         <div ref={messagesEndRef} />
       </CardContent>
+
       <div className="flex items-center gap-2 border-t p-4">
         <Input
           placeholder="Type a message..."
