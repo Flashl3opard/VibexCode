@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import ChatWindow from "../components/ChatWindow";
 import authservice from "../appwrite/auth";
 import type { Models } from "appwrite";
+import Navbar from "../components/Navbar";
 
 export default function CommunityPage() {
   const router = useRouter();
@@ -33,12 +34,15 @@ export default function CommunityPage() {
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <main className="p-4 max-w-4xl mx-auto">
-      <ChatWindow
-        conversationId="global-community"
-        selfId={session!.$id}
-        selfName={session!.name}
-      />
-    </main>
+    <>
+      <Navbar />
+      <main className="p-4 max-w-4xl mx-auto">
+        <ChatWindow
+          conversationId="global-community"
+          selfId={session!.$id}
+          selfName={session!.name}
+        />
+      </main>
+    </>
   );
 }
