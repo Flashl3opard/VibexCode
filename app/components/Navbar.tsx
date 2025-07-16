@@ -23,7 +23,6 @@ const menuItemVariants = {
 const Navbar = () => {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-
   const dispatch = useDispatch<AppDispatch>();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -67,8 +66,7 @@ const Navbar = () => {
     }
   };
 
-  const navItems = ["Practice", "Explore", "Dashboard"];
-  if (isLoggedIn) navItems.push("Community");
+  const navItems = ["Practice", "Explore", "Dashboard", "Community"];
 
   return (
     <nav className="w-full py-4 px-6 md:px-8 relative z-30 bg-transparent dark:bg-[#020612] transition-all">
@@ -120,7 +118,6 @@ const Navbar = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          {/* Auth Buttons (Desktop) */}
           <div className="hidden min-[500px]:flex items-center gap-3">
             {isLoggedIn ? (
               <>

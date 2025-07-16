@@ -5,7 +5,7 @@ import Message from "@/models/Messages";
 // GET: Fetch all messages for a conversation
 export async function GET(
   req: NextRequest,
-  context: { params: { conversationId: string } }
+  context: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     await connectDB();
@@ -27,7 +27,7 @@ export async function GET(
 // POST: Save a new message
 export async function POST(
   req: NextRequest,
-  context: { params: { conversationId: string } }
+  context: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     await connectDB();
