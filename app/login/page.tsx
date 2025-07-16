@@ -10,19 +10,17 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { AppDispatch } from "../store/store";
 import { login } from "../store/authSlice";
-import { FaFacebook, FaGithub } from "react-icons/fa";
+import { FaFacebook, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
-/* ─────────── Types ─────────── */
 type Hform = { email: string; password: string };
 type Banner = { msg: string; type: "error" | "ok" };
 type AppwriteErr = { message?: string };
 
-/* ─────────── Component ─────────── */
 export default function Page() {
-  /* ─── Hooks & state ─── */
   const [banner, setBanner] = useState<Banner>();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -33,24 +31,18 @@ export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  /* ─── Handlers ─── */
   const onSubmit = async (data: Hform) => {
     setBanner(undefined);
     setLoading(true);
 
     try {
-      /* Step 1 — sign‑in */
       const session = await authservice.signIn(data.email, data.password);
-
       if (session) {
-        /* Step 2 — fetch user */
         const userData = await authservice.checkUser();
-
         if (userData) {
-          /* Step 3 — store in Redux & redirect */
           dispatch(login({ status: true, userData }));
           setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
-          setTimeout(() => router.push("/"), 1_000);
+          setTimeout(() => router.push("/"), 1000);
         } else {
           setBanner({
             msg: "Authentication failed. Please try again.",
@@ -59,7 +51,6 @@ export default function Page() {
         }
       }
     } catch (err: unknown) {
-      /* ---------- typed error handling ---------- */
       const { message } = (err as AppwriteErr) ?? {};
 
       if (message?.includes("invalid_credentials")) {
@@ -89,7 +80,6 @@ export default function Page() {
     }
   };
 
-  /* ─── UI ─── */
   return (
     <>
       <Navbar />
@@ -137,7 +127,7 @@ export default function Page() {
                 className="space-y-4 sm:space-y-5"
                 onSubmit={handleSubmit(onSubmit)}
               >
-                {/* email */}
+                {/* Email */}
                 <div>
                   <input
                     type="email"
@@ -159,18 +149,24 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* password */}
-                <div>
+                {/* Password with Eye */}
+                <div className="relative">
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     {...register("password", {
                       required: "Password is required",
                       minLength: { value: 1, message: "Password is required" },
                     })}
-                    className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition pr-10"
                     disabled={loading}
                   />
+                  <div
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-500 dark:text-zinc-300 cursor-pointer"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </div>
                   {errors.password && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.password.message}
@@ -178,7 +174,7 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* submit */}
+                {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -188,7 +184,7 @@ export default function Page() {
                 </button>
               </form>
 
-              {/* links */}
+              {/* Links */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <Link href="/forgot-password">
                   <span className="cursor-pointer hover:underline">
@@ -203,7 +199,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* social auth */}
+            {/* Social Auth */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign in with
