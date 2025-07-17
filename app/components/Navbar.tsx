@@ -106,7 +106,13 @@ const Navbar = () => {
             >
               <Link
                 href={`/${
-                  item === "Practice" ? "playground" : item.toLowerCase()
+                  item === "Practice"
+                    ? "playground"
+                    : item === "Dashboard"
+                    ? "Dashboard"
+                    : item === "Explore"
+                    ? "Explore"
+                    : item.toLowerCase()
                 }`}
                 className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"
               >
@@ -206,6 +212,10 @@ const Navbar = () => {
                     handleMobileNavClick(
                       item === "Practice"
                         ? "/playground"
+                        : item === "Dashboard"
+                        ? "/Dashboard"
+                        : item === "Explore"
+                        ? "/Explore"
                         : `/${item.toLowerCase()}`
                     )
                   }
