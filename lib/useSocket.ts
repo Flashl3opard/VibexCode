@@ -1,32 +1,29 @@
+// lib/useSocket.ts
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-let socket: Socket;
-
-export const useSocket = (): Socket | null => {
-  const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
+export function useSocket(): Socket | null {
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    if (!socket) {
-      socket = io({
-        path: "/api/socketio", // ✅ Must match server
-      });
+    const socketInstance = io({
+      path: "/api/socketio",
+    });
 
-      socket.on("connect", () => {
-        console.log("✅ Socket connected:", socket.id);
-      });
+    socketInstance.on("connect", () => {
+      console.log("✅ Connected:", socketInstance.id);
+    });
 
-      socket.on("disconnect", () => {
-        console.log("❌ Socket disconnected");
-      });
-    }
+    socketInstance.on("disconnect", () => {
+      console.log("❌ Disconnected");
+    });
 
-    setSocketInstance(socket);
+    setSocket(socketInstance);
 
     return () => {
-      socket.disconnect();
+      socketInstance.disconnect();
     };
   }, []);
 
-  return socketInstance;
-};
+  return socket;
+}

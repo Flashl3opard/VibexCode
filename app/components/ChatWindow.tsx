@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";
 import { useSocket } from "@/lib/useSocket";
 import axios from "axios";
+import { cn } from "@/lib/utils";
 
 interface Props {
   conversationId: string;
@@ -32,7 +33,6 @@ export default function ChatWindow({
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch old messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -42,14 +42,11 @@ export default function ChatWindow({
         console.error("❌ Error fetching messages:", err);
       }
     };
-
     fetchMessages();
   }, [conversationId]);
 
-  // Handle real-time messages
   useEffect(() => {
     if (!socket) return;
-
     socket.emit("join", { conversationId });
 
     socket.on("message", (msg: Message) => {
@@ -61,17 +58,12 @@ export default function ChatWindow({
     };
   }, [socket, conversationId]);
 
-  // Scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Send new message
   const handleSend = async () => {
-    if (!input.trim() || !selfId || !selfName || !conversationId) {
-      console.error("❌ Missing required message data");
-      return;
-    }
+    if (!input.trim()) return;
 
     const messageData = {
       conversationId,
@@ -80,63 +72,66 @@ export default function ChatWindow({
       body: input.trim(),
     };
 
-    console.log("📤 Sending message:", messageData);
-
     socket?.emit("message", messageData);
 
     try {
-      const res = await axios.post(
-        `/api/messages/${conversationId}`,
-        messageData
-      );
-      console.log("✅ Message saved to DB:", res.data);
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        console.error(
-          "❌ Failed to save message to DB:",
-          err.response?.data || err.message
-        );
-      } else if (err instanceof Error) {
-        console.error("❌ Failed to save message to DB:", err.message);
-      } else {
-        console.error("❌ Failed to save message to DB:", err);
-      }
+      await axios.post(`/api/messages/${conversationId}`, messageData);
+    } catch (err) {
+      console.error("❌ Failed to save message to DB:", err);
     }
 
     setInput("");
   };
 
   return (
-    <Card>
-      <CardHeader className="text-lg font-semibold">Community Chat</CardHeader>
+    <Card className="flex flex-col w-full max-w-3xl mx-auto shadow-lg border rounded-2xl overflow-hidden">
+      <CardHeader className="text-xl font-semibold bg-muted dark:bg-muted/50 border-b px-6 py-4">
+        💬 Community Chat
+      </CardHeader>
 
-      <CardContent className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto">
-        {messages.map((m) => (
-          <div
-            key={m._id}
-            className={`rounded-lg px-4 py-2 max-w-[70%] text-sm whitespace-pre-wrap shadow-sm ${
-              m.sender === selfId
-                ? "ml-auto bg-primary text-primary-foreground"
-                : "bg-muted"
-            }`}
-          >
-            <p className="text-xs text-muted-foreground mb-1">
-              {m.senderName ?? m.sender}
-            </p>
-            <p>{m.body}</p>
-          </div>
-        ))}
+      <CardContent className="flex flex-col flex-grow gap-2 px-4 py-3 overflow-y-auto max-h-[75vh] scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50">
+        {messages.map((m) => {
+          const isSelf = m.sender === selfId;
+          return (
+            <div
+              key={m._id}
+              className={cn(
+                "flex flex-col mb-2 max-w-[75%] px-4 py-2 rounded-xl transition-all",
+                isSelf
+                  ? "ml-auto bg-gradient-to-br from-primary to-primary/80 text-primary-foreground"
+                  : "bg-muted dark:bg-muted/60 text-foreground"
+              )}
+            >
+              <div className="text-xs font-semibold opacity-70 mb-1">
+                {m.senderName ?? m.sender}
+              </div>
+              <div className="whitespace-pre-wrap text-sm">{m.body}</div>
+              <div className="text-[10px] text-muted-foreground mt-1 text-right">
+                {new Date(m.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            </div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </CardContent>
 
-      <div className="flex items-center gap-2 border-t p-4">
+      <div className="flex items-center gap-2 border-t bg-background px-4 py-3">
         <Input
           placeholder="Type a message..."
           value={input}
+          className="flex-1 rounded-full px-4 py-2 text-sm"
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
-        <Button onClick={handleSend}>Send</Button>
+        <Button
+          onClick={handleSend}
+          className="rounded-full px-5 py-2 text-sm font-medium"
+        >
+          Send
+        </Button>
       </div>
     </Card>
   );
