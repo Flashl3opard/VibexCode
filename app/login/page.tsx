@@ -48,65 +48,39 @@ export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  // Helper function to handle successful authentication
   const handleSuccessfulAuth = async (userData: any, message: string) => {
     dispatch(login({ status: true, userData }));
     setBanner({ msg: message, type: "ok" });
-
-    // Redirect to home page after successful login
+    document.cookie = `token=${userData.$id || "loggedin"}; path=/;`;
     setTimeout(() => {
       router.push("/");
       router.refresh();
     }, 1000);
   };
 
-  // Social Login Handler
   const handleSocialLogin = async (provider: AuthProvider) => {
     if (loadingSocial) return;
-
     setLoadingSocial(true);
     setBanner(undefined);
 
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
       console.log("Social login successful:", user);
 
-<<<<<<< HEAD
-      // ✅ Set token cookie
-      document.cookie = `token=${user.uid}; path=/;`;
-
-      setBanner({
-        msg: `Welcome ${user.displayName || user.email}!`,
-        type: "ok",
-      });
-
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
-=======
-      // Option 1: If you want to integrate with Appwrite
-      // You would need to create a function in your authservice to handle social login
-      // For now, we'll simulate the integration
-
-      // Create a user object similar to what Appwrite returns
       const mockUserData = {
         $id: user.uid,
         name: user.displayName || user.email?.split("@")[0] || "User",
         email: user.email,
         emailVerification: user.emailVerified,
-        // Add other properties as needed to match your Appwrite user structure
       };
 
       await handleSuccessfulAuth(
         mockUserData,
         `Welcome ${user.displayName || user.email}!`
       );
->>>>>>> 8d0bcf884d3b75bab6924903a2f4dd5357528b83
     } catch (error: any) {
       console.error("Social login error:", error);
-
       let errorMessage = "Social login failed. Please try again.";
 
       if (error.code) {
@@ -137,7 +111,6 @@ export default function Page() {
     }
   };
 
-  // Form Submit Handler
   const onSubmit = async (data: Hform) => {
     setBanner(undefined);
     setLoading(true);
@@ -150,20 +123,10 @@ export default function Page() {
           const userData = await authservice.checkUser();
 
           if (userData) {
-<<<<<<< HEAD
-            dispatch(login({ status: true, userData }));
-
-            // ✅ Set token cookie
-            document.cookie = `token=${userData.$id || "loggedin"}; path=/;`;
-
-            setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
-            setTimeout(() => router.push("/"), 1000);
-=======
             await handleSuccessfulAuth(
               userData,
               "Sign‑in successful! Redirecting…"
             );
->>>>>>> 8d0bcf884d3b75bab6924903a2f4dd5357528b83
           } else {
             setBanner({
               msg: "Authentication failed. Please try again.",
