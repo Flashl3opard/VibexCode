@@ -1,4 +1,3 @@
-// app/appwrite/auth.ts
 import { Client, Account, ID, Models, AppwriteException } from "appwrite";
 
 /**
@@ -11,18 +10,16 @@ export interface AuthServiceContract {
     password: string,
     name: string
   ): Promise<Models.User<Models.Preferences>>;
-
   signIn(email: string, password: string): Promise<Models.Session>;
-
-  logout(): Promise<void>;
-
+  logout(): Promise<{ success: boolean; error?: string }>;
   checkUser(): Promise<Models.User<Models.Preferences> | null>;
-
-  /** Send a reset‑password e‑mail that redirects to /reset-password */
   sendPasswordReset(email: string): Promise<void>;
-
-  /** Check if user is authenticated */
   isAuthenticated(): Promise<boolean>;
+  createSocialUser(
+    email: string,
+    name: string,
+    uid: string
+  ): Promise<Models.User<Models.Preferences>>;
 }
 
 /**
@@ -46,7 +43,6 @@ class AppwriteAuthService implements AuthServiceContract {
 
   async signUp(email: string, password: string, name: string) {
     try {
-      // Returns User<Preferences> in SDK v12
       return await this.account.create(ID.unique(), email, password, name);
     } catch (error) {
       if (error instanceof AppwriteException) {
@@ -58,7 +54,6 @@ class AppwriteAuthService implements AuthServiceContract {
 
   async signIn(email: string, password: string) {
     try {
-      // Returns Session in SDK v12
       return await this.account.createEmailPasswordSession(email, password);
     } catch (error) {
       if (error instanceof AppwriteException) {
@@ -68,24 +63,59 @@ class AppwriteAuthService implements AuthServiceContract {
     }
   }
 
-  async logout() {
+  async logout(): Promise<{ success: boolean; error?: string }> {
     try {
-      await this.account.deleteSessions();
-    } catch {
-      // Ignore errors during logout - user might already be logged out
-      console.warn("Logout warning: user may already be logged out");
+      // First try to delete current session
+      await this.account.deleteSession("current");
+      console.log("✅ Current session deleted successfully");
+      return { success: true };
+    } catch (error) {
+      console.error("❌ Current session delete failed:", error);
+
+      // Check if user is already logged out
+      if (error instanceof AppwriteException && error.code === 401) {
+        console.log("✅ User was already logged out");
+        return { success: true };
+      }
+
+      // Fallback: try to delete all sessions
+      try {
+        await this.account.deleteSessions();
+        console.log("✅ All sessions deleted successfully (fallback)");
+        return { success: true };
+      } catch (fallbackError) {
+        console.error("❌ Fallback logout also failed:", fallbackError);
+
+        // If fallback also fails due to 401, user is already logged out
+        if (
+          fallbackError instanceof AppwriteException &&
+          fallbackError.code === 401
+        ) {
+          console.log("✅ User was already logged out (fallback check)");
+          return { success: true };
+        }
+
+        return {
+          success: false,
+          error:
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : "Unknown logout error",
+        };
+      }
     }
   }
 
   async checkUser(): Promise<Models.User<Models.Preferences> | null> {
     try {
-      return await this.account.get();
+      const user = await this.account.get();
+      return user;
     } catch (error) {
-      if (error instanceof AppwriteException) {
-        // If user is not authenticated, return null instead of throwing
-        if (error.code === 401 || error.message.includes("missing scope")) {
-          return null;
-        }
+      if (
+        error instanceof AppwriteException &&
+        (error.code === 401 || error.message.includes("missing scope"))
+      ) {
+        return null;
       }
       throw error;
     }
@@ -100,10 +130,6 @@ class AppwriteAuthService implements AuthServiceContract {
     }
   }
 
-  /**
-   * Password‑reset flow for **SDK v12**.
-   * If you ever upgrade to v13, change this to `createEmailPasswordRecovery`.
-   */
   async sendPasswordReset(email: string) {
     try {
       await this.account.createRecovery(email, this.resetRedirect);
@@ -111,6 +137,38 @@ class AppwriteAuthService implements AuthServiceContract {
       if (error instanceof AppwriteException) {
         throw new Error(`Password reset failed: ${error.message}`);
       }
+      throw error;
+    }
+  }
+
+  /**
+   * Create user via social login (e.g., Firebase).
+   * Tries to create and login Appwrite user using social data.
+   */
+  async createSocialUser(
+    email: string,
+    name: string,
+    uid: string
+  ): Promise<Models.User<Models.Preferences>> {
+    try {
+      // Check if session already exists (user is logged in)
+      const existingUser = await this.checkUser();
+      if (existingUser) {
+        return existingUser;
+      }
+
+      // Secure random placeholder password
+      const password = crypto.randomUUID();
+
+      // Create user with Firebase UID as Appwrite user ID
+      const newUser = await this.account.create(uid, email, password, name);
+
+      // Create session
+      await this.account.createEmailPasswordSession(email, password);
+
+      return newUser;
+    } catch (error) {
+      console.error("Error creating social user:", error);
       throw error;
     }
   }

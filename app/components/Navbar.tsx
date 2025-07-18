@@ -6,10 +6,12 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../store/store";
-import { login } from "../store/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { login, logout as logoutAction } from "../store/authSlice";
 import authservice from "../appwrite/auth";
+import { getAuth, signOut } from "firebase/auth";
+import { app } from "@/lib/firebase";
 
 const menuItemVariants = {
   hidden: { opacity: 0, x: -10 },
@@ -24,25 +26,35 @@ const Navbar = () => {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Get authentication state from Redux store
+  const authState = useSelector((state: RootState) => state.auth);
+  const isLoggedIn = authState.status;
+
+  // Debug logging
+  console.log("Auth State:", authState);
+  console.log("Is Logged In:", isLoggedIn);
 
   useEffect(() => {
     const checkUser = async () => {
       try {
         const userData = await authservice.checkUser();
         if (userData) {
-          setIsLoggedIn(true);
           dispatch(login({ status: true, userData }));
         } else {
-          setIsLoggedIn(false);
+          dispatch(login({ status: false, userData: null }));
         }
       } catch (error) {
         console.error("Error checking user:", error);
-        setIsLoggedIn(false);
+        dispatch(login({ status: false, userData: null }));
       }
     };
-    checkUser();
-  }, [dispatch]);
+
+    // Only check user if not already logged in
+    if (!isLoggedIn) {
+      checkUser();
+    }
+  }, [dispatch, isLoggedIn]);
 
   const handleVibeClick = () => {
     setMenuOpen(false);
@@ -56,13 +68,24 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
+      // First update the Redux state immediately
+      dispatch(logoutAction());
+
+      // Clear Firebase auth state
+      const auth = getAuth(app);
+      await signOut(auth);
+
+      // Then perform the Appwrite logout
       await authservice.logout();
-      setIsLoggedIn(false);
-      dispatch(login({ status: false, userData: null }));
+
+      // Navigate to login page
       router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Logout Error:", error);
+      // Even if logout fails, clear the local state
+      dispatch(logoutAction());
+      router.push("/login");
     }
   };
 
