@@ -3,14 +3,14 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 //Defining the type for user data
 interface UserData {
-    email: string;
-    name: string;
+  email: string;
+  name: string;
 }
 
 /** Slice state */
 interface AuthState {
-    status: boolean,
-    userData: UserData | null,
+  status: boolean;
+  userData: UserData | null;
 }
 
 const initialState: AuthState = {
@@ -19,18 +19,21 @@ const initialState: AuthState = {
 };
 
 const authSlice = createSlice({
-    name: "auth",
-    initialState,
-    reducers: {
-        login: (state, action: PayloadAction<{ status: boolean ; userData: UserData | null }>) => {
-            state.status = true;
-            state.userData = action.payload.userData;
-        },
-        logout: (state)=>{
-            state.status = false;
-            state.userData = null;
-        }
-    }
+  name: "auth",
+  initialState,
+  reducers: {
+    login: (
+      state,
+      action: PayloadAction<{ status: boolean; userData: UserData | null }>
+    ) => {
+      state.status = action.payload.status; // Use the status from payload
+      state.userData = action.payload.userData;
+    },
+    logout: (state) => {
+      state.status = false;
+      state.userData = null;
+    },
+  },
 });
 
 export const { login, logout } = authSlice.actions;
