@@ -61,14 +61,14 @@ export default function Page() {
 
       console.log("Social login successful:", user);
 
-      // You can integrate this with your Appwrite auth here
-      // For now, just show success message
+      // ✅ Set token cookie
+      document.cookie = `token=${user.uid}; path=/;`;
+
       setBanner({
         msg: `Welcome ${user.displayName || user.email}!`,
         type: "ok",
       });
 
-      // Redirect to dashboard after successful login
       setTimeout(() => {
         router.push("/");
       }, 1500);
@@ -86,7 +86,7 @@ export default function Page() {
             errorMessage = "Login popup was closed.";
             break;
           case "auth/popup-blocked":
-            errorMessage = "Popup was blocked by browser. Please allow popups.";
+            errorMessage = "Popup was blocked by browser.";
             break;
           case "auth/operation-not-allowed":
             errorMessage = "This sign-in method is not enabled.";
@@ -119,6 +119,10 @@ export default function Page() {
 
           if (userData) {
             dispatch(login({ status: true, userData }));
+
+            // ✅ Set token cookie
+            document.cookie = `token=${userData.$id || "loggedin"}; path=/;`;
+
             setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
             setTimeout(() => router.push("/"), 1000);
           } else {
@@ -150,7 +154,7 @@ export default function Page() {
           });
         } else if (message.includes("too_many_requests")) {
           setBanner({
-            msg: "Too many login attempts. Please wait a moment and try again.",
+            msg: "Too many login attempts. Please wait a moment.",
             type: "error",
           });
         } else if (message.includes("user_not_found")) {
@@ -240,7 +244,7 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Password with Eye Toggle */}
+                {/* Password */}
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -265,7 +269,7 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -290,7 +294,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Social Authentication */}
+            {/* Social Login */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign in with
@@ -302,14 +306,12 @@ export default function Page() {
                   }`}
                   onClick={() => handleSocialLogin(googleProvider)}
                 />
-
                 <FaGithub
                   className={`cursor-pointer hover:scale-110 transition dark:text-white ${
                     loadingSocial ? "pointer-events-none opacity-50" : ""
                   }`}
                   onClick={() => handleSocialLogin(githubProvider)}
                 />
-
                 <FaFacebook
                   className={`text-blue-500 cursor-pointer hover:scale-110 transition ${
                     loadingSocial ? "pointer-events-none opacity-50" : ""
