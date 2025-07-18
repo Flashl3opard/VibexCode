@@ -48,6 +48,18 @@ export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
+  // Helper function to handle successful authentication
+  const handleSuccessfulAuth = async (userData: any, message: string) => {
+    dispatch(login({ status: true, userData }));
+    setBanner({ msg: message, type: "ok" });
+
+    // Redirect to home page after successful login
+    setTimeout(() => {
+      router.push("/");
+      router.refresh();
+    }, 1000);
+  };
+
   // Social Login Handler
   const handleSocialLogin = async (provider: AuthProvider) => {
     if (loadingSocial) return;
@@ -61,17 +73,23 @@ export default function Page() {
 
       console.log("Social login successful:", user);
 
-      // You can integrate this with your Appwrite auth here
-      // For now, just show success message
-      setBanner({
-        msg: `Welcome ${user.displayName || user.email}!`,
-        type: "ok",
-      });
+      // Option 1: If you want to integrate with Appwrite
+      // You would need to create a function in your authservice to handle social login
+      // For now, we'll simulate the integration
 
-      // Redirect to dashboard after successful login
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
+      // Create a user object similar to what Appwrite returns
+      const mockUserData = {
+        $id: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "User",
+        email: user.email,
+        emailVerification: user.emailVerified,
+        // Add other properties as needed to match your Appwrite user structure
+      };
+
+      await handleSuccessfulAuth(
+        mockUserData,
+        `Welcome ${user.displayName || user.email}!`
+      );
     } catch (error: any) {
       console.error("Social login error:", error);
 
@@ -118,9 +136,10 @@ export default function Page() {
           const userData = await authservice.checkUser();
 
           if (userData) {
-            dispatch(login({ status: true, userData }));
-            setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
-            setTimeout(() => router.push("/"), 1000);
+            await handleSuccessfulAuth(
+              userData,
+              "Sign‑in successful! Redirecting…"
+            );
           } else {
             setBanner({
               msg: "Authentication failed. Please try again.",
