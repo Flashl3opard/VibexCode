@@ -73,6 +73,19 @@ export default function Page() {
 
       console.log("Social login successful:", user);
 
+<<<<<<< HEAD
+      // ✅ Set token cookie
+      document.cookie = `token=${user.uid}; path=/;`;
+
+      setBanner({
+        msg: `Welcome ${user.displayName || user.email}!`,
+        type: "ok",
+      });
+
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+=======
       // Option 1: If you want to integrate with Appwrite
       // You would need to create a function in your authservice to handle social login
       // For now, we'll simulate the integration
@@ -90,6 +103,7 @@ export default function Page() {
         mockUserData,
         `Welcome ${user.displayName || user.email}!`
       );
+>>>>>>> 8d0bcf884d3b75bab6924903a2f4dd5357528b83
     } catch (error: any) {
       console.error("Social login error:", error);
 
@@ -104,7 +118,7 @@ export default function Page() {
             errorMessage = "Login popup was closed.";
             break;
           case "auth/popup-blocked":
-            errorMessage = "Popup was blocked by browser. Please allow popups.";
+            errorMessage = "Popup was blocked by browser.";
             break;
           case "auth/operation-not-allowed":
             errorMessage = "This sign-in method is not enabled.";
@@ -136,10 +150,20 @@ export default function Page() {
           const userData = await authservice.checkUser();
 
           if (userData) {
+<<<<<<< HEAD
+            dispatch(login({ status: true, userData }));
+
+            // ✅ Set token cookie
+            document.cookie = `token=${userData.$id || "loggedin"}; path=/;`;
+
+            setBanner({ msg: "Sign‑in successful! Redirecting…", type: "ok" });
+            setTimeout(() => router.push("/"), 1000);
+=======
             await handleSuccessfulAuth(
               userData,
               "Sign‑in successful! Redirecting…"
             );
+>>>>>>> 8d0bcf884d3b75bab6924903a2f4dd5357528b83
           } else {
             setBanner({
               msg: "Authentication failed. Please try again.",
@@ -169,7 +193,7 @@ export default function Page() {
           });
         } else if (message.includes("too_many_requests")) {
           setBanner({
-            msg: "Too many login attempts. Please wait a moment and try again.",
+            msg: "Too many login attempts. Please wait a moment.",
             type: "error",
           });
         } else if (message.includes("user_not_found")) {
@@ -259,7 +283,7 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Password with Eye Toggle */}
+                {/* Password */}
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -284,7 +308,7 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -309,7 +333,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Social Authentication */}
+            {/* Social Login */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign in with
@@ -321,14 +345,12 @@ export default function Page() {
                   }`}
                   onClick={() => handleSocialLogin(googleProvider)}
                 />
-
                 <FaGithub
                   className={`cursor-pointer hover:scale-110 transition dark:text-white ${
                     loadingSocial ? "pointer-events-none opacity-50" : ""
                   }`}
                   onClick={() => handleSocialLogin(githubProvider)}
                 />
-
                 <FaFacebook
                   className={`text-blue-500 cursor-pointer hover:scale-110 transition ${
                     loadingSocial ? "pointer-events-none opacity-50" : ""
