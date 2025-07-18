@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import authservice from "../appwrite/auth";
 import Navbar from "../components/Navbar";
+import { Eye, EyeOff } from "lucide-react";
 
 // Types
-
 type FormValues = {
   password: string;
   confirmPassword: string;
@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
         type: "ok",
       });
       setTimeout(() => router.push("/login"), 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       setBanner({
         msg: "Failed to reset password. Link may have expired.",
@@ -64,12 +64,9 @@ export default function ResetPasswordPage() {
   return (
     <>
       <Navbar />
-
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
-        {/* Card */}
         <div className="relative z-10 w-full max-w-sm sm:max-w-md min-h-[480px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
           <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between min-h-[480px]">
-            {/* Header */}
             <div className="text-center mb-6 sm:mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold">
                 <span className="text-gray-400">Reset</span>
@@ -102,6 +99,13 @@ export default function ResetPasswordPage() {
                     className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition pr-10"
                     disabled={loading}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
                 <div className="relative">
                   <input
@@ -111,6 +115,13 @@ export default function ResetPasswordPage() {
                     className="w-full p-3 sm:p-4 rounded-md border border-gray-300 dark:bg-zinc-800 dark:border-zinc-700 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition pr-10"
                     disabled={loading}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
                 <button
                   type="submit"

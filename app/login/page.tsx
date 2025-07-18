@@ -33,6 +33,13 @@ type Hform = { email: string; password: string };
 type Banner = { msg: string; type: "error" | "ok" };
 type AppwriteErr = { message?: string };
 
+interface UserData {
+  $id: string;
+  name: string;
+  email: string;
+  emailVerification?: boolean;
+}
+
 export default function Page() {
   const [banner, setBanner] = useState<Banner>();
   const [loading, setLoading] = useState(false);
@@ -48,7 +55,7 @@ export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const handleSuccessfulAuth = async (userData: any, message: string) => {
+  const handleSuccessfulAuth = async (userData: UserData, message: string) => {
     dispatch(login({ status: true, userData }));
     setBanner({ msg: message, type: "ok" });
     document.cookie = `token=${userData.$id || "loggedin"}; path=/;`;
@@ -68,10 +75,10 @@ export default function Page() {
       const user = result.user;
       console.log("Social login successful:", user);
 
-      const mockUserData = {
+      const mockUserData: UserData = {
         $id: user.uid,
         name: user.displayName || user.email?.split("@")[0] || "User",
-        email: user.email,
+        email: user.email || "unknown",
         emailVerification: user.emailVerified,
       };
 
@@ -79,12 +86,19 @@ export default function Page() {
         mockUserData,
         `Welcome ${user.displayName || user.email}!`
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Social login error:", error);
       let errorMessage = "Social login failed. Please try again.";
 
-      if (error.code) {
-        switch (error.code) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        typeof (error as { code: unknown }).code === "string"
+      ) {
+        const errorCode = (error as { code: string }).code;
+
+        switch (errorCode) {
           case "auth/cancelled-popup-request":
             errorMessage = "Login cancelled.";
             break;
@@ -101,7 +115,10 @@ export default function Page() {
             errorMessage = "Account exists with different credentials.";
             break;
           default:
-            errorMessage = `Login failed: ${error.message}`;
+            errorMessage =
+              "message" in error && typeof error.message === "string"
+                ? `Login failed: ${error.message}`
+                : "Login failed.";
         }
       }
 
@@ -182,7 +199,6 @@ export default function Page() {
       <Navbar />
 
       <div className="relative min-h-screen flex items-center justify-center px-4 py-6 sm:py-10 dark:bg-[#020612] transition-all duration-300">
-        {/* Illustration */}
         <div className="hidden lg:block absolute left-4 xl:left-30 top-0 h-full scale-90 -translate-x-15 -translate-y-10">
           <Image
             src="/assets/login.svg"
@@ -193,10 +209,8 @@ export default function Page() {
           />
         </div>
 
-        {/* Card */}
         <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:ml-auto lg:mr-[10vw] xl:mr-[15vw] min-h-[580px] bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
           <div className="p-6 sm:p-8 text-zinc-800 dark:text-white flex flex-col justify-between min-h-[580px]">
-            {/* Logo */}
             <div className="text-center mb-6 sm:mb-8">
               <Link href="/">
                 <h1 className="text-2xl sm:text-3xl font-bold">
@@ -206,7 +220,6 @@ export default function Page() {
               </Link>
             </div>
 
-            {/* Form */}
             <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6">
               {banner && (
                 <div
@@ -224,7 +237,6 @@ export default function Page() {
                 className="space-y-4 sm:space-y-5"
                 onSubmit={handleSubmit(onSubmit)}
               >
-                {/* Email */}
                 <div>
                   <input
                     type="email"
@@ -246,7 +258,6 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Password */}
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -271,7 +282,6 @@ export default function Page() {
                   )}
                 </div>
 
-                {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -281,7 +291,6 @@ export default function Page() {
                 </button>
               </form>
 
-              {/* Links */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <Link href="/forgot-password">
                   <span className="cursor-pointer hover:underline">
@@ -296,7 +305,6 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Social Login */}
             <div className="mt-6 sm:mt-8 space-y-4">
               <div className="text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 Or sign in with
