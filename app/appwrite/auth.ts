@@ -1,7 +1,7 @@
 import { Client, Account, ID, Models, AppwriteException } from "appwrite";
 
 /**
- * Contract every auth service must fulfil.
+ * Contract every auth service must fulfill.
  * Uses the exact return types the v12 SDK gives us.
  */
 export interface AuthServiceContract {
@@ -20,16 +20,20 @@ export interface AuthServiceContract {
     name: string,
     uid: string
   ): Promise<Models.User<Models.Preferences>>;
+  updatePassword(
+    userId: string,
+    secret: string,
+    newPassword: string
+  ): Promise<Models.Token>; // ✅ Correct return type
 }
 
 /**
  * Concrete Appwrite implementation.
- * Compatible with **SDK v12 or earlier** (uses `createRecovery`).
  */
 class AppwriteAuthService implements AuthServiceContract {
   private client: Client;
   private account: Account;
-  private readonly resetRedirect = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`;
+  private readonly resetRedirect = `${process.env.NEXT_PUBLIC_APP_URL}/resetPassword`;
 
   constructor() {
     this.client = new Client()
@@ -38,8 +42,6 @@ class AppwriteAuthService implements AuthServiceContract {
 
     this.account = new Account(this.client);
   }
-
-  /* ───────────── Auth methods ───────────── */
 
   async signUp(email: string, password: string, name: string) {
     try {
@@ -65,33 +67,21 @@ class AppwriteAuthService implements AuthServiceContract {
 
   async logout(): Promise<{ success: boolean; error?: string }> {
     try {
-      // First try to delete current session
       await this.account.deleteSession("current");
-      console.log("✅ Current session deleted successfully");
       return { success: true };
     } catch (error) {
-      console.error("❌ Current session delete failed:", error);
-
-      // Check if user is already logged out
       if (error instanceof AppwriteException && error.code === 401) {
-        console.log("✅ User was already logged out");
         return { success: true };
       }
 
-      // Fallback: try to delete all sessions
       try {
         await this.account.deleteSessions();
-        console.log("✅ All sessions deleted successfully (fallback)");
         return { success: true };
       } catch (fallbackError) {
-        console.error("❌ Fallback logout also failed:", fallbackError);
-
-        // If fallback also fails due to 401, user is already logged out
         if (
           fallbackError instanceof AppwriteException &&
           fallbackError.code === 401
         ) {
-          console.log("✅ User was already logged out (fallback check)");
           return { success: true };
         }
 
@@ -108,8 +98,7 @@ class AppwriteAuthService implements AuthServiceContract {
 
   async checkUser(): Promise<Models.User<Models.Preferences> | null> {
     try {
-      const user = await this.account.get();
-      return user;
+      return await this.account.get();
     } catch (error) {
       if (
         error instanceof AppwriteException &&
@@ -141,29 +130,33 @@ class AppwriteAuthService implements AuthServiceContract {
     }
   }
 
-  /**
-   * Create user via social login (e.g., Firebase).
-   * Tries to create and login Appwrite user using social data.
-   */
+  async updatePassword(
+    userId: string,
+    secret: string,
+    newPassword: string
+  ): Promise<Models.Token> {
+    try {
+      return await this.account.updateRecovery(userId, secret, newPassword);
+    } catch (error) {
+      if (error instanceof AppwriteException) {
+        throw new Error(`Password update failed: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
   async createSocialUser(
     email: string,
     name: string,
     uid: string
   ): Promise<Models.User<Models.Preferences>> {
     try {
-      // Check if session already exists (user is logged in)
       const existingUser = await this.checkUser();
-      if (existingUser) {
-        return existingUser;
-      }
+      if (existingUser) return existingUser;
 
-      // Secure random placeholder password
       const password = crypto.randomUUID();
 
-      // Create user with Firebase UID as Appwrite user ID
       const newUser = await this.account.create(uid, email, password, name);
-
-      // Create session
       await this.account.createEmailPasswordSession(email, password);
 
       return newUser;
@@ -174,6 +167,6 @@ class AppwriteAuthService implements AuthServiceContract {
   }
 }
 
-/* Export a singleton instance */
+/* Export singleton */
 const authservice: AuthServiceContract = new AppwriteAuthService();
 export default authservice;
