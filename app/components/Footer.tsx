@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
           <ul className="space-y-2 text-sm">
             <li>
               <a
-                href="/about"
+                href="/aboutUs"
                 className="transition-colors hover:text-blue-600 dark:hover:text-blue-400"
               >
                 About Us
