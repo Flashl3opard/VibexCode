@@ -131,7 +131,10 @@ export default function AboutUs() {
               <Image
                 src={user.avatar_url}
                 alt={user.login}
-                className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-500 shadow-lg"
+                width={96}
+                height={96}
+                className="rounded-full mx-auto mb-4 border-4 border-purple-500 shadow-lg"
+                unoptimized
               />
               <h3 className="text-xl font-semibold">
                 {user.name || user.login}
