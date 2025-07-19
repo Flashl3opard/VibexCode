@@ -5,6 +5,7 @@ import "aos/dist/aos.css";
 import Navbar from "../components/Navbar";
 import { motion } from "framer-motion";
 import { Github } from "lucide-react";
+import Image from "next/image";
 
 interface GitHubUser {
   login: string;
@@ -16,6 +17,13 @@ interface GitHubUser {
     additions: number;
     deletions: number;
     total: number;
+  };
+}
+interface ContributorStats {
+  total: number;
+  weeks: { a: number; d: number; c: number }[];
+  author: {
+    login: string;
   };
 }
 
@@ -41,16 +49,19 @@ export default function AboutUs() {
           contributorsData.map(async (contributor: GitHubUser) => {
             if (Array.isArray(statsData)) {
               const userStats = statsData.find(
-                (stat: any) => stat.author.login === contributor.login
+                (stat: ContributorStats) =>
+                  stat.author.login === contributor.login
               );
 
               if (userStats) {
                 const totalAdditions = userStats.weeks.reduce(
-                  (sum: number, week: any) => sum + week.a,
+                  (sum: number, week: { a: number; d: number; c: number }) =>
+                    sum + week.a,
                   0
                 );
                 const totalDeletions = userStats.weeks.reduce(
-                  (sum: number, week: any) => sum + week.d,
+                  (sum: number, week: { a: number; d: number; c: number }) =>
+                    sum + week.d,
                   0
                 );
 
@@ -117,7 +128,7 @@ export default function AboutUs() {
               transition={{ duration: 0.5 }}
               data-aos="fade-up"
             >
-              <img
+              <Image
                 src={user.avatar_url}
                 alt={user.login}
                 className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-purple-500 shadow-lg"
