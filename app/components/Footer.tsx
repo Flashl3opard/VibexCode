@@ -30,10 +30,10 @@ const Footer: React.FC = () => {
             </li>
             <li>
               <a
-                href="/projects"
+                href="/FAQs"
                 className="transition-colors hover:text-blue-600 dark:hover:text-blue-400"
               >
-                Projects
+                FAQs
               </a>
             </li>
             <li>
