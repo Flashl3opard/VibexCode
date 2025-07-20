@@ -29,22 +29,25 @@ export default function CommunityPage() {
         console.error("Auth check failed:", err);
         router.push("/login");
       });
-  }, [router]); // ✅ included router here
-
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  }, [router]);
 
   return (
-    <>
-      <div className="dark:bg-[#020612]">
-        <Navbar />
-        <main className="p-4 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-white dark:bg-[#020612] transition-colors duration-300">
+      <Navbar />
+
+      <main className="p-4 max-w-4xl mx-auto">
+        {loading ? (
+          <p className="text-center mt-10 text-black dark:text-white">
+            Loading...
+          </p>
+        ) : (
           <ChatWindow
             conversationId="global-community"
             selfId={session!.$id}
             selfName={session!.name}
           />
-        </main>
-      </div>
-    </>
+        )}
+      </main>
+    </div>
   );
 }
