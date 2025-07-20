@@ -94,7 +94,7 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
               </button>
             </div>
           </section>
-
+          {/* Committed  */}
           {/* Output Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg max-h-40 overflow-auto flex flex-col gap-y-2">
             <h2 className="text-lg font-semibold">📄 Result</h2>
