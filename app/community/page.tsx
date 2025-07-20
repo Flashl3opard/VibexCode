@@ -35,14 +35,16 @@ export default function CommunityPage() {
 
   return (
     <>
-      <Navbar />
-      <main className="p-4 max-w-4xl mx-auto">
-        <ChatWindow
-          conversationId="global-community"
-          selfId={session!.$id}
-          selfName={session!.name}
-        />
-      </main>
+      <div className="dark:bg-[#020612]">
+        <Navbar />
+        <main className="p-4 max-w-4xl mx-auto">
+          <ChatWindow
+            conversationId="global-community"
+            selfId={session!.$id}
+            selfName={session!.name}
+          />
+        </main>
+      </div>
     </>
   );
 }
