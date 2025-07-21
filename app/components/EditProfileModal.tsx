@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { X, Check, Camera } from "lucide-react";
+import Image from "next/image";
 
 interface UserProfile {
   id: string;
@@ -78,7 +79,8 @@ const EditProfileModal = ({
       await onSave(editData);
       setImagePreview("");
       onClose();
-    } catch (err) {
+    } catch (error) {
+      console.error("Failed to update profile:", error);
       alert("Failed to update profile.");
     } finally {
       setIsLoading(false);
@@ -118,9 +120,11 @@ const EditProfileModal = ({
             <div className="relative">
               <div className="w-20 h-20 rounded-full border-4 border-blue-500 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-xl overflow-hidden">
                 {getProfileImage() ? (
-                  <img
+                  <Image
                     src={getProfileImage()!}
                     alt="Profile"
+                    width={80}
+                    height={80}
                     className="w-full h-full object-cover"
                   />
                 ) : (
