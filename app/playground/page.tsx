@@ -16,10 +16,13 @@ export default function PlaygroundPage() {
   const [code, setCode] = useState("// Write your code here");
   const [output, setOutput] = useState("");
   const lang = ["Javascript", "Python", "Java", "C++"] as const;
-  type Language = typeof lang[number];
+  type Language = (typeof lang)[number];
   const [language, setLanguage] = useState<Language>("Javascript");
 
-  const languageMap: Record<Language, { monacoLang: string; judge0Id: number }> = {
+  const languageMap: Record<
+    Language,
+    { monacoLang: string; judge0Id: number }
+  > = {
     Javascript: { monacoLang: "javascript", judge0Id: 63 },
     Python: { monacoLang: "python", judge0Id: 71 },
     Java: { monacoLang: "java", judge0Id: 62 },
@@ -49,17 +52,18 @@ export default function PlaygroundPage() {
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%] flex flex-col gap-y-2">
             <h2 className="text-xl font-semibold">🧠 Question</h2>
             <p className="text-sm">
-              Write a function to print &quot;Hello, World!&quot;. You can try using different languages.
+              Write a function to print &quot;Hello, World!&quot;. You can try
+              using different languages.
             </p>
           </section>
 
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg flex-1 overflow-auto flex flex-col gap-y-2">
             <h2 className="text-lg font-semibold">🧪 Testcases</h2>
             <ul className="list-disc pl-4 space-y-1 text-sm">
-              <li>Print "Hello JavaScript"</li>
-              <li>Print "Hello Python"</li>
-              <li>Print "Hello Java"</li>
-              <li>Print "Hello C++"</li>
+              <li>Print &quot;Hello JavaScript&quot;</li>
+              <li>Print &quot;Hello Python&quot;</li>
+              <li>Print &quot;Hello Java&quot;</li>
+              <li>Print &quot;Hello C++&quot;</li>
             </ul>
           </section>
         </div>
