@@ -32,7 +32,7 @@ export default function CommunityPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#020612] transition-colors duration-300">
+    <div className="min-h-screen  dark:bg-[#020612] transition-colors duration-300">
       <Navbar />
 
       <main className="p-4 max-w-4xl mx-auto">
