@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VibeXCode
 
-## Getting Started
+**VibeXCode** is a modern, collaborative group chat and forum platform built using **Next.js**, **Tailwind CSS**, **Socket.IO**, **MongoDB**, and **Appwrite**. It supports real-time messaging, image sharing, and authentication with both Appwrite and Firebase (including social login options).
 
-First, run the development server:
+## 🌟 Features
+
+- 🔐 User Authentication with Appwrite & Firebase
+- 💬 Real-time group chat using Socket.IO
+- 🖼️ Image sharing support
+- 🌗 Light and Dark mode UI
+- 👤 Editable user profiles (name, email)
+- 🧑‍💻 Developer-friendly tech stack
+- 📱 Responsive design
+
+---
+
+## 📸 Screenshots
+
+### 🏠 Main Page – Light Mode
+
+<img width="1917" height="871" alt="Screenshot 2025-07-21 165058" src="https://github.com/user-attachments/assets/dbbaf631-13ab-4a8a-a3b6-79a7397c832b" />
+
+
+### 🏠 Main Page – Dark Mode
+
+<img width="1918" height="866" alt="Screenshot 2025-07-21 165011" src="https://github.com/user-attachments/assets/99fb3774-087a-4bb7-8b10-5d55f4b8dd63" />
+
+
+### 📊 Dashboard Page
+
+<img width="1884" height="874" alt="Screenshot 2025-07-21 165031" src="https://github.com/user-attachments/assets/1a1a59f1-2b44-49b5-a3a3-7b1ec3b5512c" />
+
+
+### 👤 Profile Page
+
+<img width="1892" height="862" alt="Screenshot 2025-07-21 165045" src="https://github.com/user-attachments/assets/f14cbb40-7228-4437-826c-72d9aa4faf6f" />
+
+
+
+---
+
+## ⚙️ Tech Stack
+
+- **Frontend**: Next.js, Tailwind CSS
+- **Real-time Communication**: Socket.IO
+- **Authentication**: Appwrite, Firebase
+- **Database**: MongoDB
+- **Deployment**: Vercel / Netlify / Custom
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js ≥ 18
+- MongoDB (local or Atlas)
+- Appwrite project & API keys
+- Firebase setup (for optional social login)
+
+### Setup
 
 ```bash
+# Clone the repo
+git clone https://github.com/yourusername/vibexcode.git
+cd vibexcode
+
+# Install dependencies
+npm install
+
+# Create and configure .env.local
+cp .env.example .env.local
+# Fill in Appwrite, Firebase, and MongoDB credentials
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
