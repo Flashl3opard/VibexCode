@@ -12,6 +12,7 @@ import { login, logout as logoutAction } from "../store/authSlice";
 import authservice from "../appwrite/auth";
 import { getAuth, signOut } from "firebase/auth";
 import { app } from "@/lib/firebase";
+import { CgProfile } from "react-icons/cg";
 
 const menuItemVariants = {
   hidden: { opacity: 0, x: -10 },
@@ -28,6 +29,8 @@ const Navbar = () => {
   const [showNotif, setShowNotif] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
   const notifRef = useRef<HTMLDivElement | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
   const dispatch = useDispatch<AppDispatch>();
 
   const authState = useSelector((state: RootState) => state.auth);
@@ -68,13 +71,32 @@ const Navbar = () => {
     handleRouteChange();
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setShowProfileMenu(false);
+      }
+    };
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
   const handleVibeClick = () => {
     setMenuOpen(false);
+    setShowProfileMenu(false);
     router.push("/playground");
   };
 
   const handleMobileNavClick = (path: string) => {
     setMenuOpen(false);
+    setShowProfileMenu(false);
     router.push(path);
   };
 
@@ -99,6 +121,7 @@ const Navbar = () => {
     <nav className="w-full py-4 px-6 md:px-8 relative z-30 bg-transparent dark:bg-[#020612] transition-all">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* Mobile menu button */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen((prev) => !prev)}
@@ -112,7 +135,6 @@ const Navbar = () => {
               {menuOpen ? "✕" : "☰"}
             </motion.span>
           </motion.button>
-
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -122,6 +144,7 @@ const Navbar = () => {
           </motion.div>
         </div>
 
+        {/* Main navigation items (desktop) */}
         <div className="hidden md:flex items-center gap-6">
           {navItems.map((item) => (
             <motion.div
@@ -147,118 +170,128 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden min-[500px]:flex items-center gap-3">
-            {isLoggedIn ? (
-              <>
-                <Link
-                  href="/Profile"
-                  className="text-purple-600 dark:text-teal-300 font-medium hover:underline cursor-pointer"
+        {/* Right section */}
+        <div className="flex items-center gap-2 min-w-[110px] justify-end relative">
+          {isLoggedIn ? (
+            <>
+              {/* Profile Button and Popup */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setShowProfileMenu((v) => !v)}
+                  className="p-2 rounded-full focus:outline-none text-purple-600 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                  title="Profile"
+                  aria-haspopup="menu"
+                  aria-expanded={showProfileMenu}
                 >
-                  Profile
-                </Link>
+                  <CgProfile className="w-7 h-7" />
+                </button>
+                {/* Dropdown */}
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.17 }}
+                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-3 flex flex-col gap-1 z-50"
+                    >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          router.push("/Profile");
+                        }}
+                        className="py-2 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-white rounded text-left transition"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="py-2 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-left text-red-500 transition"
+                      >
+                        Logout
+                      </button>
+                      <button
+                        onClick={handleVibeClick}
+                        className="py-2 px-3 mt-1 rounded font-semibold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 text-white shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition"
+                      >
+                        Start Vibing
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* Notification */}
+              <div className="relative" ref={notifRef}>
                 <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleLogout}
-                  className="text-red-500 hover:underline font-medium cursor-pointer"
-                >
-                  Logout
-                </motion.button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-purple-600 dark:text-teal-300 font-medium hover:underline cursor-pointer"
-                >
-                  Log In
-                </Link>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setShowNotif(!showNotif);
+                    localStorage.setItem("poll-viewed", "true");
+                    setHasUnread(false);
+                  }}
+                  className="relative p-2 text-gray-800 dark:text-white"
+                  aria-label="Notification"
                 >
-                  <Link
-                    href="/signup"
-                    className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-2 rounded-full font-semibold shadow hover:opacity-90 transition-all text-sm cursor-pointer"
+                  {hasUnread && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
+                      1
+                    </span>
+                  )}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
                   >
-                    Sign Up
-                  </Link>
-                </motion.div>
-              </>
-            )}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                </motion.button>
+                <AnimatePresence>
+                  {showNotif && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-800 shadow-xl rounded-lg p-4 text-sm z-50"
+                    >
+                      <p className="text-gray-800 dark:text-gray-200">
+                        📢 New Poll: &quot;Topic for first test&quot;
+                      </p>
+                      <button
+                        className="mt-2 text-blue-600 hover:underline dark:text-blue-400"
+                        onClick={() => router.push("/comm")}
+                      >
+                        View Poll
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          ) : (
+            // LOGGED OUT: Show only Login button
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleVibeClick}
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 animate-pulse text-white text-sm font-semibold shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition-all duration-300 cursor-pointer"
+              onClick={() => router.push("/login")}
+              className="bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 text-white px-4 py-2 rounded-full font-semibold shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition-all text-sm"
             >
-              Start Vibing
+              Log In
             </motion.button>
-          </div>
-
-          {/* Notification */}
-          {isLoggedIn && (
-            <div className="relative" ref={notifRef}>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setShowNotif(!showNotif);
-                  localStorage.setItem("poll-viewed", "true");
-                  setHasUnread(false);
-                }}
-                className="relative text-gray-800 dark:text-white"
-              >
-                {hasUnread && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
-                    1
-                  </span>
-                )}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-              </motion.button>
-
-              <AnimatePresence>
-                {showNotif && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-800 shadow-xl rounded-lg p-4 text-sm z-50"
-                  >
-                    <p className="text-gray-800 dark:text-gray-200">
-                      📢 New Poll: &quot;Topic for first test&quot;
-                    </p>
-
-                    <button
-                      className="mt-2 text-blue-600 hover:underline dark:text-blue-400"
-                      onClick={() => router.push("/comm")}
-                    >
-                      View Poll
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
           )}
-
+          {/* ThemeToggle always shown */}
           <ThemeToggle />
         </div>
       </div>
 
-      {/* Overlay */}
+      {/* Overlay for mobile */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -308,7 +341,6 @@ const Navbar = () => {
                 </button>
               </motion.li>
             ))}
-
             <motion.li
               custom={3}
               variants={menuItemVariants}
@@ -322,7 +354,8 @@ const Navbar = () => {
                   <>
                     <button
                       onClick={() => handleMobileNavClick("/Profile")}
-                      className="text-purple-600 dark:text-teal-300 font-medium hover:underline"
+                      className="text-purple-600 dark:text-white text-xl hover:underline scale-90"
+                      title="Profile"
                     >
                       Profile
                     </button>
