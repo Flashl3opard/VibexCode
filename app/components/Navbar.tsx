@@ -197,60 +197,62 @@ const Navbar = () => {
           </div>
 
           {/* Notification */}
-          <div className="relative" ref={notifRef}>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setShowNotif(!showNotif);
-                localStorage.setItem("poll-viewed", "true");
-                setHasUnread(false);
-              }}
-              className="relative text-gray-800 dark:text-white"
-            >
-              {hasUnread && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
-                  1
-                </span>
-              )}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+          {isLoggedIn && (
+            <div className="relative" ref={notifRef}>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setShowNotif(!showNotif);
+                  localStorage.setItem("poll-viewed", "true");
+                  setHasUnread(false);
+                }}
+                className="relative text-gray-800 dark:text-white"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-            </motion.button>
-
-            <AnimatePresence>
-              {showNotif && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-800 shadow-xl rounded-lg p-4 text-sm z-50"
+                {hasUnread && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
+                    1
+                  </span>
+                )}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
                 >
-                  <p className="text-gray-800 dark:text-gray-200">
-                    📢 New Poll: &quot;Topic for first test&quot;
-                  </p>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              </motion.button>
 
-                  <button
-                    className="mt-2 text-blue-600 hover:underline dark:text-blue-400"
-                    onClick={() => router.push("/comm")}
+              <AnimatePresence>
+                {showNotif && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-800 shadow-xl rounded-lg p-4 text-sm z-50"
                   >
-                    View Poll
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                    <p className="text-gray-800 dark:text-gray-200">
+                      📢 New Poll: &quot;Topic for first test&quot;
+                    </p>
+
+                    <button
+                      className="mt-2 text-blue-600 hover:underline dark:text-blue-400"
+                      onClick={() => router.push("/comm")}
+                    >
+                      View Poll
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           <ThemeToggle />
         </div>
