@@ -172,54 +172,11 @@ const Navbar = () => {
 
         {/* Right section */}
         <div className="flex items-center gap-2 min-w-[110px] justify-end relative">
+          {/* ThemeToggle always first */}
+          <ThemeToggle />
+
           {isLoggedIn ? (
             <>
-              {/* Profile Button and Popup */}
-              <div className="relative" ref={profileRef}>
-                <button
-                  onClick={() => setShowProfileMenu((v) => !v)}
-                  className="p-2 rounded-full focus:outline-none text-purple-600 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                  title="Profile"
-                  aria-haspopup="menu"
-                  aria-expanded={showProfileMenu}
-                >
-                  <CgProfile className="w-7 h-7" />
-                </button>
-                {/* Dropdown */}
-                <AnimatePresence>
-                  {showProfileMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.17 }}
-                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-3 flex flex-col gap-1 z-50"
-                    >
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          router.push("/Profile");
-                        }}
-                        className="py-2 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-white rounded text-left transition"
-                      >
-                        Profile
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="py-2 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-left text-red-500 transition"
-                      >
-                        Logout
-                      </button>
-                      <button
-                        onClick={handleVibeClick}
-                        className="py-2 px-3 mt-1 rounded font-semibold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 text-white shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition"
-                      >
-                        Start Vibing
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
               {/* Notification */}
               <div className="relative" ref={notifRef}>
                 <motion.button
@@ -274,6 +231,53 @@ const Navbar = () => {
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Profile Button and Popup */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setShowProfileMenu((v) => !v)}
+                  className="p-2 rounded-full focus:outline-none text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                  title="Profile"
+                  aria-haspopup="menu"
+                  aria-expanded={showProfileMenu}
+                >
+                  <CgProfile className="w-7 h-7" />
+                </button>
+                {/* Dropdown */}
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.17 }}
+                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-3 flex flex-col gap-1 z-50"
+                    >
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          router.push("/Profile");
+                        }}
+                        className="py-2 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-white rounded text-left transition"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="py-2 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-left text-red-500 transition"
+                      >
+                        Logout
+                      </button>
+                      <button
+                        onClick={handleVibeClick}
+                        className="py-2 px-3 mt-1 rounded font-semibold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-rose-500 text-white shadow-[0_0_10px_#ff00ff] hover:opacity-90 transition"
+                      >
+                        Start Vibing
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </>
           ) : (
             // LOGGED OUT: Show only Login button
@@ -286,8 +290,6 @@ const Navbar = () => {
               Log In
             </motion.button>
           )}
-          {/* ThemeToggle always shown */}
-          <ThemeToggle />
         </div>
       </div>
 
