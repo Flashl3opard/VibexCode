@@ -12,13 +12,13 @@ interface GitHubUser {
   avatar_url: string;
   html_url: string;
   name?: string;
-  contributions?: number;
   stats?: {
     additions: number;
     deletions: number;
     total: number;
   };
 }
+
 interface ContributorStats {
   total: number;
   weeks: { a: number; d: number; c: number }[];
@@ -156,12 +156,6 @@ export default function AboutUs() {
                     {user.stats.total.toLocaleString()} total lines
                   </p>
                 </div>
-              )}
-
-              {user.contributions && (
-                <p className="text-purple-400 text-sm mt-2">
-                  {user.contributions} commits
-                </p>
               )}
 
               <a
