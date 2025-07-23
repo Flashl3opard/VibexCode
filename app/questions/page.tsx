@@ -19,6 +19,9 @@ export default function SubmitQuestionPage() {
   });
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+    "easy"
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -29,7 +32,6 @@ export default function SubmitQuestionPage() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear specific field error when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -40,20 +42,17 @@ export default function SubmitQuestionPage() {
       e.preventDefault();
       const newTag = currentTag.trim().toLowerCase();
 
-      // Validate tag length
       if (newTag.length > 20) {
         setMessage("❌ Tags must be 20 characters or less");
         return;
       }
 
-      // Check for duplicates (case insensitive)
       if (!tags.some((tag) => tag.toLowerCase() === newTag)) {
-        setTags([...tags, currentTag.trim()]);
+        setTags([...tags, newTag]);
       }
       setCurrentTag("");
     }
 
-    // Allow backspace to remove last tag if input is empty
     if (e.key === "Backspace" && currentTag === "" && tags.length > 0) {
       setTags(tags.slice(0, -1));
     }
@@ -78,7 +77,6 @@ export default function SubmitQuestionPage() {
       newErrors.description = "Description must be at least 10 characters";
     }
 
-    // Optional validation for test cases and solutions
     if (formData.testcases.trim() && formData.testcases.trim().length < 5) {
       newErrors.testcases =
         "Test cases must be at least 5 characters if provided";
@@ -87,6 +85,10 @@ export default function SubmitQuestionPage() {
     if (formData.solutions.trim() && formData.solutions.trim().length < 5) {
       newErrors.solutions =
         "Solutions must be at least 5 characters if provided";
+    }
+
+    if (!["easy", "medium", "hard"].includes(difficulty)) {
+      newErrors.difficulty = "Invalid difficulty selected";
     }
 
     setErrors(newErrors);
@@ -106,14 +108,10 @@ export default function SubmitQuestionPage() {
 
     try {
       const payload = {
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        testcases: formData.testcases.trim(),
-        solutions: formData.solutions.trim(),
-        tags: tags.filter((tag) => tag.trim() !== ""), // Remove empty tags
+        ...formData,
+        tags: tags.filter((tag) => tag.trim() !== ""),
+        difficulty,
       };
-
-      console.log("Sending payload:", payload);
 
       const res = await fetch("/api/questions", {
         method: "POST",
@@ -124,12 +122,10 @@ export default function SubmitQuestionPage() {
       });
 
       const result = await res.json();
-      console.log("Response:", result);
 
       if (res.ok && result.success) {
         setMessage("✅ Question submitted successfully!");
 
-        // Clear form
         setFormData({
           title: "",
           description: "",
@@ -138,9 +134,9 @@ export default function SubmitQuestionPage() {
         });
         setTags([]);
         setCurrentTag("");
+        setDifficulty("easy");
         setErrors({});
 
-        // Auto-clear success message after 5 seconds
         setTimeout(() => setMessage(""), 5000);
       } else {
         setMessage(
@@ -150,7 +146,6 @@ export default function SubmitQuestionPage() {
         );
       }
     } catch (error) {
-      console.error("Submit error:", error);
       setMessage(
         `❌ Network error: ${
           error instanceof Error
@@ -260,7 +255,7 @@ export default function SubmitQuestionPage() {
               );
             })}
 
-            {/* Enhanced Tag input */}
+            {/* Tags Input */}
             <div className="block">
               <label className="block mb-2 font-medium text-sm">
                 Tags (press space or Enter to add)
@@ -299,40 +294,37 @@ export default function SubmitQuestionPage() {
                   className="flex-grow min-w-[120px] bg-transparent outline-none text-sm py-1"
                 />
               </div>
+            </div>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Use tags like: javascript, react, algorithms, data-structures
-              </p>
+            {/* Difficulty Selector */}
+            <div className="block">
+              <label className="block mb-2 font-medium text-sm">
+                Difficulty
+              </label>
+              <select
+                value={difficulty}
+                onChange={(e) =>
+                  setDifficulty(e.target.value as "easy" | "medium" | "hard")
+                }
+                className="w-full p-3 rounded-lg bg-gray-50 dark:bg-[#2a2a2f] border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              {errors.difficulty && (
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                  {errors.difficulty}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 dark:disabled:hover:bg-blue-500"
+              className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Submitting...
-                </span>
-              ) : (
-                "Submit Question"
-              )}
+              {loading ? "Submitting..." : "Submit Question"}
             </button>
 
             {message && (
@@ -347,29 +339,6 @@ export default function SubmitQuestionPage() {
               </div>
             )}
           </form>
-
-          {/* Development debug info */}
-          {process.env.NODE_ENV === "development" && (
-            <details className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs">
-              <summary className="font-bold mb-2 cursor-pointer">
-                Debug Info
-              </summary>
-              <div className="space-y-2 mt-2">
-                <p>
-                  <strong>Form Data:</strong>
-                </p>
-                <pre className="bg-gray-200 dark:bg-gray-700 p-2 rounded overflow-auto">
-                  {JSON.stringify(formData, null, 2)}
-                </pre>
-                <p>
-                  <strong>Tags:</strong> {JSON.stringify(tags)}
-                </p>
-                <p>
-                  <strong>Errors:</strong> {JSON.stringify(errors)}
-                </p>
-              </div>
-            </details>
-          )}
         </div>
       </div>
     </>

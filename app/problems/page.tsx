@@ -10,6 +10,7 @@ type Question = {
   tags: string[];
   testcases?: string;
   solutions?: string;
+  difficulty?: "easy" | "medium" | "hard";
   createdAt?: string;
   updatedAt?: string;
 };
@@ -21,6 +22,7 @@ export default function ProblemsPage() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     new Set()
   );
@@ -38,7 +40,6 @@ export default function ProblemsPage() {
       )
     : allTags;
 
-  // Fetch questions on mount
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -54,17 +55,26 @@ export default function ProblemsPage() {
         }
         const data = await res.json();
         if (data.success) {
-          const sortedQuestions = data.questions.sort(
-            (a: Question, b: Question) =>
-              new Date(b.createdAt || "").getTime() -
-              new Date(a.createdAt || "").getTime()
-          );
+          const sortedQuestions = data.questions
+            .map((q: Partial<Question>) => ({
+              ...q,
+              difficulty:
+                q.difficulty === "easy" ||
+                q.difficulty === "medium" ||
+                q.difficulty === "hard"
+                  ? q.difficulty
+                  : "easy",
+            }))
+            .sort(
+              (a: Question, b: Question) =>
+                new Date(b.createdAt || "").getTime() -
+                new Date(a.createdAt || "").getTime()
+            );
           setQuestions(sortedQuestions);
         } else {
           setError(data.error || "Failed to load questions");
         }
       } catch (err) {
-        console.error("Error fetching questions:", err);
         setError(
           err instanceof Error
             ? err.message
@@ -78,7 +88,7 @@ export default function ProblemsPage() {
     fetchQuestions();
   }, []);
 
-  // Filter questions based on search and tag
+  // Filter questions
   useEffect(() => {
     let filtered = questions;
 
@@ -92,16 +102,16 @@ export default function ProblemsPage() {
       );
     }
 
-    if (selectedTag) {
+    if (selectedTag)
       filtered = filtered.filter((q) => q.tags.includes(selectedTag));
-    }
+    if (selectedDifficulty)
+      filtered = filtered.filter((q) => q.difficulty === selectedDifficulty);
 
     setFilteredQuestions(filtered);
-  }, [questions, searchTerm, selectedTag]);
+  }, [questions, searchTerm, selectedTag, selectedDifficulty]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
+    const handleClick = (e: MouseEvent) => {
       if (
         showTagDropdown &&
         tagDropdownRef.current &&
@@ -109,26 +119,27 @@ export default function ProblemsPage() {
       ) {
         setShowTagDropdown(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClick);
+
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showTagDropdown]);
 
-  const toggleExpanded = (questionId: string) => {
+  const toggleExpanded = (id: string) => {
     setExpandedQuestions((prev) => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(questionId)) {
-        newExpanded.delete(questionId);
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
       } else {
-        newExpanded.add(questionId);
+        newSet.add(id);
       }
-      return newExpanded;
+      return newSet;
     });
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -139,11 +150,23 @@ export default function ProblemsPage() {
     setSearchTerm("");
     setSelectedTag("");
     setTagSearch("");
+    setSelectedDifficulty("");
   };
 
-  const retryFetch = () => {
-    window.location.reload();
+  const difficultyBadgeClasses = (difficulty?: string) => {
+    switch (difficulty) {
+      case "easy":
+        return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300";
+      case "medium":
+        return "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300";
+      case "hard":
+        return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300";
+      default:
+        return "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200";
+    }
   };
+
+  const retryFetch = () => window.location.reload();
 
   return (
     <>
@@ -157,7 +180,6 @@ export default function ProblemsPage() {
             </p>
           </div>
 
-          {/* Search and Filter Section */}
           {!loading && !error && questions.length > 0 && (
             <div className="mb-8 space-y-4">
               <div className="flex flex-col sm:flex-row gap-4">
@@ -172,7 +194,7 @@ export default function ProblemsPage() {
                   />
                 </div>
 
-                {/* Tag Filter with Search inside dropdown */}
+                {/* Tag Filter */}
                 <div className="relative sm:w-64">
                   <button
                     type="button"
@@ -242,16 +264,30 @@ export default function ProblemsPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Difficulty Filter */}
+                <div className="relative sm:w-44">
+                  <select
+                    value={selectedDifficulty}
+                    onChange={(e) => setSelectedDifficulty(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-white dark:bg-[#1a1a1d] border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="">Filter by difficulty...</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Active Filters & Stats */}
+              {/* Filters & Stats */}
               <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-4">
                   <span>
                     Showing {filteredQuestions.length} of {questions.length}{" "}
                     questions
                   </span>
-                  {(searchTerm || selectedTag) && (
+                  {(searchTerm || selectedTag || selectedDifficulty) && (
                     <button
                       onClick={clearFilters}
                       className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -260,11 +296,22 @@ export default function ProblemsPage() {
                     </button>
                   )}
                 </div>
-                {selectedTag && (
-                  <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full">
-                    Tag: {selectedTag}
-                  </span>
-                )}
+                <div className="flex gap-2 items-center">
+                  {selectedTag && (
+                    <span className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full">
+                      Tag: {selectedTag}
+                    </span>
+                  )}
+                  {selectedDifficulty && (
+                    <span
+                      className={`px-3 py-1 rounded-full capitalize font-semibold text-xs ${difficultyBadgeClasses(
+                        selectedDifficulty
+                      )}`}
+                    >
+                      {selectedDifficulty}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -273,6 +320,7 @@ export default function ProblemsPage() {
           {loading && (
             <div className="text-center py-12">
               <div className="inline-flex items-center gap-3">
+                {/* Spinner SVG */}
                 <svg
                   className="animate-spin h-6 w-6 text-blue-600"
                   viewBox="0 0 24 24"
@@ -369,9 +417,27 @@ export default function ProblemsPage() {
                   >
                     {/* Header */}
                     <div className="flex justify-between items-start mb-4">
-                      <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 leading-tight">
-                        {q.title}
-                      </h2>
+                      <div className="flex items-center gap-3">
+                        {/* Difficulty badge */}
+                        <span
+                          className={`text-xs px-2 py-1 rounded font-bold uppercase ${difficultyBadgeClasses(
+                            q.difficulty
+                          )} mr-2 cursor-pointer`}
+                          onClick={() =>
+                            setSelectedDifficulty(
+                              selectedDifficulty === q.difficulty
+                                ? ""
+                                : q.difficulty || ""
+                            )
+                          }
+                          title={`Filter by ${q.difficulty} difficulty`}
+                        >
+                          {q.difficulty || "easy"}
+                        </span>
+                        <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 leading-tight">
+                          {q.title}
+                        </h2>
+                      </div>
                       {q.createdAt && (
                         <time className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-4">
                           {formatDate(q.createdAt)}
@@ -427,9 +493,9 @@ export default function ProblemsPage() {
                     {/* Tags */}
                     {q.tags && q.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2">
-                        {q.tags.map((tag, index) => (
+                        {q.tags.map((tag, idx) => (
                           <button
-                            key={`${tag}-${index}`}
+                            key={`${tag}-${idx}`}
                             onClick={() =>
                               setSelectedTag(selectedTag === tag ? "" : tag)
                             }
@@ -444,6 +510,16 @@ export default function ProblemsPage() {
                         ))}
                       </div>
                     )}
+
+                    {/* Solve Button */}
+                    <div className="mt-4 flex justify-end">
+                      <a
+                        href={`/playground?id=${q._id}`}
+                        className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition"
+                      >
+                        Solve
+                      </a>
+                    </div>
                   </article>
                 );
               })}
