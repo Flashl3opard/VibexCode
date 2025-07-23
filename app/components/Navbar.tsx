@@ -115,7 +115,7 @@ const Navbar = () => {
     }
   };
 
-  const navItems = ["Practice", "Explore", "Dashboard", "Community"];
+  const navItems = ["Problems", "Explore", "Dashboard", "Community"];
 
   return (
     <nav className="w-full py-4 px-6 md:px-8 relative z-30 bg-transparent dark:bg-[#020612] transition-all">
@@ -154,8 +154,8 @@ const Navbar = () => {
             >
               <Link
                 href={`/${
-                  item === "Practice"
-                    ? "playground"
+                  item === "Problems"
+                    ? "problems"
                     : item === "Dashboard"
                     ? "Dashboard"
                     : item === "Explore"
@@ -328,8 +328,8 @@ const Navbar = () => {
                 <button
                   onClick={() =>
                     handleMobileNavClick(
-                      item === "Practice"
-                        ? "/playground"
+                      item === "Probelms"
+                        ? "/problems"
                         : item === "Dashboard"
                         ? "/Dashboard"
                         : item === "Explore"
