@@ -25,13 +25,67 @@ type Question = {
 const languages = ["Javascript", "Python", "Java", "C++"] as const;
 type Language = (typeof languages)[number];
 
-const languageMap: Record<Language, { monacoLang: string; judge0Id: number }> =
-  {
-    Javascript: { monacoLang: "javascript", judge0Id: 63 },
-    Python: { monacoLang: "python", judge0Id: 71 },
-    Java: { monacoLang: "java", judge0Id: 62 },
-    "C++": { monacoLang: "cpp", judge0Id: 54 },
-  };
+const languageMap: Record<
+  Language,
+  { monacoLang: string; judge0Id: number; defaultCode: string }
+> = {
+  Javascript: {
+    monacoLang: "javascript",
+    judge0Id: 63,
+    defaultCode: `// JavaScript Hello World
+console.log("Hello, World!");
+
+// Try different examples:
+// console.log("Hello JavaScript");
+// let name = "Developer";
+// console.log("Hello " + name);`,
+  },
+  Python: {
+    monacoLang: "python",
+    judge0Id: 71,
+    defaultCode: `# Python Hello World
+print("Hello, World!")
+
+# Try different examples:
+# print("Hello Python")
+# name = "Developer"
+# print(f"Hello {name}")`,
+  },
+  Java: {
+    monacoLang: "java",
+    judge0Id: 62,
+    defaultCode: `// Java Hello World
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+        
+        // Try different examples:
+        // System.out.println("Hello Java");
+        // String name = "Developer";
+        // System.out.println("Hello " + name);
+    }
+}`,
+  },
+  "C++": {
+    monacoLang: "cpp",
+    judge0Id: 54,
+    defaultCode: `// C++ Hello World
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    cout << "Hello, World!" << endl;
+    
+    // Try different examples:
+    // cout << "Hello C++" << endl;
+    // string name = "Developer";
+    // cout << "Hello " << name << endl;
+    
+    return 0;
+}`,
+  },
+};
 
 export default function PlaygroundPage() {
   const searchParams = useSearchParams();
@@ -41,11 +95,12 @@ export default function PlaygroundPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [code, setCode] = useState("// Write your code here");
-  const [output, setOutput] = useState("");
   const [language, setLanguage] = useState<Language>("Javascript");
+  const [code, setCode] = useState(languageMap[language].defaultCode);
 
-  // New state for editable answer markdown input
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+
   const [answerInput, setAnswerInput] = useState<string>("");
 
   useEffect(() => {
@@ -73,21 +128,60 @@ export default function PlaygroundPage() {
         setLoading(false);
       }
     };
-
     fetchQuestion();
   }, [questionId]);
 
-  const handleRun = async () => {
-    setOutput("⏳ Running...");
-    const result = await runJudge0(code, languageMap[language].judge0Id);
+  // Reset code and output on language change
+  const handleLanguageChange = (newLanguage: Language) => {
+    setLanguage(newLanguage);
+    setCode(languageMap[newLanguage].defaultCode);
+    setOutput("");
+  };
 
-    if (result.stderr) {
-      setOutput(`❌ Error:\n${result.stderr}`);
-    } else if (result.compile_output) {
-      setOutput(`⚠️ Compile Error:\n${result.compile_output}`);
-    } else {
-      setOutput(`✅ Output:\n${result.stdout}`);
+  const handleRun = async () => {
+    if (isRunning) return;
+
+    setIsRunning(true);
+    setOutput("⏳ Running...");
+
+    try {
+      const result = await runJudge0(code, languageMap[language].judge0Id);
+
+      if ("error" in result && result.error) {
+        setOutput(`❌ API Error:\n${result.error}`);
+      } else if (result.stderr) {
+        setOutput(`❌ Runtime Error:\n${result.stderr}`);
+      } else if (result.compile_output) {
+        setOutput(`⚠️ Compile Error:\n${result.compile_output}`);
+      } else if (result.stdout) {
+        const executionInfo =
+          result.time || result.memory
+            ? `\n\n📊 Execution Time: ${result.time || "N/A"}ms | Memory: ${
+                result.memory || "N/A"
+              }KB`
+            : "";
+        setOutput(`✅ Output:\n${result.stdout}${executionInfo}`);
+      } else {
+        setOutput("✅ Code executed successfully (no output)");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setOutput(`❌ Execution Error:\n${error.message}`);
+      } else {
+        setOutput(`❌ Unknown Error:\n${JSON.stringify(error)}`);
+      }
     }
+
+    setIsRunning(false);
+  };
+
+  const handleResetCode = () => {
+    setCode(languageMap[language].defaultCode);
+    setOutput("");
+  };
+
+  const handleClearOutput = () => {
+    setOutput("");
   };
 
   return (
@@ -155,17 +249,29 @@ export default function PlaygroundPage() {
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[600px] overflow-hidden flex flex-col gap-y-2">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-semibold">💻 Compiler</h2>
-              <select
-                className="dark:bg-gray-800 px-2 py-1 rounded"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-              >
-                {languages.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-3">
+                <select
+                  className="dark:bg-gray-800 px-2 py-1 rounded"
+                  value={language}
+                  onChange={(e) =>
+                    handleLanguageChange(e.target.value as Language)
+                  }
+                  disabled={isRunning}
+                >
+                  {languages.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleResetCode}
+                  className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-md"
+                  disabled={isRunning}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
 
             <div className="flex-1">
@@ -175,22 +281,41 @@ export default function PlaygroundPage() {
                 value={code}
                 theme="vs-dark"
                 onChange={(value) => setCode(value || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                }}
               />
             </div>
 
             <div className="mt-2">
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-500`}
                 onClick={handleRun}
+                disabled={isRunning}
               >
-                Run Code
+                {isRunning ? "⏳ Running..." : "Run Code"}
               </button>
             </div>
           </section>
 
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg max-h-40 overflow-auto flex flex-col gap-y-2">
-            <h2 className="text-lg font-semibold">📄 Result</h2>
-            <pre className="text-sm whitespace-pre-wrap">{output}</pre>
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">📄 Result</h2>
+              {output && (
+                <button
+                  onClick={handleClearOutput}
+                  className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-md"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <pre className="text-sm whitespace-pre-wrap">
+              {output || "Output will appear here after running your code..."}
+            </pre>
           </section>
         </div>
 
