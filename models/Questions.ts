@@ -1,15 +1,20 @@
-import mongoose, { Schema, models } from "mongoose";
+import mongoose from "mongoose";
 
-const QuestionSchema = new Schema(
+const QuestionSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    testcases: { type: String, required: true },
-    solutions: { type: String, required: true },
-    tags: { type: [String], default: [] },
+    testcases: { type: String },
+    solutions: { type: String },
+    tags: [{ type: String }],
+    difficulty: {
+      type: String,
+      enum: ["easy", "medium", "hard"],
+      default: "easy",
+    },
   },
   { timestamps: true }
 );
 
-export const Questions =
-  models.Questions || mongoose.model("Questions", QuestionSchema);
+export default mongoose.models.Question ||
+  mongoose.model("Question", QuestionSchema);

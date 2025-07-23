@@ -8,7 +8,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-const publicRoutes = ["/", "/login", "/signup"];
+const publicRoutes = ["/", "/login", "/signup", "/forgot_password"];
 
 export default function AuthGuard({ children }: Props) {
   const router = useRouter();

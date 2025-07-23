@@ -1,33 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import ReactMarkdown from "react-markdown";
 import { runJudge0 } from "@/lib/judge0";
 import Navbar from "../components/Navbar";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 
-// Dynamically load Monaco Editor
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
-export default function PlaygroundPage() {
-  const [code, setCode] = useState("// Write your code here");
-  const [output, setOutput] = useState("");
-  const lang = ["Javascript", "Python", "Java", "C++"] as const;
-  type Language = (typeof lang)[number];
-  const [language, setLanguage] = useState<Language>("Javascript");
+type Question = {
+  _id: string;
+  title: string;
+  description: string;
+  testcases?: string;
+  solutions?: string;
+  difficulty?: string;
+};
 
-  const languageMap: Record<
-    Language,
-    { monacoLang: string; judge0Id: number }
-  > = {
+const languages = ["Javascript", "Python", "Java", "C++"] as const;
+type Language = (typeof languages)[number];
+
+const languageMap: Record<Language, { monacoLang: string; judge0Id: number }> =
+  {
     Javascript: { monacoLang: "javascript", judge0Id: 63 },
     Python: { monacoLang: "python", judge0Id: 71 },
     Java: { monacoLang: "java", judge0Id: 62 },
     "C++": { monacoLang: "cpp", judge0Id: 54 },
   };
+
+export default function PlaygroundPage() {
+  const searchParams = useSearchParams();
+  const questionId = searchParams?.get("id");
+
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [code, setCode] = useState("// Write your code here");
+  const [output, setOutput] = useState("");
+  const [language, setLanguage] = useState<Language>("Javascript");
+
+  // New state for editable answer markdown input
+  const [answerInput, setAnswerInput] = useState<string>("");
+
+  useEffect(() => {
+    if (!questionId) {
+      setError("❌ No question ID provided in URL.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchQuestion = async () => {
+      try {
+        const res = await fetch(`/api/questions/${questionId}`);
+        if (!res.ok)
+          throw new Error(`Failed to fetch question (${res.status})`);
+        const data = await res.json();
+        if (data.success) {
+          setQuestion(data.question);
+          setAnswerInput(data.question.solutions || "");
+        } else {
+          throw new Error(data.error || "Unknown error");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestion();
+  }, [questionId]);
 
   const handleRun = async () => {
     setOutput("⏳ Running...");
@@ -47,28 +95,62 @@ export default function PlaygroundPage() {
       <Navbar />
 
       <div className="flex flex-1 p-3 gap-4 overflow-hidden flex-col md:flex-row">
-        {/* ---------- Left Panel: Question + Testcases ---------- */}
+        {/* --------- Left Panel: Question + Testcases + Editable Answer --------- */}
         <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%] flex flex-col gap-y-2">
-            <h2 className="text-xl font-semibold">🧠 Question</h2>
-            <p className="text-sm">
-              Write a function to print &quot;Hello, World!&quot;. You can try
-              using different languages.
-            </p>
+          {/* Question Section */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
+            <h2 className="text-xl font-semibold mb-2">🧠 Question</h2>
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : error ? (
+              <p className="text-sm text-red-500">Error: {error}</p>
+            ) : question ? (
+              <>
+                <h3 className="font-bold mb-2">{question.title}</h3>
+                <div className="text-sm overflow-auto flex-1 prose dark:prose-invert">
+                  <ReactMarkdown>{question.description}</ReactMarkdown>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">No question found</p>
+            )}
           </section>
 
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg flex-1 overflow-auto flex flex-col gap-y-2">
-            <h2 className="text-lg font-semibold">🧪 Testcases</h2>
-            <ul className="list-disc pl-4 space-y-1 text-sm">
-              <li>Print &quot;Hello JavaScript&quot;</li>
-              <li>Print &quot;Hello Python&quot;</li>
-              <li>Print &quot;Hello Java&quot;</li>
-              <li>Print &quot;Hello C++&quot;</li>
-            </ul>
+          {/* Testcases Section */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
+            <h2 className="text-lg font-semibold mb-2">🧪 Testcases</h2>
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : question?.testcases ? (
+              <pre className="text-sm whitespace-pre-wrap overflow-auto flex-1">
+                {question.testcases}
+              </pre>
+            ) : (
+              <p className="text-sm text-gray-500">No testcases available</p>
+            )}
+          </section>
+
+          {/* Editable Answer Section */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[400px] md:h-[40%] flex flex-col">
+            <h2 className="text-lg font-semibold mb-2">
+              📝 Your Answer (Markdown)
+            </h2>
+            <textarea
+              value={answerInput}
+              onChange={(e) => setAnswerInput(e.target.value)}
+              placeholder="Write your solution in Markdown here..."
+              className="flex-1 resize-none p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-[#2a2a2f] text-sm text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <h3 className="mt-4 mb-2 font-semibold text-sm">Live Preview</h3>
+            <div className="flex-1 overflow-auto prose dark:prose-invert border border-gray-200 dark:border-gray-700 rounded p-3 bg-white dark:bg-gray-900 text-sm">
+              <ReactMarkdown>
+                {answerInput || "_Nothing to preview_"}
+              </ReactMarkdown>
+            </div>
           </section>
         </div>
 
-        {/* ---------- Center Panel: Monaco Editor + Output ---------- */}
+        {/* -------- Center Panel: Editor + Output -------- */}
         <div className="w-full md:w-2/4 flex flex-col gap-4 overflow-hidden">
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[600px] overflow-hidden flex flex-col gap-y-2">
             <div className="flex justify-between items-center mb-2">
@@ -78,7 +160,7 @@ export default function PlaygroundPage() {
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
               >
-                {lang.map((l) => (
+                {languages.map((l) => (
                   <option key={l} value={l}>
                     {l}
                   </option>
@@ -112,7 +194,7 @@ export default function PlaygroundPage() {
           </section>
         </div>
 
-        {/* ---------- Right Panel: SoundBoard + Lead ---------- */}
+        {/* -------- Right Panel: SoundBoard + Leaderboard -------- */}
         <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%]">
             <SoundBoard />
