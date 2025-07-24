@@ -1,55 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import ReactMarkdown from "react-markdown";
 import { runJudge0Advanced } from "@/lib/judge0";
 import Navbar from "../components/Navbar";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 
-// Dynamically load Monaco Editor
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
-export default function PlaygroundPage() {
-  const [output, setOutput] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
+type Question = {
+  _id: string;
+  title: string;
+  description: string;
+  testcases?: string;
+  solutions?: string;
+  difficulty?: string;
+};
 
-  const lang = ["Javascript", "Python", "Java", "C++"] as const;
-  type Language = (typeof lang)[number];
-  const [language, setLanguage] = useState<Language>("Javascript");
+const languages = ["Javascript", "Python", "Java", "C++"] as const;
+type Language = (typeof languages)[number];
 
-  const languageMap: Record<
-    Language,
-    { monacoLang: string; judge0Id: number; defaultCode: string }
-  > = {
-    Javascript: {
-      monacoLang: "javascript",
-      judge0Id: 63,
-      defaultCode: `// JavaScript Hello World
+const languageMap: Record<
+  Language,
+  { monacoLang: string; judge0Id: number; defaultCode: string }
+> = {
+  Javascript: {
+    monacoLang: "javascript",
+    judge0Id: 63,
+    defaultCode: `// JavaScript Hello World
 console.log("Hello, World!");
 
 // Try different examples:
 // console.log("Hello JavaScript");
 // let name = "Developer";
 // console.log("Hello " + name);`,
-    },
-    Python: {
-      monacoLang: "python",
-      judge0Id: 71,
-      defaultCode: `# Python Hello World
+  },
+  Python: {
+    monacoLang: "python",
+    judge0Id: 71,
+    defaultCode: `# Python Hello World
 print("Hello, World!")
 
 # Try different examples:
 # print("Hello Python")
 # name = "Developer"
 # print(f"Hello {name}")`,
-    },
-    Java: {
-      monacoLang: "java",
-      judge0Id: 62,
-      defaultCode: `// Java Hello World
+  },
+  Java: {
+    monacoLang: "java",
+    judge0Id: 62,
+    defaultCode: `// Java Hello World
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
@@ -60,11 +65,11 @@ public class Main {
         // System.out.println("Hello " + name);
     }
 }`,
-    },
-    "C++": {
-      monacoLang: "cpp",
-      judge0Id: 54,
-      defaultCode: `// C++ Hello World
+  },
+  "C++": {
+    monacoLang: "cpp",
+    judge0Id: 54,
+    defaultCode: `// C++ Hello World
 #include <iostream>
 #include <string>
 using namespace std;
@@ -79,11 +84,54 @@ int main() {
     
     return 0;
 }`,
-    },
-  };
+  },
+};
 
+export default function PlaygroundPage() {
+  const searchParams = useSearchParams();
+  const questionId = searchParams?.get("id");
+
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [language, setLanguage] = useState<Language>("Javascript");
   const [code, setCode] = useState(languageMap[language].defaultCode);
 
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+
+  const [answerInput, setAnswerInput] = useState<string>("");
+
+  useEffect(() => {
+    if (!questionId) {
+      setError("❌ No question ID provided in URL.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchQuestion = async () => {
+      try {
+        const res = await fetch(`/api/questions/${questionId}`);
+        if (!res.ok)
+          throw new Error(`Failed to fetch question (${res.status})`);
+        const data = await res.json();
+        if (data.success) {
+          setQuestion(data.question);
+          setAnswerInput(data.question.solutions || "");
+        } else {
+          throw new Error(data.error || "Unknown error");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuestion();
+  }, [questionId]);
+
+  // Reset code and output on language change
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
     setCode(languageMap[newLanguage].defaultCode);
@@ -94,7 +142,7 @@ int main() {
     if (isRunning) return;
 
     setIsRunning(true);
-    setOutput("⏳ Running code...");
+    setOutput("⏳ Running...");
 
     try {
       const result = await runJudge0Advanced(
@@ -102,8 +150,7 @@ int main() {
         languageMap[language].judge0Id
       );
 
-      // Handle different types of output
-      if (result.error) {
+      if ("error" in result && result.error) {
         setOutput(`❌ API Error:\n${result.error}`);
       } else if (result.stderr) {
         setOutput(`❌ Runtime Error:\n${result.stderr}`);
@@ -131,86 +178,90 @@ int main() {
     setIsRunning(false);
   };
 
-  const handleClearOutput = () => {
-    setOutput("");
-  };
-
   const handleResetCode = () => {
     setCode(languageMap[language].defaultCode);
     setOutput("");
   };
 
+  const handleClearOutput = () => {
+    setOutput("");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col dark:bg-[#020612] bg-gray-50 text-gray-900 dark:text-white">
+    <div className="min-h-screen flex flex-col dark:bg-[#020612] text-gray-900 dark:text-white">
       <Navbar />
 
-      <div className="flex flex-1 p-3 gap-4 overflow-hidden flex-col lg:flex-row">
-        {/* Left Panel: Question + Testcases */}
-        <div className="w-full lg:w-1/4 flex flex-col gap-4 overflow-auto">
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg dark:shadow-xl h-[200px] lg:h-[45%] flex flex-col gap-y-3">
-            <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
-              🧠 Challenge
-            </h2>
-            <div className="flex-1 overflow-auto">
-              <p className="text-sm leading-relaxed">
-                Write a program to print{" "}
-                <strong>&quot;Hello, World!&quot;</strong> in your chosen
-                language.
-              </p>
-              <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-xs text-blue-600 dark:text-blue-300">
-                  💡 <strong>Tip:</strong> Try experimenting with different
-                  languages and see the syntax differences!
-                </p>
-              </div>
-            </div>
+      <div className="flex flex-1 p-3 gap-4 overflow-hidden flex-col md:flex-row">
+        {/* --------- Left Panel: Question + Testcases + Editable Answer --------- */}
+        <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
+          {/* Question Section */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
+            <h2 className="text-xl font-semibold mb-2">🧠 Question</h2>
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : error ? (
+              <p className="text-sm text-red-500">Error: {error}</p>
+            ) : question ? (
+              <>
+                <h3 className="font-bold mb-2">{question.title}</h3>
+                <div className="text-sm overflow-auto flex-1 prose dark:prose-invert">
+                  <ReactMarkdown>{question.description}</ReactMarkdown>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">No question found</p>
+            )}
           </section>
 
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg dark:shadow-xl flex-1 overflow-auto flex flex-col gap-y-3">
-            <h2 className="text-lg font-bold text-green-600 dark:text-green-400 flex items-center gap-2">
-              🧪 Test Cases
+          {/* Testcases Section */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
+            <h2 className="text-lg font-semibold mb-2">🧪 Testcases</h2>
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : question?.testcases ? (
+              <pre className="text-sm whitespace-pre-wrap overflow-auto flex-1">
+                {question.testcases}
+              </pre>
+            ) : (
+              <p className="text-sm text-gray-500">No testcases available</p>
+            )}
+          </section>
+
+          {/* Editable Answer Section */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[400px] md:h-[40%] flex flex-col">
+            <h2 className="text-lg font-semibold mb-2">
+              📝 Your Answer (Markdown)
             </h2>
-            <div className="flex-1 overflow-auto">
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <span className="text-green-500">✓</span>
-                  <span>Print &quot;Hello JavaScript&quot;</span>
-                </li>
-                <li className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <span className="text-green-500">✓</span>
-                  <span>Print &quot;Hello Python&quot;</span>
-                </li>
-                <li className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <span className="text-green-500">✓</span>
-                  <span>Print &quot;Hello Java&quot;</span>
-                </li>
-                <li className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <span className="text-green-500">✓</span>
-                  <span>Print &quot;Hello C++&quot;</span>
-                </li>
-              </ul>
+            <textarea
+              value={answerInput}
+              onChange={(e) => setAnswerInput(e.target.value)}
+              placeholder="Write your solution in Markdown here..."
+              className="flex-1 resize-none p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-[#2a2a2f] text-sm text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <h3 className="mt-4 mb-2 font-semibold text-sm">Live Preview</h3>
+            <div className="flex-1 overflow-auto prose dark:prose-invert border border-gray-200 dark:border-gray-700 rounded p-3 bg-white dark:bg-gray-900 text-sm">
+              <ReactMarkdown>
+                {answerInput || "_Nothing to preview_"}
+              </ReactMarkdown>
             </div>
           </section>
         </div>
 
-        {/* Center Panel: Monaco Editor + Output */}
-        <div className="w-full lg:w-2/4 flex flex-col gap-4 overflow-hidden">
-          {/* Code Editor Section */}
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg dark:shadow-xl h-[400px] lg:h-[600px] overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-bold text-purple-600 dark:text-purple-400 flex items-center gap-2">
-                💻 Code Editor
-              </h2>
+        {/* -------- Center Panel: Editor + Output -------- */}
+        <div className="w-full md:w-2/4 flex flex-col gap-4 overflow-hidden">
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[600px] overflow-hidden flex flex-col gap-y-2">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-semibold">💻 Compiler</h2>
               <div className="flex items-center gap-3">
                 <select
-                  className="dark:bg-gray-700 bg-gray-100 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="dark:bg-gray-800 px-2 py-1 rounded"
                   value={language}
                   onChange={(e) =>
                     handleLanguageChange(e.target.value as Language)
                   }
                   disabled={isRunning}
                 >
-                  {lang.map((l) => (
+                  {languages.map((l) => (
                     <option key={l} value={l}>
                       {l}
                     </option>
@@ -218,7 +269,7 @@ int main() {
                 </select>
                 <button
                   onClick={handleResetCode}
-                  className="px-3 py-2 text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
+                  className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-md"
                   disabled={isRunning}
                 >
                   Reset
@@ -226,7 +277,7 @@ int main() {
               </div>
             </div>
 
-            <div className="flex-1 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+            <div className="flex-1">
               <MonacoEditor
                 height="100%"
                 language={languageMap[language].monacoLang}
@@ -236,76 +287,48 @@ int main() {
                 options={{
                   minimap: { enabled: false },
                   fontSize: 14,
-                  lineNumbers: "on",
-                  roundedSelection: false,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
                   wordWrap: "on",
-                  folding: true,
-                  lineDecorationsWidth: 10,
-                  lineNumbersMinChars: 3,
+                  automaticLayout: true,
                 }}
               />
             </div>
 
-            <div className="mt-3 flex gap-2">
+            <div className="mt-2">
               <button
-                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  isRunning
-                    ? "bg-gray-400 cursor-not-allowed text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
-                }`}
+                className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-500`}
                 onClick={handleRun}
                 disabled={isRunning}
               >
-                {isRunning ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Running...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">▶️ Run Code</span>
-                )}
+                {isRunning ? "⏳ Running..." : "Run Code"}
               </button>
             </div>
           </section>
 
-          {/* Output Section */}
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg dark:shadow-xl max-h-48 overflow-hidden flex flex-col">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-bold text-orange-600 dark:text-orange-400 flex items-center gap-2">
-                📄 Output
-              </h2>
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg max-h-40 overflow-auto flex flex-col gap-y-2">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">📄 Result</h2>
               {output && (
                 <button
                   onClick={handleClearOutput}
-                  className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg transition-colors"
+                  className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-md"
                 >
                   Clear
                 </button>
               )}
             </div>
-            <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-              {output ? (
-                <pre className="text-sm whitespace-pre-wrap font-mono">
-                  {output}
-                </pre>
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-sm italic">
-                  Output will appear here after running your code...
-                </p>
-              )}
-            </div>
+            <pre className="text-sm whitespace-pre-wrap">
+              {output || "Output will appear here after running your code..."}
+            </pre>
           </section>
         </div>
 
-        {/* Right Panel: SoundBoard + Lead */}
-        <div className="w-full lg:w-1/4 flex flex-col gap-4 overflow-auto">
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg dark:shadow-xl h-[200px] lg:h-[45%]">
+        {/* -------- Right Panel: SoundBoard + Leaderboard -------- */}
+        <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%]">
             <SoundBoard />
           </section>
 
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg dark:shadow-xl flex-1 overflow-auto">
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg flex-1 overflow-auto">
             <Lead />
           </section>
         </div>
