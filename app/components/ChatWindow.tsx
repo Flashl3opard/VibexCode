@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/src/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";
 import { useSocket } from "@/lib/useSocket";
 import axios from "axios";
@@ -55,6 +54,7 @@ export default function ChatWindow({
 
     return () => {
       socket.emit("leave", { conversationId });
+      socket.off("message");
     };
   }, [socket, conversationId]);
 
@@ -84,28 +84,32 @@ export default function ChatWindow({
   };
 
   return (
-    <Card className="flex flex-col w-full max-w-3xl mx-auto shadow-lg border rounded-2xl overflow-hidden">
-      <CardHeader className="text-xl font-semibold bg-muted dark:bg-muted/50 border-b px-6 py-4">
-        💬 Community Chat
-      </CardHeader>
+    <div className="flex flex-col h-full w-full bg-background text-foreground">
+      {/* Header */}
+      <div className="sticky top-0 z-10 border-b border-border backdrop-blur bg-background/70 px-6 py-3 shadow-sm">
+        <h1 className="text-xl font-semibold tracking-wide uppercase">
+          {conversationId} Chat
+        </h1>
+      </div>
 
-      <CardContent className="flex flex-col flex-grow gap-2 px-4 py-3 overflow-y-auto max-h-[75vh] scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50">
         {messages.map((m) => {
           const isSelf = m.sender === selfId;
           return (
             <div
               key={m._id}
               className={cn(
-                "flex flex-col mb-2 max-w-[75%] px-4 py-2 rounded-xl transition-all",
+                "max-w-[75%] px-4 py-3 rounded-xl shadow transition-all",
                 isSelf
-                  ? "ml-auto bg-gradient-to-br from-primary to-primary/80 text-primary-foreground"
-                  : "bg-muted dark:bg-muted/60 text-foreground"
+                  ? "ml-auto bg-primary text-primary-foreground"
+                  : "bg-muted dark:bg-muted/50 text-foreground"
               )}
             >
-              <div className="text-xs font-semibold opacity-70 mb-1">
+              <div className="text-xs font-semibold mb-1 opacity-70">
                 {m.senderName ?? m.sender}
               </div>
-              <div className="whitespace-pre-wrap text-sm">{m.body}</div>
+              <div className="text-sm whitespace-pre-wrap">{m.body}</div>
               <div className="text-[10px] text-muted-foreground mt-1 text-right">
                 {new Date(m.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -116,9 +120,10 @@ export default function ChatWindow({
           );
         })}
         <div ref={messagesEndRef} />
-      </CardContent>
+      </div>
 
-      <div className="flex items-center gap-2 border-t bg-background px-4 py-3">
+      {/* Input */}
+      <div className="border-t border-border px-6 py-4 flex items-center gap-4 bg-background">
         <Input
           placeholder="Type a message..."
           value={input}
@@ -133,6 +138,6 @@ export default function ChatWindow({
           Send
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }

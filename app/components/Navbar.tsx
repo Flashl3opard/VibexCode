@@ -160,6 +160,8 @@ const Navbar = () => {
                     ? "Dashboard"
                     : item === "Explore"
                     ? "Explore"
+                    : item === "Community" // Updated this condition
+                    ? "Forums"
                     : item.toLowerCase()
                 }`}
                 className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"
@@ -328,12 +330,14 @@ const Navbar = () => {
                 <button
                   onClick={() =>
                     handleMobileNavClick(
-                      item === "Probelms"
+                      item === "Problems"
                         ? "/problems"
                         : item === "Dashboard"
                         ? "/Dashboard"
                         : item === "Explore"
                         ? "/Explore"
+                        : item === "Community" // Updated here as well
+                        ? "/Forums"
                         : `/${item.toLowerCase()}`
                     )
                   }

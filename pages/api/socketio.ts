@@ -2,6 +2,7 @@ import { Server as IOServer } from "socket.io";
 import { Server as HTTPServer } from "http";
 import type { NextApiRequest } from "next";
 import type { NextApiResponseServerIO } from "../../types/next"; // your extended type
+import { v4 as uuidv4 } from "uuid";
 
 export const config = {
   api: {
@@ -19,7 +20,6 @@ export default function handler(
     console.log("🔌 Initializing Socket.io server...");
     const httpServer = res.socket.server as unknown as HTTPServer;
 
-
     io = new IOServer(httpServer, {
       path: "/api/socketio",
       addTrailingSlash: false,
@@ -33,24 +33,35 @@ export default function handler(
       console.log("🟢 Socket connected:", socket.id);
 
       socket.on("join", ({ conversationId }) => {
-        socket.join(conversationId);
-        console.log(`👥 ${socket.id} joined room ${conversationId}`);
+        if (typeof conversationId === "string") {
+          socket.join(conversationId);
+          console.log(`👥 ${socket.id} joined room ${conversationId}`);
+        }
       });
 
       socket.on("leave", ({ conversationId }) => {
-        socket.leave(conversationId);
-        console.log(`🚪 ${socket.id} left room ${conversationId}`);
+        if (typeof conversationId === "string") {
+          socket.leave(conversationId);
+          console.log(`🚪 ${socket.id} left room ${conversationId}`);
+        }
       });
 
-      // 🔁 Echo/broadcast to all in the room (including sender)
       socket.on("message", (message) => {
         const { conversationId } = message;
+        if (typeof conversationId !== "string") {
+          console.warn(`Received message without valid conversationId from ${socket.id}`);
+          return;
+        }
         console.log(`📣 Broadcasting message to room: ${conversationId}`, message);
         io?.to(conversationId).emit("message", {
           ...message,
-          _id: `${Date.now()}`, // add _id if needed
+          _id: uuidv4(),
           createdAt: new Date().toISOString(),
         });
+      });
+
+      socket.on("disconnect", () => {
+        console.log(`🔴 Socket disconnected: ${socket.id}`);
       });
     });
 
