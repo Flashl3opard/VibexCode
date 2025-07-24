@@ -127,6 +127,9 @@ export default function PlaygroundPage() {
   // Track diff data (if any)
   const [diffLines, setDiffLines] = useState<DiffLine[]>([]);
 
+  // Track submission loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (!questionId) {
       setError("❌ No question ID provided in URL.");
@@ -248,6 +251,36 @@ export default function PlaygroundPage() {
     setDiffLines([]);
   };
 
+  // Submit handler for the "Submit Answer" button
+  const handleSubmit = async () => {
+    if (!questionId) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/user/mark-solved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionId,
+          answerMarkdown: answerInput,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit answer");
+      }
+
+      alert("✅ Answer submitted successfully!");
+      // Additional UI updates or navigation can be added here if desired
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Unknown error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col dark:bg-[#020612] text-gray-900 dark:text-white">
       <Navbar />
@@ -288,7 +321,7 @@ export default function PlaygroundPage() {
             )}
           </section>
 
-          {/* Editable Answer Section - made taller */}
+          {/* Editable Answer Section - taller */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[300px] md:h-[600px] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">
               📝 Your Answer (Markdown)
@@ -381,9 +414,22 @@ export default function PlaygroundPage() {
               {output || "Output will appear here after running your code..."}
             </pre>
             {isCorrect === true && (
-              <p className="text-green-600 font-semibold">
-                🎉 Correct Output! Marked as Solved.
-              </p>
+              <>
+                <p className="text-green-600 font-semibold">
+                  🎉 Correct Output! Marked as Solved.
+                </p>
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className={`mt-2 px-4 py-2 rounded text-white ${
+                    isSubmitting
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Answer"}
+                </button>
+              </>
             )}
             {isCorrect === false && diffLines.length > 0 && (
               <>
@@ -405,20 +451,14 @@ export default function PlaygroundPage() {
                     ) : line.type === "remove" ? (
                       <div
                         key={idx}
-                        style={{
-                          background: "#ffeaea",
-                          color: "#d44",
-                        }}
+                        style={{ background: "#ffeaea", color: "#d44" }}
                       >
                         - {line.value}
                       </div>
                     ) : (
                       <div
                         key={idx}
-                        style={{
-                          background: "#eaffea",
-                          color: "#287c34",
-                        }}
+                        style={{ background: "#eaffea", color: "#287c34" }}
                       >
                         + {line.value}
                       </div>
@@ -440,6 +480,7 @@ export default function PlaygroundPage() {
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%]">
             <SoundBoard />
           </section>
+
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg flex-1 overflow-auto">
             <Lead />
           </section>
