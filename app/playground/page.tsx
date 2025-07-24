@@ -13,6 +13,27 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
+// --- DIFF UTILITY ---
+type DiffLine = { type: "same" | "add" | "remove"; value: string };
+function getUnifiedDiff(a: string, b: string): DiffLine[] {
+  const aLines = a.split("\n");
+  const bLines = b.split("\n");
+  const maxLen = Math.max(aLines.length, bLines.length);
+  const diff: DiffLine[] = [];
+  for (let i = 0; i < maxLen; i++) {
+    if (aLines[i] === bLines[i]) {
+      if (aLines[i] !== undefined)
+        diff.push({ type: "same", value: aLines[i] });
+    } else {
+      if (aLines[i] !== undefined)
+        diff.push({ type: "remove", value: aLines[i] });
+      if (bLines[i] !== undefined) diff.push({ type: "add", value: bLines[i] });
+    }
+  }
+  return diff;
+}
+
+// --- TYPES ---
 type Question = {
   _id: string;
   title: string;
@@ -57,8 +78,7 @@ print("Hello, World!")
     defaultCode: `// Java Hello World
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
-        
+        System.out.println("Hello, World!");        
         // Try different examples:
         // System.out.println("Hello Java");
         // String name = "Developer";
@@ -76,12 +96,10 @@ using namespace std;
 
 int main() {
     cout << "Hello, World!" << endl;
-    
     // Try different examples:
     // cout << "Hello C++" << endl;
     // string name = "Developer";
-    // cout << "Hello " << name << endl;
-    
+    // cout << "Hello " << name << endl;    
     return 0;
 }`,
   },
@@ -103,13 +121,18 @@ export default function PlaygroundPage() {
 
   const [answerInput, setAnswerInput] = useState<string>("");
 
+  // Track correctness state
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+
+  // Track diff data (if any)
+  const [diffLines, setDiffLines] = useState<DiffLine[]>([]);
+
   useEffect(() => {
     if (!questionId) {
       setError("❌ No question ID provided in URL.");
       setLoading(false);
       return;
     }
-
     const fetchQuestion = async () => {
       try {
         const res = await fetch(`/api/questions/${questionId}`);
@@ -131,11 +154,12 @@ export default function PlaygroundPage() {
     fetchQuestion();
   }, [questionId]);
 
-  // Reset code and output on language change
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
     setCode(languageMap[newLanguage].defaultCode);
     setOutput("");
+    setIsCorrect(null);
+    setDiffLines([]);
   };
 
   const handleRun = async () => {
@@ -143,6 +167,8 @@ export default function PlaygroundPage() {
 
     setIsRunning(true);
     setOutput("⏳ Running...");
+    setIsCorrect(null);
+    setDiffLines([]);
 
     try {
       const result = await runJudge0Advanced(
@@ -150,12 +176,13 @@ export default function PlaygroundPage() {
         languageMap[language].judge0Id
       );
 
+      let outputStr = "";
       if ("error" in result && result.error) {
-        setOutput(`❌ API Error:\n${result.error}`);
+        outputStr = `❌ API Error:\n${result.error}`;
       } else if (result.stderr) {
-        setOutput(`❌ Runtime Error:\n${result.stderr}`);
+        outputStr = `❌ Runtime Error:\n${result.stderr}`;
       } else if (result.compile_output) {
-        setOutput(`⚠️ Compile Error:\n${result.compile_output}`);
+        outputStr = `⚠️ Compile Error:\n${result.compile_output}`;
       } else if (result.stdout) {
         const executionInfo =
           result.time || result.memory
@@ -163,9 +190,37 @@ export default function PlaygroundPage() {
                 result.memory || "N/A"
               }KB`
             : "";
-        setOutput(`✅ Output:\n${result.stdout}${executionInfo}`);
+        outputStr = `✅ Output:\n${result.stdout}${executionInfo}`;
       } else {
-        setOutput("✅ Code executed successfully (no output)");
+        outputStr = "✅ Code executed successfully (no output)";
+      }
+      setOutput(outputStr);
+
+      // Compare outputs (normalize)
+      const userOutput = (result.stdout || "").trim().replace(/\r\n/g, "\n");
+      const expectedOutput = (question?.solutions || "")
+        .trim()
+        .replace(/\r\n/g, "\n");
+
+      if (userOutput && expectedOutput && userOutput === expectedOutput) {
+        setIsCorrect(true);
+        setDiffLines([]);
+        // Mark as solved for user - update in DB
+        await fetch("/api/user/mark-solved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            questionId,
+          }),
+        });
+      } else {
+        setIsCorrect(false);
+        // Only show if both exist
+        if (userOutput && expectedOutput) {
+          setDiffLines(getUnifiedDiff(userOutput, expectedOutput));
+        } else {
+          setDiffLines([]);
+        }
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -173,6 +228,8 @@ export default function PlaygroundPage() {
       } else {
         setOutput(`❌ Unknown Error:\n${JSON.stringify(error)}`);
       }
+      setIsCorrect(false);
+      setDiffLines([]);
     }
 
     setIsRunning(false);
@@ -181,10 +238,14 @@ export default function PlaygroundPage() {
   const handleResetCode = () => {
     setCode(languageMap[language].defaultCode);
     setOutput("");
+    setIsCorrect(null);
+    setDiffLines([]);
   };
 
   const handleClearOutput = () => {
     setOutput("");
+    setIsCorrect(null);
+    setDiffLines([]);
   };
 
   return (
@@ -227,8 +288,8 @@ export default function PlaygroundPage() {
             )}
           </section>
 
-          {/* Editable Answer Section */}
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[400px] md:h-[40%] flex flex-col">
+          {/* Editable Answer Section - made taller */}
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[300px] md:h-[600px] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">
               📝 Your Answer (Markdown)
             </h2>
@@ -304,7 +365,7 @@ export default function PlaygroundPage() {
             </div>
           </section>
 
-          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg max-h-40 overflow-auto flex flex-col gap-y-2">
+          <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg max-h-60 overflow-auto flex flex-col gap-y-2">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">📄 Result</h2>
               {output && (
@@ -319,6 +380,58 @@ export default function PlaygroundPage() {
             <pre className="text-sm whitespace-pre-wrap">
               {output || "Output will appear here after running your code..."}
             </pre>
+            {isCorrect === true && (
+              <p className="text-green-600 font-semibold">
+                🎉 Correct Output! Marked as Solved.
+              </p>
+            )}
+            {isCorrect === false && diffLines.length > 0 && (
+              <>
+                <p className="text-red-500 font-semibold mb-1">
+                  🚫 Output does not match expected answer. See Diff below:
+                </p>
+                <div
+                  style={{
+                    background:
+                      "repeating-linear-gradient(90deg,#222 0 5%,#202026 5% 10%)",
+                  }}
+                  className="rounded border border-gray-300 dark:border-gray-700 p-2 overflow-x-auto text-xs font-mono"
+                >
+                  {diffLines.map((line, idx) =>
+                    line.type === "same" ? (
+                      <div key={idx} style={{ color: "#999" }}>
+                        &nbsp; {line.value}
+                      </div>
+                    ) : line.type === "remove" ? (
+                      <div
+                        key={idx}
+                        style={{
+                          background: "#ffeaea",
+                          color: "#d44",
+                        }}
+                      >
+                        - {line.value}
+                      </div>
+                    ) : (
+                      <div
+                        key={idx}
+                        style={{
+                          background: "#eaffea",
+                          color: "#287c34",
+                        }}
+                      >
+                        + {line.value}
+                      </div>
+                    )
+                  )}
+                </div>
+              </>
+            )}
+            {isCorrect === false && !diffLines.length && (
+              <p className="text-red-500 font-semibold">
+                🚫 Output does not match expected answer.
+              </p>
+            )}
           </section>
         </div>
 
@@ -327,7 +440,6 @@ export default function PlaygroundPage() {
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%]">
             <SoundBoard />
           </section>
-
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg flex-1 overflow-auto">
             <Lead />
           </section>
