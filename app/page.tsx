@@ -49,7 +49,7 @@ export default function Home() {
               alt="Hanging Headphones"
               width={320}
               height={320}
-              className="rotate-180 object-contain translate-y-0 translate-x-40 animate-levitate"
+              className="rotate-180 object-contain translate-y-0 translate-x-50 animate-levitate"
               style={{
                 filter: "drop-shadow(-10px -10px 30px rgba(168, 85, 247, 0.6))",
               }}
