@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 
 import ProfileSection from "../components/ProfileSection";
@@ -8,10 +9,25 @@ import HistorySection from "../components/HistorySection";
 import Navbar from "../components/Navbar";
 import { historyData } from "@/lib/data";
 
+type SolvedQuestionCategory = {
+  name: string;
+  questionCount: number;
+  progress: number;
+  questions: string[];
+};
+
 export default function Page() {
   const [questionsPerView, setQuestionsPerView] = useState(3);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
+  const [solvedQuestionsData, setSolvedQuestionsData] = useState<
+    SolvedQuestionCategory[]
+  >([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Responsive questions per view depending on viewport width
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -21,51 +37,47 @@ export default function Page() {
     };
     handleResize();
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const questionsData = [
-    {
-      name: "Arrays",
-      questionCount: 3,
-      progress: 60,
-      questions: [
-        "Find the maximum subarray sum",
-        "Rotate the array by k positions",
-        "Check if two arrays are equal after sorting",
-      ],
-    },
-    {
-      name: "Recursion",
-      questionCount: 2,
-      progress: 30,
-      questions: [
-        "Find factorial using recursion",
-        "Print all subsets of a string",
-      ],
-    },
-    {
-      name: "Graphs",
-      questionCount: 2,
-      progress: 90,
-      questions: [
-        "Detect cycle in a directed graph",
-        "Find number of connected components",
-      ],
-    },
-    {
-      name: "Stacks",
-      questionCount: 1,
-      progress: 100,
-      questions: ["Implement min stack with O(1) getMin"],
-    },
-    {
-      name: "Trees",
-      questionCount: 2,
-      progress: 50,
-      questions: ["Inorder traversal", "Check if a tree is balanced"],
-    },
-  ];
+  // Fetch user's solved questions from backend API
+  useEffect(() => {
+    const fetchSolvedQuestions = async () => {
+      try {
+        setLoading(true);
+
+        // Use your dedicated GET endpoint for fetching solved questions
+        const res = await fetch("/api/user/solved-questions", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // Optional, if your backend requires credentials/cookies
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch solved questions (${res.status})`);
+        }
+
+        const data = await res.json();
+
+        // Expect data.success and data.solvedQuestions as an array
+        if (data.success && Array.isArray(data.solvedQuestions)) {
+          setSolvedQuestionsData(data.solvedQuestions);
+          setError("");
+        } else {
+          throw new Error(data.error || "Failed to fetch solved questions");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSolvedQuestions();
+  }, []);
 
   return (
     <div className="min-h-screen dark:bg-[#020612] text-gray-800 dark:text-white transition-all">
@@ -76,12 +88,24 @@ export default function Page() {
           <FriendsSection />
         </aside>
         <main className="lg:col-span-9 space-y-6 flex flex-col">
-          <QuestionsSection
-            questionsPerView={questionsPerView}
-            currentQuestionIndex={currentQuestionIndex}
-            setCurrentQuestionIndex={setCurrentQuestionIndex}
-            questionsData={questionsData}
-          />
+          {loading ? (
+            <p className="text-center text-gray-500">
+              Loading solved questions...
+            </p>
+          ) : error ? (
+            <p className="text-center text-red-500">Error: {error}</p>
+          ) : solvedQuestionsData.length === 0 ? (
+            <p className="text-center text-gray-500">
+              No solved questions yet.
+            </p>
+          ) : (
+            <QuestionsSection
+              questionsPerView={questionsPerView}
+              currentQuestionIndex={currentQuestionIndex}
+              setCurrentQuestionIndex={setCurrentQuestionIndex}
+              questionsData={solvedQuestionsData}
+            />
+          )}
           <HistorySection historyData={historyData} />
         </main>
       </div>

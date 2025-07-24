@@ -24,7 +24,7 @@ export interface AuthServiceContract {
     userId: string,
     secret: string,
     newPassword: string
-  ): Promise<Models.Token>; // ✅ Correct return type
+  ): Promise<Models.Token>;
 }
 
 /**
@@ -67,13 +67,16 @@ class AppwriteAuthService implements AuthServiceContract {
 
   async logout(): Promise<{ success: boolean; error?: string }> {
     try {
+      // Attempt to delete current session
       await this.account.deleteSession("current");
       return { success: true };
     } catch (error) {
+      // If unauthorized, treat as success (session already deleted)
       if (error instanceof AppwriteException && error.code === 401) {
         return { success: true };
       }
 
+      // Fallback: delete all sessions
       try {
         await this.account.deleteSessions();
         return { success: true };
@@ -84,7 +87,6 @@ class AppwriteAuthService implements AuthServiceContract {
         ) {
           return { success: true };
         }
-
         return {
           success: false,
           error:
@@ -154,9 +156,31 @@ class AppwriteAuthService implements AuthServiceContract {
       const existingUser = await this.checkUser();
       if (existingUser) return existingUser;
 
-      const password = crypto.randomUUID();
+      // Use a crypto-polyfill or fallback if crypto.randomUUID() is not available
+      const generateUUID = () => {
+        if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+          return crypto.randomUUID();
+        } else {
+          // fallback UUID v4 generator
+          return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+            /[xy]/g,
+            (c) => {
+              const r = (Math.random() * 16) | 0;
+              const v = c === "x" ? r : (r & 0x3) | 0x8;
+              return v.toString(16);
+            }
+          );
+        }
+      };
+
+      const password = generateUUID();
+
+      // IMPORTANT: Make sure `uid` value complies with Appwrite user ID requirements
+      // It should be a string with allowed characters and length <= 36.
 
       const newUser = await this.account.create(uid, email, password, name);
+
+      // Auto-login by creating session for the new user
       await this.account.createEmailPasswordSession(email, password);
 
       return newUser;
@@ -169,4 +193,5 @@ class AppwriteAuthService implements AuthServiceContract {
 
 /* Export singleton */
 const authservice: AuthServiceContract = new AppwriteAuthService();
+
 export default authservice;
