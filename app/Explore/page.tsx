@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -8,14 +8,51 @@ import Image from "next/image";
 import { BsFillBarChartFill } from "react-icons/bs";
 import { FaClipboardList } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
+
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Lead from "../components/Lead";
+import TagCard from "../components/TagCard";
 
 export default function LandingPage() {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
+
+    // Fetch questions
+    fetch("/api/questions")
+      .then((res) => res.json())
+      .then((data) => {
+        setQuestions(data.questions || []);
+        setLoading(false);
+      });
   }, []);
+
+  const grouped: { [key: string]: any[] } = {};
+  questions.forEach((q: any) => {
+    if (!q.tags || q.tags.length === 0) {
+      grouped["Untagged"] = [...(grouped["Untagged"] || []), q];
+    } else {
+      q.tags.forEach((tag: string) => {
+        grouped[tag] = [...(grouped[tag] || []), q];
+      });
+    }
+  });
+
+  // Scroll functions
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -146,9 +183,44 @@ export default function LandingPage() {
               </section>
             </div>
 
-            {/* Leaderboard */}
-            <Lead />
+            {/* Right Column: Leaderboard */}
+            <div className="mt-16">
+              <Lead />
+            </div>
           </div>
+
+          {/* Questions by Tag Section - Moved to Bottom */}
+          {/* Questions by Tag Carousel */}
+          <section className="mt-20" data-aos="fade-up">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold">Topics</h3>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <button
+                  onClick={scrollLeft}
+                  className="p-2 rounded-full bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 transition"
+                >
+                  &lt;
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="p-2 rounded-full bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 transition"
+                >
+                  &gt;
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div
+                ref={scrollRef}
+                className="flex space-x-8 overflow-hidden scroll-smooth"
+              >
+                {Object.entries(grouped).map(([tag, qs]) => (
+                  <TagCard key={tag} tag={tag} questions={qs} />
+                ))}
+              </div>
+            </div>
+          </section>
         </main>
         <Footer />
       </div>
