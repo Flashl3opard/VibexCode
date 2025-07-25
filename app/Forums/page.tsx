@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { FaCode, FaGamepad, FaPython, FaBolt } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
-import { MdOutlineForum } from "react-icons/md";
 
 import Navbar from "../components/Navbar";
 import ChatWindow from "../components/ChatWindow";
 import authservice from "../appwrite/auth";
+import ForumSelector from "../components/ForumSelector";
 
 interface User {
   $id: string;
@@ -22,8 +22,7 @@ const forumIcons: Record<string, React.ReactNode> = {
   games: <FaGamepad className="text-lg mr-2" />,
 };
 
-// Forum options
-const forums = ["dev", "cp", "python", "games"];
+const forums = ["dev", "cp", "python", "games", "general"];
 
 export default function ForumsPage() {
   const [selected, setSelected] = useState("dev");
@@ -70,19 +69,16 @@ export default function ForumsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col ">
-      {/* Navbar */}
+    <div className="min-h-screen flex flex-col  text-gray-900 dark:text-white transition-colors">
       <Navbar />
 
-      {/* Main layout with sidebar + chat */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-64 bg-[#111827] text-white flex flex-col border-r border-gray-800">
-          <div className="p-6 border-b border-gray-700 flex items-center space-x-2">
-            <MdOutlineForum className="text-2xl text-primary" />
-            <h2 className="text-xl font-bold">Forums</h2>
-          </div>
-
+        <aside
+          className="w-64 flex flex-col border-r 
+           border-gray-200 text-gray-900
+          dark:bg-[#020612] dark:text-white dark:border-gray-800 transition-colors"
+        >
           <ul className="flex-1 p-4 space-y-3 overflow-y-auto">
             {forums.map((forum) => {
               const isSelected = forum === selected;
@@ -90,15 +86,15 @@ export default function ForumsPage() {
                 <li key={forum}>
                   <button
                     onClick={() => setSelected(forum)}
-                    className={`w-full flex items-center px-4 py-2 rounded-lg transition duration-200
+                    className={`w-full flex items-center px-4 py-2 rounded-lg font-medium transition duration-200
                       ${
                         isSelected
-                          ? "bg-primary text-white dark:text-white"
-                          : "text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white"
+                          ? "bg-purple-900 text-white shadow dark:bg-[#d946ef]" // Accent - adjust as desired
+                          : "bg-gray-200 text-gray-900 hover:bg-[#e9d5ff] hover:text-[#c026d3] dark:bg-[#23263b] dark:text-gray-200 dark:hover:bg-[#c026d3] dark:hover:text-white"
                       }`}
                   >
                     {forumIcons[forum] ?? <FaBolt className="text-lg mr-2" />}
-                    <span className="capitalize">{forum}</span>
+                    <span className="capitalize font-semibold">{forum}</span>
                   </button>
                 </li>
               );
@@ -106,9 +102,13 @@ export default function ForumsPage() {
           </ul>
         </aside>
 
-        {/* Main chat area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex h-full w-full bg-[#1a1c23] text-white p-4">
+        {/* Main content */}
+        <main className="flex-1 flex flex-col overflow-hidden bg-[#f9faff] dark:bg-[#101226] text-gray-900 dark:text-white transition-colors">
+          {/* Optional: Use selector at top on small screens */}
+          <div className="block md:hidden">
+            <ForumSelector selected={selected} onSelect={setSelected} />
+          </div>
+          <div className="flex h-full w-full">
             <ChatWindow
               conversationId={selected}
               selfId={user.$id}

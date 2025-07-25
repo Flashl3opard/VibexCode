@@ -22,6 +22,15 @@ interface Message {
   createdAt: string;
 }
 
+const forumWallpapers: Record<string, string> = {
+  dev: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80",
+  cp: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=900&q=80",
+  python:
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+  games:
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=80",
+};
+
 export default function ChatWindow({
   conversationId,
   selfId,
@@ -31,6 +40,13 @@ export default function ChatWindow({
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -84,16 +100,28 @@ export default function ChatWindow({
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-background text-foreground">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-[#101226] text-gray-900 dark:text-white transition-colors">
       {/* Header */}
-      <div className="sticky top-0 z-10 border-b border-border backdrop-blur bg-background/70 px-6 py-3 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 backdrop-blur bg-white/80 dark:bg-[#181b2e]/80 px-6 py-3 shadow-sm transition-colors">
         <h1 className="text-xl font-semibold tracking-wide uppercase">
           {conversationId} Chat
         </h1>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50">
+      {/* Messages container with wallpaper in light mode */}
+      <div
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50"
+        style={
+          !isDark && conversationId && forumWallpapers[conversationId]
+            ? {
+                backgroundImage: `url('${forumWallpapers[conversationId]}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }
+            : {}
+        }
+      >
         {messages.map((m) => {
           const isSelf = m.sender === selfId;
           return (
@@ -102,11 +130,11 @@ export default function ChatWindow({
               className={cn(
                 "max-w-[75%] px-4 py-3 rounded-xl shadow transition-all",
                 isSelf
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "bg-muted dark:bg-muted/50 text-foreground"
+                  ? "ml-auto bg-purple-800 text-white" // solid purple bg + text
+                  : "bg-gray-100 text-gray-900 dark:bg-[#23263b] dark:text-white" // solid light/dark bg + text
               )}
             >
-              <div className="text-xs font-semibold mb-1 opacity-70">
+              <div className="text-xs font-semibold mb-1">
                 {m.senderName ?? m.sender}
               </div>
               <div className="text-sm whitespace-pre-wrap">{m.body}</div>
@@ -123,17 +151,17 @@ export default function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="border-t border-border px-6 py-4 flex items-center gap-4 bg-background">
+      <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4 bg-white dark:bg-[#181b2e] transition-colors">
         <Input
           placeholder="Type a message..."
           value={input}
-          className="flex-1 rounded-full px-4 py-2 text-sm"
+          className="flex-1 rounded-full px-4 py-2 text-sm bg-gray-100 dark:bg-[#23263b] border-none focus:ring-2 focus:ring-[#d946ef] dark:focus:ring-[#d946ef] transition"
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
         <Button
           onClick={handleSend}
-          className="rounded-full px-5 py-2 text-sm font-medium"
+          className="rounded-full px-5 py-2 text-sm font-medium bg-[#d946ef] hover:bg-[#c026d3] text-white shadow transition"
         >
           Send
         </Button>
