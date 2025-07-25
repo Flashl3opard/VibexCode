@@ -8,7 +8,7 @@ import { runJudge0Advanced } from "@/lib/judge0";
 import Navbar from "../components/Navbar";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
-
+import { account } from "@/lib/appwrite";
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
@@ -208,14 +208,24 @@ export default function PlaygroundPage() {
       if (userOutput && expectedOutput && userOutput === expectedOutput) {
         setIsCorrect(true);
         setDiffLines([]);
-        // Mark as solved for user - update in DB
+
+        const jwt = await account.createJWT();
+
         await fetch("/api/user/mark-solved", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            questionId,
-          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwt.jwt}`, // ✅ JWT added
+          },
+          body: JSON.stringify({ questionId }),
         });
+
+        // Add this single line to update the history component:
+        // @ts-ignore
+        if (window.addSolvedQuestion && question) {
+          // @ts-ignore
+          window.addSolvedQuestion(question.title, questionId);
+        }
       } else {
         setIsCorrect(false);
         // Only show if both exist

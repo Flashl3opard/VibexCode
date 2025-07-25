@@ -1,71 +1,250 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { Client } from "appwrite"; // Only Client is needed
-import connectDB from "@/lib/mongodb";
-import UserModel from "@/models/Users";
-
-type Data = { success: true } | { error: string };
-
-const client = new Client()
-  .setEndpoint(process.env.NEXT_PUBLIC_API_ENDPOINT!)
-  .setProject(process.env.NEXT_PUBLIC_PROJECT_ID!);
+// pages/api/user/mark-solved.ts (or app/api/user/mark-solved/route.ts for App Router)
+import { NextApiRequest, NextApiResponse } from "next";
+import { account } from "@/lib/appwrite";
+import User from "@/models/Users";
+import Question from "@/models/Questions";
+import dbConnect from "@/lib/mongodb";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse
 ) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ success: false, error: "Method not allowed" });
   }
 
   try {
-    // Expect token from Authorization header: 'Bearer <token>'
+    await dbConnect();
+
+    // Get JWT token from Authorization header
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: "No auth token" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ success: false, error: "No valid token provided" });
+    }
 
-    const token = authHeader.replace("Bearer ", "").trim();
-    if (!token) return res.status(401).json({ error: "Invalid auth token" });
+    const token = authHeader.split(" ")[1];
 
-    // Verify JWT using Appwrite REST API
-    const verifyResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_ENDPOINT}/account/sessions/jwt/verify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Appwrite-Project": process.env.NEXT_PUBLIC_PROJECT_ID!,
-          "X-Appwrite-Key": process.env.APPWRITE_API_KEY!, // Server key only
-        },
-        body: JSON.stringify({ jwt: token }),
+    // Extract user ID from JWT token
+    let appwriteUserId: string;
+    try {
+      const jwt = require("jsonwebtoken");
+      const decoded = jwt.decode(token) as any;
+      appwriteUserId = decoded?.userId || decoded?.sub;
+
+      if (!appwriteUserId) {
+        throw new Error("Invalid token structure");
       }
+    } catch (error) {
+      return res.status(401).json({ success: false, error: "Invalid token" });
+    }
+
+    // Extract request body
+    const {
+      questionId,
+      answerMarkdown,
+      language = "Javascript",
+      executionStats,
+    } = req.body;
+
+    if (!questionId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Question ID is required" });
+    }
+
+    // Find user and question
+    const [user, question] = await Promise.all([
+      User.findOne({ appwriteId: appwriteUserId }),
+      Question.findById(questionId),
+    ]);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    if (!question) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Question not found" });
+    }
+
+    // Add solved question using the model method
+    const wasAdded = user.addSolvedQuestion(
+      questionId,
+      answerMarkdown || "",
+      language,
+      executionStats
     );
 
-    if (!verifyResponse.ok) {
-      return res.status(401).json({ error: "Invalid token" });
+    // Update difficulty-specific stats if question was newly solved
+    if (wasAdded && question.difficulty) {
+      const difficulty = question.difficulty.toLowerCase();
+      if (difficulty === "easy") user.stats.easyCount += 1;
+      else if (difficulty === "medium") user.stats.mediumCount += 1;
+      else if (difficulty === "hard") user.stats.hardCount += 1;
     }
 
-    const verifyData = await verifyResponse.json();
+    // Update favorite language based on usage
+    const languageCount = user.solvedQuestions.reduce((acc: any, sq: any) => {
+      acc[sq.language] = (acc[sq.language] || 0) + 1;
+      return acc;
+    }, {});
 
-    // Now look up the user in MongoDB using the Appwrite user ID
-    await connectDB();
-    const user = await UserModel.findOne({ appwriteId: verifyData.userId });
+    const mostUsedLanguage = Object.entries(languageCount).reduce(
+      (a: any, b: any) => (languageCount[a[0]] > languageCount[b[0]] ? a : b)
+    )[0];
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    user.stats.favoriteLanguage = mostUsedLanguage;
 
-    const { questionId } = req.body;
-    if (!questionId || typeof questionId !== "string") {
-      return res.status(400).json({ error: "Invalid questionId" });
-    }
+    // Save user
+    await user.save();
 
-    if (!user.solvedQuestions) user.solvedQuestions = [];
-
-    if (!user.solvedQuestions.includes(questionId)) {
-      user.solvedQuestions.push(questionId);
-      await user.save();
-    }
-
-    res.status(200).json({ success: true });
+    // Return success response with updated stats
+    return res.status(200).json({
+      success: true,
+      message: wasAdded
+        ? "Question marked as solved!"
+        : "Question was already solved",
+      isNewSolve: wasAdded,
+      stats: {
+        totalSolved: user.stats.totalSolved,
+        currentStreak: user.stats.currentStreak,
+        longestStreak: user.stats.longestStreak,
+        easyCount: user.stats.easyCount,
+        mediumCount: user.stats.mediumCount,
+        hardCount: user.stats.hardCount,
+        favoriteLanguage: user.stats.favoriteLanguage,
+      },
+    });
   } catch (error) {
-    console.error("Error marking solved question with Appwrite auth:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Mark solved API Error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 }
+
+// Alternative App Router version (app/api/user/mark-solved/route.ts)
+/*
+import { NextRequest, NextResponse } from "next/server";
+import { account } from "@/lib/appwrite";
+import User from "@/models/User";
+import Question from "@/models/Question";
+import dbConnect from "@/lib/mongodb";
+
+export async function POST(request: NextRequest) {
+  try {
+    await dbConnect();
+
+    // Get JWT token from Authorization header
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { success: false, error: "No valid token provided" },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    // Extract user ID from JWT token
+    let appwriteUserId: string;
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.decode(token) as any;
+      appwriteUserId = decoded?.userId || decoded?.sub;
+      
+      if (!appwriteUserId) {
+        throw new Error("Invalid token structure");
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // Extract request body
+    const { 
+      questionId, 
+      answerMarkdown, 
+      language = "Javascript",
+      executionStats 
+    } = await request.json();
+
+    if (!questionId) {
+      return NextResponse.json(
+        { success: false, error: "Question ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Find user and question
+    const [user, question] = await Promise.all([
+      User.findOne({ appwriteId: appwriteUserId }),
+      Question.findById(questionId)
+    ]);
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!question) {
+      return NextResponse.json(
+        { success: false, error: "Question not found" },
+        { status: 404 }
+      );
+    }
+
+    // Add solved question using the model method
+    const wasAdded = user.addSolvedQuestion(
+      questionId,
+      answerMarkdown || "",
+      language,
+      executionStats
+    );
+
+    // Update difficulty-specific stats if question was newly solved
+    if (wasAdded && question.difficulty) {
+      const difficulty = question.difficulty.toLowerCase();
+      if (difficulty === "easy") user.stats.easyCount += 1;
+      else if (difficulty === "medium") user.stats.mediumCount += 1;
+      else if (difficulty === "hard") user.stats.hardCount += 1;
+    }
+
+    // Save user
+    await user.save();
+
+    // Return success response with updated stats
+    return NextResponse.json({
+      success: true,
+      message: wasAdded ? "Question marked as solved!" : "Question was already solved",
+      isNewSolve: wasAdded,
+      stats: {
+        totalSolved: user.stats.totalSolved,
+        currentStreak: user.stats.currentStreak,
+        longestStreak: user.stats.longestStreak,
+        easyCount: user.stats.easyCount,
+        mediumCount: user.stats.mediumCount,
+        hardCount: user.stats.hardCount,
+        favoriteLanguage: user.stats.favoriteLanguage
+      }
+    });
+
+  } catch (error) {
+    console.error("Mark solved API Error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+*/
