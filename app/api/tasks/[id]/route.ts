@@ -6,11 +6,11 @@ import { Types } from "mongoose";
 // ✅ PATCH = toggle completed
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // params is a Promise here
 ) {
   await connectDB();
 
-  const { id } = params;
+  const { id } = await params; // await params to get id
   const { completed } = await req.json();
 
   if (!Types.ObjectId.isValid(id)) {
@@ -32,11 +32,11 @@ export async function PATCH(
 // ✅ DELETE = remove task
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // params is a Promise here
 ) {
   await connectDB();
 
-  const { id } = params;
+  const { id } = await params; // await params to get id
 
   if (!Types.ObjectId.isValid(id)) {
     return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
