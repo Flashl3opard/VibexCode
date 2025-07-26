@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb"; //
+import connectDB from "@/lib/mongodb";
 import Task from "@/models/Tasks";
 import { Types } from "mongoose";
 
@@ -21,6 +21,7 @@ export async function PATCH(
     await Task.findByIdAndUpdate(id, { completed });
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Error updating task:", error);
     return NextResponse.json(
       { message: "Failed to update task" },
       { status: 500 }
@@ -28,7 +29,7 @@ export async function PATCH(
   }
 }
 
-// ❌ DELETE = remove task
+// ✅ DELETE = remove task
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -45,6 +46,7 @@ export async function DELETE(
     await Task.findByIdAndDelete(id);
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Error deleting task:", error);
     return NextResponse.json(
       { message: "Failed to delete task" },
       { status: 500 }

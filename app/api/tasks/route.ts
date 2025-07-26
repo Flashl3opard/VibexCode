@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb"; // ✅ your MongoDB connection
-import Task from "@/models/Tasks"; // ✅ your Task model
+import connectDB from "@/lib/mongodb"; //
+import Task from "@/models/Tasks"; //
 
 // GET: Fetch all tasks
 export async function GET() {
@@ -10,6 +10,7 @@ export async function GET() {
     const tasks = await Task.find().sort({ createdAt: -1 });
     return NextResponse.json(tasks);
   } catch (error) {
+    console.error("Error fetching tasks:", error);
     return NextResponse.json(
       { message: "Failed to fetch tasks" },
       { status: 500 }
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     const newTask = await Task.create(body);
     return NextResponse.json(newTask);
   } catch (error) {
+    console.error("Error adding new task:", error);
     return NextResponse.json(
       { message: "Failed to add task" },
       { status: 500 }
