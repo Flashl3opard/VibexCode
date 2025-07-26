@@ -1,3 +1,4 @@
+// File: /app/playground/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,7 +10,7 @@ import Navbar from "../components/Navbar";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import type { RootState } from "../store/store";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -253,10 +254,10 @@ export default function PlaygroundPage() {
   return (
     <div className="min-h-screen flex flex-col dark:bg-[#020612] text-gray-900 dark:text-white">
       <Navbar />
-
       <div className="flex flex-1 p-3 gap-4 overflow-hidden flex-col md:flex-row">
-        {/* Left panel */}
+        {/* Left Panel */}
         <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
+          {/* Question Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
             <h2 className="text-xl font-semibold mb-2">🧠 Question</h2>
             {loading ? (
@@ -275,6 +276,7 @@ export default function PlaygroundPage() {
             )}
           </section>
 
+          {/* Testcases Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">🧪 Testcases</h2>
             {loading ? (
@@ -288,6 +290,7 @@ export default function PlaygroundPage() {
             )}
           </section>
 
+          {/* Answer Markdown Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[300px] md:h-[600px] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">
               📝 Your Answer (Markdown)
@@ -307,8 +310,9 @@ export default function PlaygroundPage() {
           </section>
         </div>
 
-        {/* Center panel */}
+        {/* Center Panel */}
         <div className="w-full md:w-2/4 flex flex-col gap-4 overflow-hidden">
+          {/* Compiler Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[600px] overflow-hidden flex flex-col gap-y-2">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-semibold">💻 Compiler</h2>
@@ -364,6 +368,7 @@ export default function PlaygroundPage() {
             </div>
           </section>
 
+          {/* Result Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg max-h-60 overflow-auto flex flex-col gap-y-2">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">📄 Result</h2>
@@ -444,7 +449,7 @@ export default function PlaygroundPage() {
           </section>
         </div>
 
-        {/* Right panel */}
+        {/* Right Panel */}
         <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%]">
             <SoundBoard />

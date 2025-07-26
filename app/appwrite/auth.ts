@@ -4,6 +4,12 @@ import { Client, Account, ID, Models, AppwriteException } from "appwrite";
  * Contract every auth service must fulfill.
  * Uses the exact return types the v12 SDK gives us.
  */
+
+export const accountInstance = new Account(
+  new Client()
+    .setEndpoint(process.env.NEXT_PUBLIC_API_ENDPOINT as string)
+    .setProject(process.env.NEXT_PUBLIC_PROJECT_ID as string)
+);
 export interface AuthServiceContract {
   signUp(
     email: string,
