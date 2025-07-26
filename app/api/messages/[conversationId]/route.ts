@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Message from "@/models/Messages";
 
-// GET: Fetch all messages for a conversation
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     await connectDB();
+    const { conversationId } = await context.params; // await here
 
-    const { conversationId } = await context.params;
     if (!conversationId) {
       return NextResponse.json({ error: "Missing conversationId" }, { status: 400 });
     }
@@ -24,29 +23,34 @@ export async function GET(
   }
 }
 
-// POST: Save a new message
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ conversationId: string }> }
+  context: { params: Promise<{ conversationId: string }> } // params is a Promise here too
 ) {
   try {
     await connectDB();
+    const { conversationId } = await context.params; // <-- await added
 
-    const { conversationId } = await context.params;
+    if (!conversationId) {
+      return NextResponse.json({ error: "Missing conversationId" }, { status: 400 });
+    }
+
     const body = await req.json();
-
-    const { senderId, senderName, body: messageBody } = body;
+    const { senderId, senderName, body: messageBody, image } = body;
 
     if (!senderId || !messageBody) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const newMessage = await Message.create({
+    const newMessage = new Message({
       conversation: conversationId,
       sender: senderId,
       senderName,
       body: messageBody,
+      image,
     });
+
+    await newMessage.save();
 
     return NextResponse.json(newMessage, { status: 201 });
   } catch (err) {
@@ -54,3 +58,5 @@ export async function POST(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+
