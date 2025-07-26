@@ -20,28 +20,24 @@ interface Message {
   body: string;
   image?: string;
   createdAt: string;
+  isEditing?: boolean;
 }
 
 const forumWallpapers: Record<string, string> = {
   dev: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80",
   cp: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=900&q=80",
-  python:
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
-  games:
-    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=80",
+  python: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+  games: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=80",
 };
 
-export default function ChatWindow({
-  conversationId,
-  selfId,
-  selfName,
-}: Props) {
+export default function ChatWindow({ conversationId, selfId, selfName }: Props) {
   const socket = useSocket();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [editedBodies, setEditedBodies] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
   const [isDark, setIsDark] = useState(false);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsDark(document.documentElement.classList.contains("dark"));
@@ -62,6 +58,7 @@ export default function ChatWindow({
 
   useEffect(() => {
     if (!socket) return;
+
     socket.emit("join", { conversationId });
 
     socket.on("message", (msg: Message) => {
@@ -99,6 +96,60 @@ export default function ChatWindow({
     setInput("");
   };
 
+  const handleEditClick = (id: string, body: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg._id === id ? { ...msg, isEditing: true } : msg))
+    );
+    setEditedBodies((prev) => ({ ...prev, [id]: body }));
+  };
+
+  const handleEditSubmit = async (id: string) => {
+    const newBody = editedBodies[id]?.trim();
+    if (!newBody) return;
+
+    try {
+      axios.put(`/api/message/${id}`, {
+        senderId: selfId,
+        body: newBody,
+      });
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === id ? { ...msg, body: newBody, isEditing: false } : msg
+        )
+      );
+
+      setEditedBodies((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    } catch (err) {
+      console.error("❌ Failed to edit message:", err);
+    }
+  };
+
+  const handleEditCancel = (id: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg._id === id ? { ...msg, isEditing: false } : msg))
+    );
+    setEditedBodies((prev) => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`/api/message/${id}?senderId=${selfId}`);
+
+      setMessages((prev) => prev.filter((msg) => msg._id !== id));
+    } catch (err) {
+      console.error("❌ Failed to delete message:", err);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-[#101226] text-gray-900 dark:text-white transition-colors">
       {/* Header */}
@@ -108,7 +159,7 @@ export default function ChatWindow({
         </h1>
       </div>
 
-      {/* Messages container with wallpaper in light mode */}
+      {/* Messages */}
       <div
         className="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50"
         style={
@@ -124,26 +175,76 @@ export default function ChatWindow({
       >
         {messages.map((m) => {
           const isSelf = m.sender === selfId;
+          const editingValue = editedBodies[m._id] ?? "";
+
           return (
             <div
               key={m._id}
               className={cn(
                 "max-w-[75%] px-4 py-3 rounded-xl shadow transition-all",
                 isSelf
-                  ? "ml-auto bg-purple-800 text-white" // solid purple bg + text
-                  : "bg-gray-100 text-gray-900 dark:bg-[#23263b] dark:text-white" // solid light/dark bg + text
+                  ? "ml-auto bg-purple-800 text-white"
+                  : "bg-gray-100 text-gray-900 dark:bg-[#23263b] dark:text-white"
               )}
             >
               <div className="text-xs font-semibold mb-1">
                 {m.senderName ?? m.sender}
               </div>
-              <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+
+              {m.isEditing ? (
+                <div className="flex flex-col gap-2">
+                  <Input
+                    value={editingValue}
+                    onChange={(e) =>
+                      setEditedBodies((prev) => ({
+                        ...prev,
+                        [m._id]: e.target.value,
+                      }))
+                    }
+                    className="text-sm text-black dark:text-white"
+                  />
+                  <div className="flex gap-2 text-xs">
+                    <Button
+                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1"
+                      onClick={() => handleEditSubmit(m._id)}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1"
+                      onClick={() => handleEditCancel(m._id)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+              )}
+
               <div className="text-[10px] text-muted-foreground mt-1 text-right">
                 {new Date(m.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </div>
+
+              {isSelf && !m.isEditing && (
+                <div className="flex gap-2 mt-1 text-xs justify-end">
+                  <button
+                    onClick={() => handleEditClick(m._id, m.body)}
+                    className="text-blue-300 hover:text-blue-500"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(m._id)}
+                    className="text-red-300 hover:text-red-500"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
