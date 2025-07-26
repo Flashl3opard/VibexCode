@@ -8,12 +8,13 @@ import { runJudge0Advanced } from "@/lib/judge0";
 import Navbar from "../components/Navbar";
 import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
-// --- DIFF UTILITY ---
 type DiffLine = { type: "same" | "add" | "remove"; value: string };
 function getUnifiedDiff(a: string, b: string): DiffLine[] {
   const aLines = a.split("\n");
@@ -33,14 +34,12 @@ function getUnifiedDiff(a: string, b: string): DiffLine[] {
   return diff;
 }
 
-// --- TYPES ---
 type Question = {
   _id: string;
   title: string;
   description: string;
   testcases?: string;
   solutions?: string;
-  difficulty?: string;
 };
 
 const languages = ["Javascript", "Python", "Java", "C++"] as const;
@@ -54,36 +53,22 @@ const languageMap: Record<
     monacoLang: "javascript",
     judge0Id: 63,
     defaultCode: `// JavaScript Hello World
-console.log("Hello, World!");
-
-// Try different examples:
-// console.log("Hello JavaScript");
-// let name = "Developer";
-// console.log("Hello " + name);`,
+console.log("Hello, World!");`,
   },
   Python: {
     monacoLang: "python",
     judge0Id: 71,
     defaultCode: `# Python Hello World
-print("Hello, World!")
-
-# Try different examples:
-# print("Hello Python")
-# name = "Developer"
-# print(f"Hello {name}")`,
+print("Hello, World!")`,
   },
   Java: {
     monacoLang: "java",
     judge0Id: 62,
     defaultCode: `// Java Hello World
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");        
-        // Try different examples:
-        // System.out.println("Hello Java");
-        // String name = "Developer";
-        // System.out.println("Hello " + name);
-    }
+  public static void main(String[] args) {
+    System.out.println("Hello, World!");        
+  }
 }`,
   },
   "C++": {
@@ -91,16 +76,10 @@ public class Main {
     judge0Id: 54,
     defaultCode: `// C++ Hello World
 #include <iostream>
-#include <string>
 using namespace std;
-
 int main() {
-    cout << "Hello, World!" << endl;
-    // Try different examples:
-    // cout << "Hello C++" << endl;
-    // string name = "Developer";
-    // cout << "Hello " << name << endl;    
-    return 0;
+  cout << "Hello, World!" << endl;
+  return 0;
 }`,
   },
 };
@@ -109,25 +88,20 @@ export default function PlaygroundPage() {
   const searchParams = useSearchParams();
   const questionId = searchParams?.get("id");
 
+  const { userData, status: isLoggedIn } = useSelector(
+    (state: RootState) => state.auth
+  );
+
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   const [language, setLanguage] = useState<Language>("Javascript");
   const [code, setCode] = useState(languageMap[language].defaultCode);
-
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
-
-  const [answerInput, setAnswerInput] = useState<string>("");
-
-  // Track correctness state
+  const [answerInput, setAnswerInput] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-
-  // Track diff data (if any)
   const [diffLines, setDiffLines] = useState<DiffLine[]>([]);
-
-  // Track submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -136,8 +110,10 @@ export default function PlaygroundPage() {
       setLoading(false);
       return;
     }
+
     const fetchQuestion = async () => {
       try {
+        setLoading(true);
         const res = await fetch(`/api/questions/${questionId}`);
         if (!res.ok)
           throw new Error(`Failed to fetch question (${res.status})`);
@@ -145,6 +121,7 @@ export default function PlaygroundPage() {
         if (data.success) {
           setQuestion(data.question);
           setAnswerInput(data.question.solutions || "");
+          setCode(languageMap[language].defaultCode);
         } else {
           throw new Error(data.error || "Unknown error");
         }
@@ -154,8 +131,9 @@ export default function PlaygroundPage() {
         setLoading(false);
       }
     };
+
     fetchQuestion();
-  }, [questionId]);
+  }, [questionId, language]);
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
@@ -199,7 +177,6 @@ export default function PlaygroundPage() {
       }
       setOutput(outputStr);
 
-      // Compare outputs (normalize)
       const userOutput = (result.stdout || "").trim().replace(/\r\n/g, "\n");
       const expectedOutput = (question?.solutions || "")
         .trim()
@@ -208,17 +185,8 @@ export default function PlaygroundPage() {
       if (userOutput && expectedOutput && userOutput === expectedOutput) {
         setIsCorrect(true);
         setDiffLines([]);
-        // Mark as solved for user - update in DB
-        await fetch("/api/user/mark-solved", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            questionId,
-          }),
-        });
       } else {
         setIsCorrect(false);
-        // Only show if both exist
         if (userOutput && expectedOutput) {
           setDiffLines(getUnifiedDiff(userOutput, expectedOutput));
         } else {
@@ -234,7 +202,6 @@ export default function PlaygroundPage() {
       setIsCorrect(false);
       setDiffLines([]);
     }
-
     setIsRunning(false);
   };
 
@@ -251,29 +218,31 @@ export default function PlaygroundPage() {
     setDiffLines([]);
   };
 
-  // Submit handler for the "Submit Answer" button
   const handleSubmit = async () => {
-    if (!questionId) return;
-
+    if (!questionId || !question) return;
+    if (!isLoggedIn || !userData) {
+      alert("⚠️ You must be logged in to submit an answer.");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/user/mark-solved", {
+      const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          userEmail: userData.email,
+          userName: userData.name,
           questionId,
+          questionTitle: question.title,
           answerMarkdown: answerInput,
+          submittedAt: new Date().toISOString(),
         }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
+      if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to submit answer");
       }
-
       alert("✅ Answer submitted successfully!");
-      // Additional UI updates or navigation can be added here if desired
     } catch (error) {
       alert(error instanceof Error ? error.message : "Unknown error");
     } finally {
@@ -286,9 +255,8 @@ export default function PlaygroundPage() {
       <Navbar />
 
       <div className="flex flex-1 p-3 gap-4 overflow-hidden flex-col md:flex-row">
-        {/* --------- Left Panel: Question + Testcases + Editable Answer --------- */}
+        {/* Left panel */}
         <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
-          {/* Question Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
             <h2 className="text-xl font-semibold mb-2">🧠 Question</h2>
             {loading ? (
@@ -307,7 +275,6 @@ export default function PlaygroundPage() {
             )}
           </section>
 
-          {/* Testcases Section */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[30%] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">🧪 Testcases</h2>
             {loading ? (
@@ -321,7 +288,6 @@ export default function PlaygroundPage() {
             )}
           </section>
 
-          {/* Editable Answer Section - taller */}
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[300px] md:h-[600px] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">
               📝 Your Answer (Markdown)
@@ -341,7 +307,7 @@ export default function PlaygroundPage() {
           </section>
         </div>
 
-        {/* -------- Center Panel: Editor + Output -------- */}
+        {/* Center panel */}
         <div className="w-full md:w-2/4 flex flex-col gap-4 overflow-hidden">
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[600px] overflow-hidden flex flex-col gap-y-2">
             <div className="flex justify-between items-center mb-2">
@@ -413,10 +379,11 @@ export default function PlaygroundPage() {
             <pre className="text-sm whitespace-pre-wrap">
               {output || "Output will appear here after running your code..."}
             </pre>
+
             {isCorrect === true && (
               <>
                 <p className="text-green-600 font-semibold">
-                  🎉 Correct Output! Marked as Solved.
+                  🎉 Correct Output! You can submit your answer.
                 </p>
                 <button
                   onClick={handleSubmit}
@@ -431,6 +398,7 @@ export default function PlaygroundPage() {
                 </button>
               </>
             )}
+
             {isCorrect === false && diffLines.length > 0 && (
               <>
                 <p className="text-red-500 font-semibold mb-1">
@@ -467,6 +435,7 @@ export default function PlaygroundPage() {
                 </div>
               </>
             )}
+
             {isCorrect === false && !diffLines.length && (
               <p className="text-red-500 font-semibold">
                 🚫 Output does not match expected answer.
@@ -475,7 +444,7 @@ export default function PlaygroundPage() {
           </section>
         </div>
 
-        {/* -------- Right Panel: SoundBoard + Leaderboard -------- */}
+        {/* Right panel */}
         <div className="w-full md:w-1/4 flex flex-col gap-4 overflow-auto">
           <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow dark:shadow-lg h-[200px] md:h-[45%]">
             <SoundBoard />

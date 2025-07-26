@@ -1,4 +1,6 @@
+// File: /app/components/HistorySection.tsx
 "use client";
+
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -47,19 +49,25 @@ const HistorySection = ({ historyData }: Props) => {
         </div>
       </div>
       <div className="divide-y divide-gray-200 dark:divide-zinc-700 flex-1 overflow-auto">
-        {currentItems.map((item, index) => (
-          <div
-            key={index}
-            className="flex justify-between items-center px-2 py-3 hover:bg-gray-100 dark:hover:bg-zinc-700 transition rounded-md"
-          >
-            <p className="truncate max-w-[70%] lg:max-w-[80%] text-sm">
-              {item.title}
-            </p>
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {item.time}
-            </span>
-          </div>
-        ))}
+        {currentItems.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-300 text-sm text-center mt-4">
+            No submissions yet.
+          </p>
+        ) : (
+          currentItems.map((item, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center px-2 py-3 hover:bg-gray-100 dark:hover:bg-zinc-700 transition rounded-md"
+            >
+              <p className="truncate max-w-[70%] lg:max-w-[80%] text-sm">
+                {item.title}
+              </p>
+              <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                {item.time}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </section>
   );

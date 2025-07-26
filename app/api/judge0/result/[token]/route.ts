@@ -4,9 +4,10 @@ const JUDGE0_RESULT_URL = "https://judge0-ce.p.rapidapi.com/submissions";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  context: { params: Promise<{ token: string }> }
 ) {
   try {
+    const params = await context.params;
     const { token } = params;
 
     const res = await fetch(`${JUDGE0_RESULT_URL}/${token}`, {
