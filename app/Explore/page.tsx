@@ -14,28 +14,37 @@ import Footer from "../components/Footer";
 import Lead from "../components/Lead";
 import TagCard from "../components/TagCard";
 
+// Define Question and Tag types for better typing
+interface Question {
+  _id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  [key: string]: unknown; // For any other fields
+}
+
 export default function LandingPage() {
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
 
     // Fetch questions
     fetch("/api/questions")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: { questions?: Question[] }) => {
         setQuestions(data.questions || []);
-        setLoading(false);
       });
   }, []);
 
-  const grouped: { [key: string]: any[] } = {};
-  questions.forEach((q: any) => {
+  // Group questions by tags
+  const grouped: { [tag: string]: Question[] } = {};
+  questions.forEach((q) => {
     if (!q.tags || q.tags.length === 0) {
       grouped["Untagged"] = [...(grouped["Untagged"] || []), q];
     } else {
-      q.tags.forEach((tag: string) => {
+      q.tags.forEach((tag) => {
         grouped[tag] = [...(grouped[tag] || []), q];
       });
     }

@@ -1,4 +1,3 @@
-// models/User.ts
 import mongoose from "mongoose";
 
 // Schema for tracking solved questions with timestamps
@@ -87,8 +86,10 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-// Index for better query performance
-UserSchema.index({ appwriteId: 1 });
+// ======= INDEXES =======
+// Removed duplicate index on appwriteId because `unique: true` creates an index implicitly
+// UserSchema.index({ appwriteId: 1 }); <-- removed this line
+
 UserSchema.index({ "solvedQuestions.solvedAt": -1 });
 UserSchema.index({ "stats.totalSolved": -1 });
 

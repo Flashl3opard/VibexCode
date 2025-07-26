@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "../store/store"; // Update path based on your project structure
+import type { RootState } from "../store/store"; // Adjust path as needed
 
 import ProfileSection from "../components/ProfileSection";
 import FriendsSection from "../components/FriendsSection";
@@ -12,6 +12,12 @@ import Navbar from "../components/Navbar";
 interface HistoryItem {
   title: string;
   time: string;
+}
+
+interface Submission {
+  questionTitle?: string;
+  submittedAt: string;
+  // add more fields here if needed
 }
 
 export default function Page() {
@@ -44,9 +50,9 @@ export default function Page() {
 
         const data = await res.json();
 
-        // Expected backend response: { submissions: Array<{ questionTitle, submittedAt, ... }> }
+        // Map submissions to HistoryItem[]
         const historyArray: HistoryItem[] = (data.submissions || []).map(
-          (sub: any) => ({
+          (sub: Submission) => ({
             title: sub.questionTitle || "Untitled",
             time: new Date(sub.submittedAt).toLocaleString(),
           })

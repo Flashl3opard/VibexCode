@@ -2,12 +2,43 @@
 import { useState } from "react";
 import { account } from "@/lib/appwrite";
 
-// Temporary debugging component - remove in production
+// Result type for endpoint (success)
+type EndpointResult = {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  rawResponse: string;
+  parsedResponse: unknown;
+  timestamp: string;
+};
+
+// Result type for endpoint (error)
+type EndpointError = {
+  error: string;
+  timestamp: string;
+};
+
+// Result type for auth success
+type AuthResult = {
+  success: true;
+  userId: string;
+  email: string;
+  jwtLength: number;
+  timestamp: string;
+};
+
+// Result type for auth error (re-uses EndpointError)
+type ResultsMap = Record<string, EndpointResult | EndpointError | AuthResult>;
+
 const APIDebugger = () => {
-  const [results, setResults] = useState<any>({});
+  const [results, setResults] = useState<ResultsMap>({});
   const [loading, setLoading] = useState<string | null>(null);
 
-  const testEndpoint = async (endpoint: string, method = "GET", body?: any) => {
+  const testEndpoint = async (
+    endpoint: string,
+    method: "GET" | "POST" = "GET",
+    body?: object
+  ) => {
     setLoading(endpoint);
     try {
       const jwt = await account.createJWT();
@@ -40,14 +71,17 @@ const APIDebugger = () => {
         responseText.substring(0, 1000)
       );
 
-      let parsedResponse;
+      let parsedResponse: unknown;
       try {
         parsedResponse = JSON.parse(responseText);
-      } catch (e) {
+      } catch (e: unknown) {
+        // Safely handle unknown type with error narrowing
+        let parseErrorMessage = "Unknown error";
+        if (e instanceof Error) parseErrorMessage = e.message;
         parsedResponse = {
           error: "Failed to parse JSON",
           rawResponse: responseText,
-          parseError: e.message,
+          parseError: parseErrorMessage,
         };
       }
 
@@ -62,12 +96,15 @@ const APIDebugger = () => {
           timestamp: new Date().toISOString(),
         },
       }));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`❌ Error testing ${endpoint}:`, error);
+      // Extract error message safely
+      let errorMessage = "Unknown error";
+      if (error instanceof Error) errorMessage = error.message;
       setResults((prev) => ({
         ...prev,
         [endpoint]: {
-          error: error.message,
+          error: errorMessage,
           timestamp: new Date().toISOString(),
         },
       }));
@@ -92,11 +129,13 @@ const APIDebugger = () => {
           timestamp: new Date().toISOString(),
         },
       }));
-    } catch (error) {
+    } catch (error: unknown) {
+      let errorMessage = "Unknown error";
+      if (error instanceof Error) errorMessage = error.message;
       setResults((prev) => ({
         ...prev,
         auth: {
-          error: error.message,
+          error: errorMessage,
           timestamp: new Date().toISOString(),
         },
       }));
@@ -142,10 +181,10 @@ const APIDebugger = () => {
       </div>
 
       <div className="space-y-2 text-xs">
-        {Object.entries(results).map(([key, result]: [string, any]) => (
+        {Object.entries(results).map(([key, result]) => (
           <details key={key} className="border rounded p-2">
             <summary className="cursor-pointer font-medium">
-              {key} {result.error ? "❌" : "✅"}
+              {key} {"error" in result && result.error ? "❌" : "✅"}
             </summary>
             <pre className="mt-2 text-xs overflow-auto max-h-32 bg-gray-50 dark:bg-gray-700 p-2 rounded">
               {JSON.stringify(result, null, 2)}

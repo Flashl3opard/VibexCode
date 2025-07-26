@@ -8,13 +8,14 @@ import Questions from "@/models/Questions";
 // Interface for the JWT verification response from Appwrite
 interface AppwriteJWTVerifyResponse {
   userId: string;
-  [key: string]: any;
+  // Avoid index signature with any; add fields here if needed
 }
 
+// Computed type for the solved questions data by category
 type SolvedQuestionCategory = {
   name: string;
   questionCount: number;
-  progress: number; // Percentage of solved in category
+  progress: number; // Percentage solved in category
   questions: string[];
 };
 
@@ -80,18 +81,26 @@ export async function GET(request: Request) {
     // Calculate totals per category
     const totalByCategory: Record<string, number> = {};
     allQuestions.forEach((q) => {
-      if (q.category) totalByCategory[q.category] = (totalByCategory[q.category] || 0) + 1;
+      if (q.category && typeof q.category === "string") {
+        totalByCategory[q.category] = (totalByCategory[q.category] || 0) + 1;
+      }
     });
 
     // Group solved questions per category
-    const categoryMap: Record<string, { questions: string[]; totalQuestions: number }> = {};
+    const categoryMap: Record<
+      string,
+      { questions: string[]; totalQuestions: number }
+    > = {};
 
     solvedQuestions.forEach((q) => {
-      if (!q.category) return; // skip if no category
+      if (!q.category || typeof q.category !== "string") return; // skip if no category or invalid
       if (!categoryMap[q.category]) {
-        categoryMap[q.category] = { questions: [], totalQuestions: totalByCategory[q.category] || 0 };
+        categoryMap[q.category] = {
+          questions: [],
+          totalQuestions: totalByCategory[q.category] || 0,
+        };
       }
-      categoryMap[q.category].questions.push(q.title);
+      categoryMap[q.category].questions.push(q.title || "Untitled");
     });
 
     // Format the output
@@ -105,10 +114,16 @@ export async function GET(request: Request) {
     );
 
     return NextResponse.json({ success: true, solvedQuestions: solvedQuestionsData });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[GET] /api/user/solved-questions error:", error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Internal server error";
+
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: message },
       { status: 500 }
     );
   }
