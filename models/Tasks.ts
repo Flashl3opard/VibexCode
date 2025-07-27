@@ -1,10 +1,11 @@
-import mongoose, { Schema, Document, models, model } from "mongoose";
+import mongoose, { Schema, Document, models, model, Types } from "mongoose";
 
 export interface ITask extends Document {
   text: string;
   completed: boolean;
   priority: "low" | "medium" | "high";
   createdAt: Date;
+  userId: Types.ObjectId | string; // 👈 Add userId here
 }
 
 const TaskSchema = new Schema<ITask>(
@@ -17,13 +18,16 @@ const TaskSchema = new Schema<ITask>(
       default: "medium",
     },
     createdAt: { type: Date, default: Date.now },
+    userId: {
+      type: Schema.Types.Mixed, // Can be ObjectId or string (Appwrite ID)
+      required: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Avoid model overwrite error in Next.js
 const Task = models.Task || model<ITask>("Task", TaskSchema);
 
 export default Task;
