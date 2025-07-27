@@ -21,22 +21,31 @@ interface Message {
   image?: string;
   createdAt: string;
   isEditing?: boolean;
+  deleted?: boolean;
+  edited?: boolean;
 }
 
 const forumWallpapers: Record<string, string> = {
   dev: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80",
   cp: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=900&q=80",
-  python: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
-  games: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=80",
+  python:
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+  games:
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=900&q=80",
 };
 
-export default function ChatWindow({ conversationId, selfId, selfName }: Props) {
+export default function ChatWindow({
+  conversationId,
+  selfId,
+  selfName,
+}: Props) {
   const socket = useSocket();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [editedBodies, setEditedBodies] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [isDark, setIsDark] = useState(false);
+  const [openMenuFor, setOpenMenuFor] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -101,6 +110,7 @@ export default function ChatWindow({ conversationId, selfId, selfName }: Props) 
       prev.map((msg) => (msg._id === id ? { ...msg, isEditing: true } : msg))
     );
     setEditedBodies((prev) => ({ ...prev, [id]: body }));
+    setOpenMenuFor(null);
   };
 
   const handleEditSubmit = async (id: string) => {
@@ -115,7 +125,9 @@ export default function ChatWindow({ conversationId, selfId, selfName }: Props) 
 
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === id ? { ...msg, body: newBody, isEditing: false } : msg
+          msg._id === id
+            ? { ...msg, body: newBody, isEditing: false, edited: true }
+            : msg
         )
       );
 
@@ -140,14 +152,22 @@ export default function ChatWindow({ conversationId, selfId, selfName }: Props) 
     });
   };
 
+  // Instead of removing, mark as deleted and set the body accordingly
   const handleDelete = async (id: string) => {
     try {
       await axios.delete(`/api/message/${id}?senderId=${selfId}`);
 
-      setMessages((prev) => prev.filter((msg) => msg._id !== id));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === id
+            ? { ...msg, deleted: true, body: "this message was deleted" }
+            : msg
+        )
+      );
     } catch (err) {
       console.error("❌ Failed to delete message:", err);
     }
+    setOpenMenuFor(null);
   };
 
   return (
@@ -191,7 +211,8 @@ export default function ChatWindow({ conversationId, selfId, selfName }: Props) 
                 {m.senderName ?? m.sender}
               </div>
 
-              {m.isEditing ? (
+              {/* Edit Field or Message Body */}
+              {m.isEditing && !m.deleted ? (
                 <div className="flex flex-col gap-2">
                   <Input
                     value={editingValue}
@@ -219,30 +240,54 @@ export default function ChatWindow({ conversationId, selfId, selfName }: Props) 
                   </div>
                 </div>
               ) : (
-                <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+                <div
+                  className={cn(
+                    "text-sm whitespace-pre-wrap",
+                    m.deleted && "italic text-muted-foreground"
+                  )}
+                >
+                  {m.deleted ? "this message was deleted" : m.body}
+                </div>
               )}
 
-              <div className="text-[10px] text-muted-foreground mt-1 text-right">
+              {/* Timestamp and Edited Tag */}
+              <div className="text-[10px] text-muted-foreground mt-1 text-right flex items-center gap-1">
                 {new Date(m.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
+                {m.edited && !m.deleted && (
+                  <span className="text-blue-400 ml-1">(edited)</span>
+                )}
               </div>
 
-              {isSelf && !m.isEditing && (
-                <div className="flex gap-2 mt-1 text-xs justify-end">
+              {/* Dropdown Accordion for Edit/Delete */}
+              {isSelf && !m.isEditing && !m.deleted && (
+                <div className="relative flex gap-2 mt-1 text-xs justify-end">
                   <button
-                    onClick={() => handleEditClick(m._id, m.body)}
-                    className="text-blue-300 hover:text-blue-500"
+                    onClick={() =>
+                      setOpenMenuFor(openMenuFor === m._id ? null : m._id)
+                    }
+                    className="text-purple-300 hover:text-purple-500"
                   >
-                    Edit
+                    ⋮
                   </button>
-                  <button
-                    onClick={() => handleDelete(m._id)}
-                    className="text-red-300 hover:text-red-500"
-                  >
-                    Delete
-                  </button>
+                  {openMenuFor === m._id && (
+                    <div className="absolute right-0 bg-white dark:bg-[#23263b] border rounded shadow z-50 mt-4 min-w-[100px]">
+                      <button
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#181b2e] border-b"
+                        onClick={() => handleEditClick(m._id, m.body)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#181b2e] text-red-500"
+                        onClick={() => handleDelete(m._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
