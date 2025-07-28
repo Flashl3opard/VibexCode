@@ -296,7 +296,6 @@ export default function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4 bg-white dark:bg-[#181b2e] transition-colors">
         <Input
           placeholder="Type a message..."
