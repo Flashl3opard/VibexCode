@@ -17,7 +17,7 @@ const PersonalTODO = () => {
   const [input, setInput] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
-  const [loading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -50,6 +50,8 @@ const PersonalTODO = () => {
         } else {
           setError("An unexpected error occurred");
         }
+      } finally {
+        setLoading(false);
       }
     };
 
