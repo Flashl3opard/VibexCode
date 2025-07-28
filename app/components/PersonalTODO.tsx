@@ -176,7 +176,7 @@ const PersonalTODO = () => {
   // Loading
   if (loading) {
     return (
-      <div className="w-full max-w-md mx-auto bg-slate-800 rounded-2xl shadow-xl p-6 flex items-center justify-center h-64 border border-slate-700">
+      <div className="w-full bg-white max-w-md mx-auto dark:bg-slate-800 rounded-2xl shadow-xl p-6 flex items-center justify-center h-64 border">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
           <p className="text-slate-400 text-sm">Loading tasks...</p>

@@ -6,14 +6,9 @@ import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 import Navbar from "../components/Navbar";
 import PersonalTODO from "../components/PersonalTODO";
+import CommunityConnect from "../components/CommunityConnect";
 
 import { account } from "@/lib/appwrite";
-
-const CommunityConnect = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 h-full flex items-center justify-center">
-    <h2 className="text-2xl font-semibold">Community Connect</h2>
-  </div>
-);
 
 const Dashboard = () => {
   useEffect(() => {
