@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Check, Clock } from "lucide-react";
+import { account } from "@/lib/appwrite";
 
 interface Task {
   _id: string;
   text: string;
   completed: boolean;
   priority: "low" | "medium" | "high";
-  createdAt: string; // ISO string from Mongo
+  createdAt: string;
 }
 
 const PersonalTODO = () => {
@@ -16,62 +17,146 @@ const PersonalTODO = () => {
   const [input, setInput] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // 🔁 Fetch from Mongo on load
+  // 🔁 Fetch tasks on mount
   useEffect(() => {
-    const fetchTasks = async () => {
-      const res = await fetch("/api/tasks");
-      const data = await res.json();
-      setTasks(data);
+    const fetchData = async () => {
+      try {
+        const user = await account.get();
+        setUserId(user.$id);
+
+        const res = await fetch(`/api/tasks?userId=${user.$id}`);
+        if (!res.ok) {
+          const errorData = await res
+            .json()
+            .catch(() => ({ message: "Unknown error" }));
+          throw new Error(
+            errorData.message || `HTTP error! status: ${res.status}`
+          );
+        }
+
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else {
+          throw new Error("Invalid response format from server");
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchTasks();
+
+    fetchData();
   }, []);
 
-  // ➕ Add new task
+  // ➕ Add task
   const addTask = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !userId) return;
 
-    const res = await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: input.trim(), priority }),
-    });
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input.trim(), priority, userId }),
+      });
 
-    const savedTask = await res.json();
-    setTasks([savedTask, ...tasks]);
-    setInput("");
-    setPriority("medium");
+      if (!res.ok) {
+        const errorData = await res
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+        throw new Error(errorData.message || "Failed to add task");
+      }
+
+      const savedTask = await res.json();
+      setTasks([savedTask, ...tasks]);
+      setInput("");
+      setPriority("medium");
+      setError(null);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    }
   };
 
   // ✅ Toggle complete
   const toggleTask = async (id: string, currentCompleted: boolean) => {
-    await fetch(`/api/tasks/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ completed: !currentCompleted }),
-    });
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !currentCompleted, userId }),
+      });
 
-    setTasks(
-      tasks.map((task) =>
-        task._id === id ? { ...task, completed: !currentCompleted } : task
-      )
-    );
+      if (!res.ok) {
+        const errorData = await res
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+        throw new Error(errorData.message || "Failed to update task");
+      }
+
+      setTasks(
+        tasks.map((task) =>
+          task._id === id ? { ...task, completed: !currentCompleted } : task
+        )
+      );
+      setError(null);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    }
   };
 
   // ❌ Remove task
   const removeTask = async (id: string) => {
-    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-    setTasks(tasks.filter((task) => task._id !== id));
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+        throw new Error(errorData.message || "Failed to delete task");
+      }
+
+      setTasks(tasks.filter((task) => task._id !== id));
+      setError(null);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    }
   };
 
-  // 🔍 Filter tasks
+  // 🎨 Helper Functions
   const filteredTasks = tasks.filter((task) => {
     if (filter === "pending") return !task.completed;
     if (filter === "completed") return task.completed;
     return true;
   });
 
-  // 🎨 Color by priority
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
@@ -88,6 +173,39 @@ const PersonalTODO = () => {
   const completedCount = tasks.filter((t) => t.completed).length;
   const pendingCount = tasks.length - completedCount;
 
+  // Loading
+  if (loading) {
+    return (
+      <div className="w-full bg-white max-w-md mx-auto dark:bg-slate-800 rounded-2xl shadow-xl p-6 flex items-center justify-center h-64 border">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+          <p className="text-slate-400 text-sm">Loading tasks...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error
+  if (error) {
+    return (
+      <div className="w-full max-w-md mx-auto bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-700">
+        <div className="text-center">
+          <div className="text-red-400 mb-4">
+            <Clock size={48} className="mx-auto mb-2" />
+            <h3 className="text-lg font-semibold">Error</h3>
+          </div>
+          <p className="text-slate-300 text-sm mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-md mx-auto bg-slate-800 rounded-2xl shadow-xl p-6 flex flex-col h-full max-h-[95vh] border border-slate-700">
       {/* Header */}
@@ -98,6 +216,13 @@ const PersonalTODO = () => {
           <span className="text-green-400">{completedCount} completed</span>
         </div>
       </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-lg">
+          <p className="text-red-200 text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Priority */}
       <div className="mb-4">
