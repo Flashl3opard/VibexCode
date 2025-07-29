@@ -91,7 +91,7 @@ const Navbar = () => {
   const handleVibeClick = () => {
     setMenuOpen(false);
     setShowProfileMenu(false);
-    router.push("/playground");
+    router.push("playground?id=6884bb87f1b587e466becd87");
   };
 
   const handleMobileNavClick = (path: string) => {
