@@ -118,7 +118,7 @@ export default function ChatWindow({
     if (!newBody) return;
 
     try {
-      axios.put(`/api/message/${id}`, {
+      await axios.put(`/api/message/${id}`, {
         senderId: selfId,
         body: newBody,
       });
@@ -152,7 +152,6 @@ export default function ChatWindow({
     });
   };
 
-  // Instead of removing, mark as deleted and set the body accordingly
   const handleDelete = async (id: string) => {
     try {
       await axios.delete(`/api/message/${id}?senderId=${selfId}`);
@@ -171,17 +170,17 @@ export default function ChatWindow({
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-[#101226] text-gray-900 dark:text-white transition-colors">
-      {/* Header */}
-      <div className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 backdrop-blur bg-white/80 dark:bg-[#181b2e]/80 px-6 py-3 shadow-sm transition-colors">
+    <div className="flex flex-col h-[calc(100vh-80px)] w-full overflow-hidden bg-white dark:bg-[#101226] text-gray-900 dark:text-white transition-colors py-0 ">
+      {/* Header (sticky, fixed height) */}
+      <div className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 backdrop-blur bg-white/80 dark:bg-[#181b2e]/80 px-6 py-3 shadow-sm transition-colors flex-shrink-0">
         <h1 className="text-xl font-semibold tracking-wide uppercase">
           {conversationId} Chat
         </h1>
       </div>
 
-      {/* Messages */}
+      {/* Messages Scroll Area */}
       <div
-        className="flex-1 overflow-y-auto px-6 py-4 space-y-3 scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50"
+        className="flex-1 overflow-y-auto px-6 py-0  space-y-3 scrollbar-thin scrollbar-thumb-muted-foreground/30 dark:scrollbar-thumb-muted-foreground/50"
         style={
           !isDark && conversationId && forumWallpapers[conversationId]
             ? {
@@ -296,7 +295,8 @@ export default function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4 bg-white dark:bg-[#181b2e] transition-colors">
+      {/* Input Box (fixed height) */}
+      <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4 bg-white dark:bg-[#181b2e] transition-colors flex-shrink-0">
         <Input
           placeholder="Type a message..."
           value={input}
