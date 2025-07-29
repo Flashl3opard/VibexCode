@@ -1,5 +1,8 @@
 // /components/SuccessModal.tsx
+"use client";
+
 import React from "react";
+import Image from "next/image";
 
 interface SuccessModalProps {
   onClose: () => void;
@@ -26,7 +29,6 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   line,
   gifUrl,
 }) => {
-  // Randomly pick if not provided
   const randomMotivation =
     line ||
     defaultMotivation[Math.floor(Math.random() * defaultMotivation.length)];
@@ -43,12 +45,19 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
         >
           ×
         </button>
-        <img
-          src={randomGif}
-          alt="Celebration"
-          className="mb-4 rounded-lg w-48 h-48 object-cover shadow-lg"
+        <div
+          className="mb-4 rounded-lg shadow-lg overflow-hidden"
           style={{ animation: "pop 0.8s" }}
-        />
+        >
+          <Image
+            src={randomGif}
+            alt="Celebration"
+            width={192}
+            height={192}
+            className="w-48 h-48 object-cover"
+            unoptimized // Required for external gifs without loader
+          />
+        </div>
         <h2 className="text-2xl font-bold text-center mb-3 text-green-700 dark:text-green-300 animate-bounce">
           {randomMotivation}
         </h2>
