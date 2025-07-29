@@ -13,6 +13,7 @@ interface Clan {
 }
 
 const CommunityConnect: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [myClan, setMyClan] = useState<Clan | null>(null);
   const [joinKey, setJoinKey] = useState<string>("");
   const [newClanName, setNewClanName] = useState<string>("");
@@ -32,7 +33,7 @@ const CommunityConnect: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 h-full "
+      className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 h-full"
     >
       <h2 className="text-2xl font-bold mb-4 text-center">Community Connect</h2>
 
@@ -68,7 +69,7 @@ const CommunityConnect: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <p className="text-gray-500">You're not in a clan yet.</p>
+              <p className="text-gray-500">You&apos;re not in a clan yet.</p>
             )}
           </Tab.Panel>
 

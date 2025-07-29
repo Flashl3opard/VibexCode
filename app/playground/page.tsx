@@ -1,4 +1,3 @@
-// File: /app/playground/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import SoundBoard from "../components/SoundBoard";
 import Lead from "../components/Lead";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/store";
+import SuccessModal from "../components/SuccessModal";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -104,6 +104,9 @@ export default function PlaygroundPage() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [diffLines, setDiffLines] = useState<DiffLine[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Success Modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // <-- MODAL
 
   useEffect(() => {
     if (!questionId) {
@@ -243,7 +246,8 @@ export default function PlaygroundPage() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to submit answer");
       }
-      alert("✅ Answer submitted successfully!");
+      // SHOW MODAL INSTEAD OF ALERT!
+      setShowSuccessModal(true); // <-- MODAL
     } catch (error) {
       alert(error instanceof Error ? error.message : "Unknown error");
     } finally {
@@ -460,6 +464,10 @@ export default function PlaygroundPage() {
           </section>
         </div>
       </div>
+      {/* ---- MODAL BELOW ---- */}
+      {showSuccessModal && (
+        <SuccessModal onClose={() => setShowSuccessModal(false)} />
+      )}
     </div>
   );
 }
