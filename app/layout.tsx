@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${sora.variable} ${geistMono.variable}`}>
-      <body className="bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] dark:bg-black min-h-screen antialiased">
+      <body className="bg-gradient-to-r cursor-text2 from-[#e0c3fc] to-[#8ec5fc] dark:bg-black min-h-screen antialiased">
         <RouteProgress />
         <ReduxProvider>
           <AuthGuard>{children}</AuthGuard>

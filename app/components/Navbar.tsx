@@ -125,7 +125,7 @@ const Navbar = () => {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="md:hidden text-3xl text-purple-600 dark:text-teal-300 focus:outline-none cursor-pointer"
+            className="md:hidden text-3xl text-purple-600 dark:text-teal-300 focus:outline-none cursor-pointer2"
           >
             <motion.span
               initial={false}

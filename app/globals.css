@@ -226,3 +226,13 @@ html {
   border-radius: 0 0 2px 2px;
   box-shadow: 0 0 10px #a855f7;
 }
+
+
+
+.cursor-pointer2 {
+  cursor: url('/cursor/hand.cur'), pointer;
+}
+
+.cursor-text2 {
+  cursor: url('/cursor/arrow.cur'), text;
+}

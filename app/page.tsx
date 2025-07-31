@@ -99,11 +99,14 @@ export default function Home() {
                   skills, expand your knowledge and prepare for technical
                   interviews.
                 </p>
-                <Link href="/playground">
+                <Link
+                  href="playground?id=6884bb87f1b587e466becd87"
+                  className=""
+                >
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all"
+                    className="mt-8 bg-gradient-to-r  from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full text-lg font-semibold shadow hover:opacity-90 transition-all"
                   >
                     Begin Coding
                   </motion.button>
