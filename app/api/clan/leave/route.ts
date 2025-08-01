@@ -4,17 +4,17 @@ import { ClanService } from "@/lib/clan";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { joinKey, userId } = body;
+    const { userId } = body;
 
-    if (!joinKey || !userId) {
+    if (!userId) {
       return NextResponse.json(
-        { error: "Join key and userId are required" },
+        { error: "UserId is required" },
         { status: 400 }
       );
     }
 
-    const clan = ClanService.joinClan(joinKey, userId);
-    return NextResponse.json({ clan });
+    const success = ClanService.leaveClan(userId);
+    return NextResponse.json({ success });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },

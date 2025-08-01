@@ -1,46 +1,46 @@
-// app/api/clans/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
+import { ClanService } from "@/lib/clan";
 
-// Define the Clan interface
-interface Clan {
-  name: string;
-  key: string;
-  members: string[];
-}
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
 
-// In-memory "database"
-// In a real app, use a DB instead!
-const clans: Record<string, Clan> = {};
-
-// Helper to generate a unique key
-function generateKey(name: string): string {
-  return (
-    name.trim().toLowerCase().replace(/[\s]+/g, "-") +
-    "-" +
-    Math.floor(1000 + Math.random() * 9000)
-  );
-}
-
-// Handle POST: create clan
-export async function POST(request: NextRequest) {
-  const { name, creator } = await request.json();
-  if (!name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    if (userId) {
+      // Get user's clan
+      const clan = ClanService.getUserClan(userId);
+      return NextResponse.json({ clan });
+    } else {
+      // Get all clans
+      const clans = ClanService.getAllClans();
+      return NextResponse.json({ clans });
+    }
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 400 }
+    );
   }
-
-  const key = generateKey(name);
-  clans[key] = {
-    name,
-    key,
-    members: creator ? [creator] : [],
-  };
-
-  return NextResponse.json(clans[key], { status: 201 });
 }
 
-// Handle GET: list all clans (optional)
-export async function GET() {
-  // Returns all clans (array) for demo/testing
-  return NextResponse.json(Object.values(clans));
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { name, creatorId, description } = body;
+
+    if (!name || !creatorId) {
+      return NextResponse.json(
+        { error: "Name and creatorId are required" },
+        { status: 400 }
+      );
+    }
+
+    const clan = ClanService.createClan(name, creatorId, description);
+    return NextResponse.json({ clan }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 400 }
+    );
+  }
 }
