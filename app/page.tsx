@@ -34,12 +34,10 @@ export default function Home() {
 
   return (
     <>
-      {/* ✅ Enable scroll on mobile, keep full height on desktop */}
       <div className="h-screen md:overflow-hidden overflow-auto">
         <Navbar />
 
         <main className="min-h-screen w-full text-black dark:text-white dark:bg-[#020612] px-8 md:px-24 pb-0 transition-colors duration-300 relative overflow-hidden">
-          {/* Hanging Headphones (Hidden on mobile) */}
           <div
             className="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none animate-float-in-top hidden sm:block"
             data-aos="fade-down"
@@ -57,7 +55,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Floating Laptop (Hidden on mobile) */}
           <div
             className="fixed bottom-0 right-20 z-40 pointer-events-none animate-enter-up hidden sm:block"
             data-aos="fade-up"
@@ -78,9 +75,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex flex-col-reverse md:flex-row items-center md:justify-between justify-start gap-10 min-h-[calc(100vh-4rem)] pt-12 md:pt-24 relative z-20">
-            {/* Left Text Section with Framer Motion */}
             {loggedIn ? (
               <motion.div
                 className="flex-1 text-center md:text-left"
