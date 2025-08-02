@@ -15,12 +15,11 @@ import { RootState } from "./store/store";
 const rand = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
-// Generate random properties for 5 rings
+// Generate random properties for 5 rings on mobile
 const genMobileRingProps = () =>
   Array(5)
     .fill(0)
     .map(() => {
-      // Choose either top+left, bottom+right, etc randomly
       const positions = [
         { style: { top: rand(10, 60), left: rand(10, 70) } },
         { style: { bottom: rand(10, 60), right: rand(10, 70) } },
@@ -28,18 +27,15 @@ const genMobileRingProps = () =>
         { style: { bottom: rand(10, 70), left: rand(10, 60) } },
         { style: { bottom: rand(30, 80), right: rand(10, 50) } },
       ];
-      // Randomly pick one from positions for this ring
       const pos = positions[rand(0, positions.length - 1)].style;
-      // Randomize animation duration/direction
       const animTime = rand(2800, 4200);
-      // Randomize translate px for movement path
       const animX = rand(8, 32) * (Math.random() > 0.5 ? 1 : -1);
       const animY = rand(8, 32) * (Math.random() > 0.5 ? 1 : -1);
       return {
         style: {
+          position: "absolute",
           ...pos,
           opacity: Math.random() > 0.5 ? 0.4 : 0.3,
-          // Animate per ring: X and Y
           animation: `floatRingMobile ${animTime}ms ease-in-out infinite alternate`,
           "--ring-anim-x": `${animX}px`,
           "--ring-anim-y": `${animY}px`,
@@ -47,9 +43,45 @@ const genMobileRingProps = () =>
       };
     });
 
+// Generate random properties for desktop rings (fixed positions + animation)
+const genDesktopRingProps = () => {
+  const positions = [
+    { top: 96, left: 80 }, // top-24 left-20 (24*4=96, 20*4=80 px)
+    { bottom: 16, right: 40 }, // bottom-4 right-10
+    { top: 40, right: 64 }, // top-10 right-16
+    { bottom: 64, left: 40 }, // bottom-16 left-10
+    { bottom: 112, right: 112 }, // bottom-28 right-28
+  ];
+
+  return positions.map((pos) => {
+    const animTime = rand(2800, 4200);
+    const animX = rand(8, 32) * (Math.random() > 0.5 ? 1 : -1);
+    const animY = rand(8, 32) * (Math.random() > 0.5 ? 1 : -1);
+    return {
+      style: {
+        position: "absolute",
+        ...pos,
+        opacity: 0.4,
+        animation: `floatRingDesktop ${animTime}ms ease-in-out infinite alternate`,
+        "--ring-anim-x": `${animX}px`,
+        "--ring-anim-y": `${animY}px`,
+      } as unknown as React.CSSProperties,
+    };
+  });
+};
+
 // Define the CSS animation keyframes
 const mobileRingsCSS = `
 @keyframes floatRingMobile {
+  0%   { transform: translate(0, 0);}
+  100% {
+    transform: translate(var(--ring-anim-x,12px), var(--ring-anim-y,12px));
+  }
+}
+`;
+
+const desktopRingsCSS = `
+@keyframes floatRingDesktop {
   0%   { transform: translate(0, 0);}
   100% {
     transform: translate(var(--ring-anim-x,12px), var(--ring-anim-y,12px));
@@ -64,6 +96,9 @@ export default function Home() {
   // For random ring positions on each mount
   const [mobileRingProps, setMobileRingProps] = useState(() =>
     genMobileRingProps()
+  );
+  const [desktopRingProps, setDesktopRingProps] = useState(() =>
+    genDesktopRingProps()
   );
 
   useEffect(() => {
@@ -86,12 +121,13 @@ export default function Home() {
   // On remounts, update rings
   useEffect(() => {
     setMobileRingProps(genMobileRingProps());
+    setDesktopRingProps(genDesktopRingProps());
   }, []);
 
   return (
     <>
       {/* Add animation CSS to the head */}
-      <style>{mobileRingsCSS}</style>
+      <style>{mobileRingsCSS + desktopRingsCSS}</style>
       <div className="h-screen md:overflow-hidden overflow-auto">
         <Navbar />
         <main className="min-h-screen w-full text-black dark:text-white dark:bg-[#020612] px-4 sm:px-8 md:px-24 pb-8 transition-colors duration-300 relative overflow-hidden">
@@ -143,7 +179,6 @@ export default function Home() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                {/* ... same as before ... */}
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
                   <span className="text-purple-600">A</span>{" "}
                   <span className="text-gray-900 dark:text-white">New Way</span>{" "}
@@ -196,15 +231,12 @@ export default function Home() {
             )}
 
             {/* Right Decorative Circles: animate randomly on mobile only */}
-            {/* Animate on mobile (`sm:hidden`), static on larger screens (`hidden sm:flex`) */}
-            {/* Mobile animated rings */}
             <div className="flex-1 relative flex flex-col justify-end items-end h-full w-full max-w-md md:max-w-none sm:hidden">
               {mobileRingProps.map((ring, i) => (
                 <div
                   key={i}
                   className={[
                     "absolute z-0",
-                    // Sizes, borders:
                     i === 0
                       ? "w-20 h-20 border-8 border-purple-300 dark:border-purple-700 rounded-full"
                       : i === 1
@@ -219,19 +251,32 @@ export default function Home() {
                 />
               ))}
             </div>
-            {/* Desktop/Tablet: static (original) rings */}
+
+            {/* Desktop/Tablet: animated rings */}
             <motion.div
               className="flex-1 relative flex-col justify-end items-end h-full w-full max-w-md md:max-w-none hidden sm:flex"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              {/* Rings in your original desktop/tablet positions go here exactly as before */}
-              <div className="absolute w-20 h-20 rounded-full border-8 border-purple-300 dark:border-purple-700 top-24 left-20 opacity-50 z-0"></div>
-              <div className="absolute w-20 h-20 rounded-full border-8 border-purple-300 dark:border-purple-700 bottom-4 right-10 opacity-50 z-0"></div>
-              <div className="absolute w-16 h-16 rounded-full border-4 border-purple-400 dark:border-purple-600 top-10 right-16 opacity-40 z-0"></div>
-              <div className="absolute w-24 h-24 rounded-full border-4 border-pink-400 dark:border-pink-600 bottom-16 left-10 opacity-40 z-0"></div>
-              <div className="absolute w-12 h-12 rounded-full border-4 border-blue-400 dark:border-blue-600 bottom-28 right-28 opacity-40 z-0"></div>
+              {desktopRingProps.map((ring, i) => (
+                <div
+                  key={i}
+                  className={[
+                    "rounded-full z-0",
+                    i === 0
+                      ? "w-20 h-20 border-8 border-purple-300 dark:border-purple-700 opacity-50"
+                      : i === 1
+                      ? "w-20 h-20 border-8 border-purple-300 dark:border-purple-700 opacity-50"
+                      : i === 2
+                      ? "w-16 h-16 border-4 border-purple-400 dark:border-purple-600 opacity-40"
+                      : i === 3
+                      ? "w-24 h-24 border-4 border-pink-400 dark:border-pink-600 opacity-40"
+                      : "w-12 h-12 border-4 border-blue-400 dark:border-blue-600 opacity-40",
+                  ].join(" ")}
+                  style={ring.style}
+                />
+              ))}
             </motion.div>
           </div>
         </main>
