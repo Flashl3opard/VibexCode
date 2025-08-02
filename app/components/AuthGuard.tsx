@@ -8,7 +8,8 @@ interface Props {
   children: React.ReactNode;
 }
 
-const publicRoutes = ["/", "/login", "/signup", "/forgot_password"];
+// Make sure these routes exactly match your actual public routes without trailing slashes
+const publicRoutes = ["/", "/login", "/signup", "/forgot-password"];
 
 export default function AuthGuard({ children }: Props) {
   const router = useRouter();
@@ -18,31 +19,43 @@ export default function AuthGuard({ children }: Props) {
   useEffect(() => {
     if (!pathname) return;
 
+    // Normalize pathname to remove trailing slash if any for consistent matching
+    const normalizedPathname = pathname.replace(/\/$/, "");
+
+    console.log("Normalized pathname:", normalizedPathname);
+
     const checkAuth = async () => {
       try {
         const user = await authservice.checkUser();
+        console.log("User from auth check:", user);
 
         if (user) {
-          if (["/login", "/signup"].includes(pathname)) {
-            router.replace("/"); // Already logged in, redirect to home
+          // If user is logged in, prevent access to auth pages
+          if (
+            ["/login", "/signup", "/forgot_password"].includes(
+              normalizedPathname
+            )
+          ) {
+            router.replace("/"); // Redirect logged-in user away from auth pages
           } else {
-            setChecking(false); // Access granted
+            setChecking(false); // User logged in and allowed route, show content
           }
         } else {
-          if (!publicRoutes.includes(pathname)) {
-            router.replace("/login"); // Not logged in, redirect to login
+          // Not logged in
+          if (!publicRoutes.includes(normalizedPathname)) {
+            router.replace("/login"); // Redirect to login if trying to access private routes
           } else {
             setChecking(false); // Public route, allow access
           }
         }
       } catch (err) {
         console.error("Auth check error:", err);
-        setChecking(false); // Fallback to allow access on error
+        setChecking(false); // Fail safe: allow access if error occurs
       }
     };
 
     checkAuth();
-  }, [pathname, router]); // ✅ Included router to satisfy exhaustive-deps
+  }, [pathname, router]);
 
   if (checking) {
     return (
@@ -52,5 +65,6 @@ export default function AuthGuard({ children }: Props) {
     );
   }
 
+  // Once checking is done, render children content
   return <>{children}</>;
 }
