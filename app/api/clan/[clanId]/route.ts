@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { ClanService } from "@/lib/clan";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     clanId: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const clan = ClanService.getClanById(params.clanId);
+    const { clanId } = await params;
+    const clan = ClanService.getClanById(clanId);
     if (!clan) {
       return NextResponse.json({ error: "Clan not found" }, { status: 404 });
     }
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const { clanId } = await params;
     const body = await request.json();
     const { updates, userId } = body;
 
@@ -34,7 +36,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const clan = ClanService.updateClan(params.clanId, updates, userId);
+    const clan = ClanService.updateClan(clanId, updates, userId);
     return NextResponse.json({ clan });
   } catch (error) {
     return NextResponse.json(

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Client, Users } from 'node-appwrite';
 
-export async function PUT(req: Request, { params }: { params: { userId: string } }) {
-  const { userId } = params;
+export async function PUT(req: Request, { params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params;
   const body = await req.json();
   const { status } = body; // e.g., 'active', 'banned'
 
