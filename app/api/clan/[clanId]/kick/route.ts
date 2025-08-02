@@ -1,13 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
 import { ClanService } from "@/lib/clan";
+import { NextRequest, NextResponse } from "next/server";
 
-interface RouteParams {
-  params: {
-    clanId: string;
-  };
+type RouteContext = { params: Promise<{ clanId: string }> };
+
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(
+  request: NextRequest,
+  context: RouteContext
+) {
+  const { clanId } = await context.params;
+
   try {
     const body = await request.json();
     const { memberToKick, requesterId } = body;
@@ -19,11 +24,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const success = ClanService.kickMember(
-      params.clanId,
+    const success = await ClanService.kickMember(
+      clanId,
       memberToKick,
       requesterId
     );
+
     return NextResponse.json({ success });
   } catch (error) {
     return NextResponse.json(

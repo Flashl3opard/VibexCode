@@ -1,4 +1,5 @@
-// lib/clans.ts
+// lib/clan.ts
+
 export interface Clan {
   id: string;
   name: string;
@@ -17,11 +18,11 @@ export interface ClanMember {
   role: "owner" | "admin" | "member";
 }
 
-// In-memory clan store (replace with database in production)
+// In-memory stores (replace with DB in production)
 export const clans: Record<string, Clan> = {};
 export const userClans: Record<string, string> = {}; // userId -> clanId mapping
 
-// Helper to generate a unique key
+// Helper to generate a unique key for clan
 export function generateKey(name: string): string {
   const baseKey = name.trim().toLowerCase().replace(/[\s]+/g, "-");
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -33,7 +34,6 @@ export function generateClanId(): string {
   return `clan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Clan service functions
 export class ClanService {
   static createClan(
     name: string,
@@ -67,7 +67,7 @@ export class ClanService {
       createdAt: new Date(),
       createdBy: creatorId,
       description,
-      maxMembers: 50, // Default max members
+      maxMembers: 50, // Default maximum members
     };
 
     clans[clanId] = newClan;
@@ -111,11 +111,9 @@ export class ClanService {
       throw new Error("Clan not found");
     }
 
-    // Remove user from clan
     clan.members = clan.members.filter((memberId) => memberId !== userId);
     delete userClans[userId];
 
-    // If clan is empty, delete it
     if (clan.members.length === 0) {
       delete clans[clanId];
     }
@@ -125,9 +123,7 @@ export class ClanService {
 
   static getUserClan(userId: string): Clan | null {
     const clanId = userClans[userId];
-    if (!clanId || !clans[clanId]) {
-      return null;
-    }
+    if (!clanId || !clans[clanId]) return null;
     return clans[clanId];
   }
 
@@ -145,7 +141,7 @@ export class ClanService {
 
   static updateClan(
     clanId: string,
-    updates: Partial<Clan>,
+    updates: Partial<Pick<Clan, "name" | "description" | "maxMembers">>,
     userId: string
   ): Clan {
     const clan = clans[clanId];
@@ -157,14 +153,16 @@ export class ClanService {
       throw new Error("Only clan owner can update clan details");
     }
 
-    // Prevent updating critical fields
-    const allowedUpdates = ["name", "description", "maxMembers"];
-    const filteredUpdates: Partial<Clan> = {};
+    const filteredUpdates: Partial<Pick<Clan, "name" | "description" | "maxMembers">> = {};
 
-    for (const key of allowedUpdates) {
-      if (updates[key as keyof Clan] !== undefined) {
-        filteredUpdates[key as keyof Clan] = updates[key as keyof Clan];
-      }
+    if (updates.name !== undefined) {
+      filteredUpdates.name = updates.name;
+    }
+    if (updates.description !== undefined) {
+      filteredUpdates.description = updates.description;
+    }
+    if (updates.maxMembers !== undefined) {
+      filteredUpdates.maxMembers = updates.maxMembers;
     }
 
     Object.assign(clan, filteredUpdates);
@@ -193,7 +191,7 @@ export class ClanService {
       throw new Error("User is not a member of this clan");
     }
 
-    clan.members = clan.members.filter((memberId) => memberId !== memberToKick);
+    clan.members = clan.members.filter((id) => id !== memberToKick);
     delete userClans[memberToKick];
 
     return true;
