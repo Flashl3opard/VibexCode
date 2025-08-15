@@ -1,4 +1,3 @@
-// File: /app/components/HistorySection.tsx
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
