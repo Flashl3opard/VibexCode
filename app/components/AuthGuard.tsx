@@ -8,7 +8,6 @@ interface Props {
   children: React.ReactNode;
 }
 
-// Make sure these routes exactly match your actual public routes without trailing slashes
 const publicRoutes = ["/", "/login", "/signup", "/forgot-password"];
 
 export default function AuthGuard({ children }: Props) {
@@ -19,8 +18,9 @@ export default function AuthGuard({ children }: Props) {
   useEffect(() => {
     if (!pathname) return;
 
-    // Normalize pathname to remove trailing slash if any for consistent matching
-    const normalizedPathname = pathname.replace(/\/$/, "");
+    // Normalize pathname
+    let normalizedPathname = pathname.replace(/\/$/, "");
+    if (normalizedPathname === "") normalizedPathname = "/";
 
     console.log("Normalized pathname:", normalizedPathname);
 
@@ -30,27 +30,25 @@ export default function AuthGuard({ children }: Props) {
         console.log("User from auth check:", user);
 
         if (user) {
-          // If user is logged in, prevent access to auth pages
           if (
-            ["/login", "/signup", "/forgot_password"].includes(
+            ["/login", "/signup", "/forgot-password"].includes(
               normalizedPathname
             )
           ) {
-            router.replace("/"); // Redirect logged-in user away from auth pages
+            router.replace("/");
           } else {
-            setChecking(false); // User logged in and allowed route, show content
+            setChecking(false);
           }
         } else {
-          // Not logged in
           if (!publicRoutes.includes(normalizedPathname)) {
-            router.replace("/login"); // Redirect to login if trying to access private routes
+            router.replace("/login");
           } else {
-            setChecking(false); // Public route, allow access
+            setChecking(false);
           }
         }
       } catch (err) {
         console.error("Auth check error:", err);
-        setChecking(false); // Fail safe: allow access if error occurs
+        setChecking(false);
       }
     };
 
@@ -65,6 +63,5 @@ export default function AuthGuard({ children }: Props) {
     );
   }
 
-  // Once checking is done, render children content
   return <>{children}</>;
 }
