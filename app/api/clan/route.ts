@@ -1,46 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ClanService } from "@/lib/clan";
+import { getAppwriteDatabases } from "@/lib/appwrite"; // server-side client
 
+const DATABASE_ID = process.env.NEXT_PUBLIC_DATABASE_ID as string;
+const CLANS_COLLECTION_ID = process.env
+  .NEXT_PUBLIC_CLANS_COLLECTION_ID as string;
+const PROFILES_COLLECTION_ID = process.env
+  .NEXT_PUBLIC_PROFILES_COLLECTION_ID as string;
+
+// GET the current user's clan
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
-    if (userId) {
-      // Get user's clan
-      const clan = ClanService.getUserClan(userId);
-      return NextResponse.json({ clan });
-    } else {
-      // Get all clans
-      const clans = ClanService.getAllClans();
-      return NextResponse.json({ clans });
-    }
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 400 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { name, creatorId, description } = body;
-
-    if (!name || !creatorId) {
+    if (!userId) {
       return NextResponse.json(
-        { error: "Name and creatorId are required" },
+        { message: "User ID is required" },
         { status: 400 }
       );
     }
 
-    const clan = ClanService.createClan(name, creatorId, description);
-    return NextResponse.json({ clan }, { status: 201 });
-  } catch (error) {
+    const databases = getAppwriteDatabases();
+
+    const profile = await databases.getDocument(
+      DATABASE_ID,
+      PROFILES_COLLECTION_ID,
+      userId
+    );
+
+    if (!profile.clanId) {
+      return NextResponse.json(
+        { message: "User not in a clan" },
+        { status: 404 }
+      );
+    }
+
+    const clanData = await databases.getDocument(
+      DATABASE_ID,
+      CLANS_COLLECTION_ID,
+      profile.clanId as string
+    );
+
+    return NextResponse.json(clanData);
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as any).code === 404
+    ) {
+      return NextResponse.json(
+        { message: "User not in a clan" },
+        { status: 404 }
+      );
+    }
+
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown server error";
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 400 }
+      { message: "Server error", error: errMessage },
+      { status: 500 }
     );
   }
 }

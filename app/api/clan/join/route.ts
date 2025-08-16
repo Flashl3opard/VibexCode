@@ -1,24 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ClanService } from "@/lib/clan";
+// Using the client-side import as requested.
+import { databases } from "@/lib/appwrite";
 
+const DATABASE_ID = process.env.NEXT_PUBLIC_DATABASE_ID as string;
+const PROFILES_COLLECTION_ID = process.env
+  .NEXT_PUBLIC_PROFILES_COLLECTION_ID as string;
+
+// POST to join a clan
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { joinKey, userId } = body;
+    const { userId, clanId } = await request.json();
 
-    if (!joinKey || !userId) {
+    if (!userId || !clanId) {
       return NextResponse.json(
-        { error: "Join key and userId are required" },
+        { message: "User ID and Clan ID are required" },
         { status: 400 }
       );
     }
 
-    const clan = ClanService.joinClan(joinKey, userId);
-    return NextResponse.json({ clan });
-  } catch (error) {
+    // ⚠️ This may fail if the Appwrite instance is not authenticated
+    await databases.updateDocument(
+      DATABASE_ID,
+      PROFILES_COLLECTION_ID,
+      userId,
+      { clanId }
+    );
+
+    return NextResponse.json({ message: "Successfully joined clan" });
+  } catch (error: unknown) {
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 400 }
+      { message: "Failed to join clan", error: errMessage },
+      { status: 500 }
     );
   }
 }
