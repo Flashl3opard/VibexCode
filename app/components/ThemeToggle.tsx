@@ -26,7 +26,7 @@ export default function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label="Toggle Dark Mode"
-      className="w-10 h-10 flex items-center justify-center rounded-full text-xl transition-transform duration-500 ease-in-out hover: hover:scale-110"
+      className="w-10 h-10 flex items-center justify-center rounded-full text-xl transition-transform duration-500 ease-in-out hover: hover:scale-110 cursor-pointer2"
     >
       <span className="relative w-6 h-6 block">
         <FaSun

@@ -57,7 +57,7 @@ const FriendsSection = () => {
           .map((player, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer2"
             >
               <div className="relative">
                 <div

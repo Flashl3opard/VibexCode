@@ -19,27 +19,27 @@ interface User {
   name: string;
 }
 
+// Using the icons from your original code to maintain consistency
 const forumIcons: Record<string, React.ReactNode> = {
-  dev: <FaCode className="text-lg mr-2" />,
-  cp: <SiLeetcode className="text-lg mr-2" />,
-  python: <FaPython className="text-lg mr-2" />,
-  games: <FaGamepad className="text-lg mr-2" />,
+  dev: <FaCode className="mr-3 text-lg" />,
+  cp: <SiLeetcode className="mr-3 text-lg" />,
+  python: <FaPython className="mr-3 text-lg" />,
+  games: <FaGamepad className="mr-3 text-lg" />,
+  general: <FaBolt className="mr-3 text-lg" />,
 };
 
 const forums = ["dev", "cp", "python", "games", "general"];
 
 export default function ForumsPage() {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string>("cp"); // Default to 'cp' as in the image
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Track if on mobile screen by window width
+  // This logic remains the same
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -64,85 +64,36 @@ export default function ForumsPage() {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-gray-500 dark:text-gray-400">
-        Loading your chat profile...
+      <div className="flex items-center justify-center h-screen bg-[#0d1117] text-gray-400">
+        Loading...
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-red-600 dark:text-red-400">
-        User not found or not logged in.
+      <div className="flex items-center justify-center h-screen bg-[#0d1117] text-red-500">
+        User not found. Please log in.
       </div>
     );
   }
 
-  // MOBILE VIEW
-
+  // MOBILE VIEW (Simplified for chat focus)
   if (isMobile) {
-    // If no forum selected => show forums list styled like desktop sidebar (full screen)
-    if (!selected) {
-      return (
-        <div className="min-h-screen bg-white dark:bg-[#020612] text-gray-900 dark:text-white flex flex-col">
-          <Navbar />
-
-          <aside
-            className="w-full flex flex-col border-r border-gray-200 text-gray-900
-                       dark:bg-[#020612] dark:text-white dark:border-gray-800 transition-colors"
-          >
-            <ul className="flex-1 p-4 space-y-3 overflow-y-auto">
-              {forums.map((forum) => {
-                // No selected forum on list screen, but can highlight last clicked if you want
-                const isSelected = forum === selected;
-
-                return (
-                  <li key={forum}>
-                    <button
-                      onClick={() => setSelected(forum)}
-                      className={`w-full flex items-center px-4 py-2 rounded-lg font-medium transition duration-200
-                        ${
-                          isSelected
-                            ? "bg-purple-900 text-white shadow dark:bg-[#d946ef]"
-                            : "bg-gray-200 text-gray-900 hover:bg-[#e9d5ff] hover:text-[#c026d3] dark:bg-[#23263b] dark:text-gray-200 dark:hover:bg-[#c026d3] dark:hover:text-white"
-                        }
-                      `}
-                    >
-                      {forumIcons[forum] ?? <FaBolt className="text-lg mr-2" />}
-                      <span className="capitalize font-semibold">{forum}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </aside>
-        </div>
-      );
-    }
-
-    // Forum selected => show chat window with back button
     return (
-      <div className="min-h-screen flex flex-col bg-[#f9faff] dark:bg-[#101226] text-gray-900 dark:text-white">
+      <div className="h-screen flex flex-col bg-[#0d1117] text-gray-300">
         <Navbar />
-
-        <header className="flex items-center px-4 py-3 border-b dark:border-gray-700">
-          <button
-            onClick={() => setSelected(null)}
-            className="mr-4 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-[#23263b]"
-            aria-label="Back to forums"
-          >
-            <FaArrowLeft size={20} />
-          </button>
-          <h1 className="text-lg font-semibold capitalize">{selected}</h1>
+        <header className="flex items-center p-4 border-b border-gray-800">
+          <h1 className="text-lg font-bold uppercase text-white">
+            {selected} Chat
+          </h1>
         </header>
-
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden">
           <ChatWindow
             conversationId={selected}
             selfId={user.$id}
@@ -154,33 +105,29 @@ export default function ForumsPage() {
   }
 
   // DESKTOP VIEW
-
   return (
-    <div className="min-h-screen flex flex-col text-gray-900 dark:text-white transition-colors">
+    <div className="h-screen flex flex-col bg-[#0d1117] text-gray-300">
       <Navbar />
-
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside
-          className="w-64 flex flex-col border-r border-gray-200 text-gray-900
-            dark:bg-[#020612] dark:text-white dark:border-gray-800 transition-colors"
-        >
-          <ul className="flex-1 p-4 space-y-3 overflow-y-auto">
+        <aside className="w-64 flex-col p-4 bg-[#161b22] border-r border-gray-800 hidden md:flex">
+          <h2 className="text-xl font-bold text-white mb-6 px-2">Forums</h2>
+          <ul className="space-y-2">
             {forums.map((forum) => {
               const isSelected = forum === selected;
               return (
                 <li key={forum}>
                   <button
                     onClick={() => setSelected(forum)}
-                    className={`w-full flex items-center px-4 py-2 rounded-lg font-medium transition duration-200
+                    className={`w-full flex items-center px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-left
                       ${
                         isSelected
-                          ? "bg-purple-900 text-white shadow dark:bg-[#d946ef]" // Accent - adjust as desired
-                          : "bg-gray-200 text-gray-900 hover:bg-[#e9d5ff] hover:text-[#c026d3] dark:bg-[#23263b] dark:text-gray-200 dark:hover:bg-[#c026d3] dark:hover:text-white"
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-400 hover:bg-[#21262d] hover:text-white"
                       }`}
                   >
-                    {forumIcons[forum] ?? <FaBolt className="text-lg mr-2" />}
-                    <span className="capitalize font-semibold">{forum}</span>
+                    {forumIcons[forum]}
+                    <span className="capitalize">{forum}</span>
                   </button>
                 </li>
               );
@@ -188,13 +135,23 @@ export default function ForumsPage() {
           </ul>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-[#f9faff] dark:bg-[#101226] text-gray-900 dark:text-white transition-colors">
-          <ChatWindow
-            conversationId={selected || "dev"}
-            selfId={user.$id}
-            selfName={user.name}
-          />
+        {/* Main Chat Area */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Header for the chat area */}
+          <header className="px-6 py-4 border-b border-gray-800">
+            <h1 className="text-xl font-bold uppercase text-white">
+              {selected} Chat
+            </h1>
+          </header>
+
+          {/* ChatWindow now takes up the remaining space */}
+          <div className="flex-1 overflow-hidden">
+            <ChatWindow
+              conversationId={selected}
+              selfId={user.$id}
+              selfName={user.name}
+            />
+          </div>
         </main>
       </div>
     </div>

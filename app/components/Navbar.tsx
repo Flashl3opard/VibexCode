@@ -145,7 +145,7 @@ const Navbar = () => {
         </div>
 
         {/* Main navigation items (desktop) */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-6 cursor-pointer2">
           {navItems.map((item) => (
             <motion.div
               key={item}
@@ -164,7 +164,7 @@ const Navbar = () => {
                     ? "Forums"
                     : item.toLowerCase()
                 }`}
-                className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+                className="text-gray-800 dark:text-white font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer2"
               >
                 {item}
               </Link>
@@ -173,7 +173,7 @@ const Navbar = () => {
         </div>
 
         {/* Right section */}
-        <div className="flex items-center gap-2 min-w-[110px] justify-end relative">
+        <div className="flex items-center gap-2 min-w-[110px] justify-end relative ">
           {/* ThemeToggle always first */}
           <ThemeToggle />
 
@@ -238,7 +238,7 @@ const Navbar = () => {
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setShowProfileMenu((v) => !v)}
-                  className="p-2 rounded-full focus:outline-none text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                  className="p-2 rounded-full focus:outline-none text-black dark:text-white dark:hover:bg-zinc-800 transition cursor-pointer2"
                   title="Profile"
                   aria-haspopup="menu"
                   aria-expanded={showProfileMenu}
@@ -355,7 +355,7 @@ const Navbar = () => {
               exit="hidden"
               className="pt-2 border-t border-zinc-300 dark:border-zinc-700"
             >
-              <div className="flex flex-col gap-4 mt-3">
+              <div className="flex flex-col gap-4 mt-3 cursor-pointer2">
                 {isLoggedIn ? (
                   <>
                     <button
@@ -382,7 +382,7 @@ const Navbar = () => {
                     </button>
                     <button
                       onClick={() => handleMobileNavClick("/signup")}
-                      className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-2 rounded-full font-semibold shadow hover:opacity-90 transition-all text-sm"
+                      className="bg-gradient-to-r from-purple-400 to-pink-500 text-white px-4 py-2 rounded-full font-semibold shadow hover:opacity-90 transition-all text-sm cursor-pointer2"
                     >
                       Sign Up
                     </button>
