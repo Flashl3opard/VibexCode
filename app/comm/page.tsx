@@ -51,12 +51,14 @@ export default function CommunityPage() {
               <li
                 key={forum}
                 onClick={() => setSelectedForum(forum)}
-                className={`cursor-pointer px-4 py-3 rounded-lg transition text-sm font-medium
-                  ${
-                    selectedForum === forum
-                      ? "bg-gradient-to-tr from-indigo-400 to-blue-500 text-white shadow-md"
-                      : "hover:bg-blue-100 dark:hover:bg-gray-800 dark:text-gray-200"
-                  }`}
+                className={`${
+                  selectedForum === forum ? "cursor-text2" : "cursor-pointer2"
+                } px-4 py-3 rounded-lg transition text-sm font-medium
+      ${
+        selectedForum === forum
+          ? "bg-gradient-to-tr from-indigo-400 to-blue-500 text-white shadow-md"
+          : "hover:bg-blue-100 dark:hover:bg-gray-800 dark:text-gray-200"
+      }`}
               >
                 {forum}
               </li>

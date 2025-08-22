@@ -31,7 +31,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column - Leaderboard */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 h-full">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 ">
               <Lead />
             </div>
           </div>
