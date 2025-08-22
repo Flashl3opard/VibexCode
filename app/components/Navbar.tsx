@@ -238,7 +238,7 @@ const Navbar = () => {
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setShowProfileMenu((v) => !v)}
-                  className="p-2 rounded-full focus:outline-none text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                  className="p-2 rounded-full focus:outline-none text-black dark:text-white dark:hover:bg-zinc-800 transition cursor-pointer2"
                   title="Profile"
                   aria-haspopup="menu"
                   aria-expanded={showProfileMenu}
