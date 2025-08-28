@@ -6,6 +6,7 @@ import {
   FacebookAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore"; // ✅ Add this
 
 // Firebase Config from .env.local
 const firebaseConfig = {
@@ -24,6 +25,9 @@ const app = initializeApp(firebaseConfig);
 // Firebase Authentication instance
 const auth = getAuth(app);
 
+// Firestore instance
+const db = getFirestore(app); // ✅ Add this
+
 // Auth Providers
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope("email");
@@ -40,6 +44,7 @@ facebookProvider.addScope("email");
 export {
   app,
   auth, // <-- Important for password reset
+  db, // ✅ Now we can use Firestore in leaderboard
   googleProvider,
   githubProvider,
   facebookProvider,
