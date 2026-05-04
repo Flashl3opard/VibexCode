@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
@@ -85,7 +85,7 @@ int main() {
   },
 };
 
-export default function PlaygroundPage() {
+function PlaygroundContent() {
   const searchParams = useSearchParams();
   const questionId = searchParams?.get("id");
 
@@ -110,7 +110,6 @@ export default function PlaygroundPage() {
 
   useEffect(() => {
     if (!questionId) {
-      setError("❌ No question ID provided in URL.");
       setLoading(false);
       return;
     }
@@ -180,6 +179,13 @@ export default function PlaygroundPage() {
         outputStr = "✅ Code executed successfully (no output)";
       }
       setOutput(outputStr);
+
+      if (!questionId) {
+        setIsCorrect(null);
+        setDiffLines([]);
+        setIsRunning(false);
+        return;
+      }
 
       const userOutput = (result.stdout || "").trim().replace(/\r\n/g, "\n");
       const expectedOutput = (question?.solutions || "")
@@ -275,6 +281,21 @@ export default function PlaygroundPage() {
                   <ReactMarkdown>{question.description}</ReactMarkdown>
                 </div>
               </>
+            ) : !questionId ? (
+              <>
+                <h3 className="font-semibold mb-1">Free Coding Playground</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  You&apos;re in standalone mode. Pick a question from{" "}
+                  <a
+                    href="/problems"
+                    className="text-blue-500 hover:underline"
+                  >
+                    Problems
+                  </a>{" "}
+                  to attempt one, or just experiment with the editor on the
+                  right.
+                </p>
+              </>
             ) : (
               <p className="text-sm text-gray-500">No question found</p>
             )}
@@ -289,6 +310,10 @@ export default function PlaygroundPage() {
               <pre className="text-sm whitespace-pre-wrap overflow-auto flex-1">
                 {question.testcases}
               </pre>
+            ) : !questionId ? (
+              <p className="text-sm text-gray-500">
+                No challenge selected — testcases will appear here.
+              </p>
             ) : (
               <p className="text-sm text-gray-500">No testcases available</p>
             )}
@@ -469,5 +494,19 @@ export default function PlaygroundPage() {
         <SuccessModal onClose={() => setShowSuccessModal(false)} />
       )}
     </div>
+  );
+}
+
+export default function PlaygroundPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center dark:bg-[#020612] text-gray-500 dark:text-gray-300">
+          Loading playground...
+        </div>
+      }
+    >
+      <PlaygroundContent />
+    </Suspense>
   );
 }
