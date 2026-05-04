@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import authservice from "../appwrite/auth";
@@ -15,7 +15,7 @@ type FormValues = {
 
 type Banner = { msg: string; type: "error" | "ok" };
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [banner, setBanner] = useState<Banner>();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -136,5 +136,19 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center dark:bg-[#020612] text-gray-500 dark:text-gray-300">
+          Loading...
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
