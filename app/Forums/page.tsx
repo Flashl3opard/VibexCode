@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  FaCode,
-  FaGamepad,
-  FaPython,
-  FaBolt,
-  FaArrowLeft,
-} from "react-icons/fa";
+import { FaCode, FaGamepad, FaPython, FaBolt } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
 
 import Navbar from "../components/Navbar";
