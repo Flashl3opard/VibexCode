@@ -8,16 +8,15 @@ import Navbar from "../components/Navbar";
 import PersonalTODO from "../components/PersonalTODO";
 import CommunityConnect from "../components/CommunityConnect";
 
-import { account } from "@/lib/appwrite";
+import authservice from "../appwrite/auth";
 
 const Dashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        await account.get(); // ✅ No JWT needed, session maintained
+        await authservice.checkUser();
       } catch (error) {
         console.error("Not authenticated", error);
-        // Optionally redirect to login page here
       }
     };
 

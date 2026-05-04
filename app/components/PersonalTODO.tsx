@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Check, Clock } from "lucide-react";
-import { account } from "@/lib/appwrite";
+import authservice from "../appwrite/auth";
 
 interface Task {
   _id: string;
@@ -25,7 +25,8 @@ const PersonalTODO = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const user = await account.get();
+        const user = await authservice.checkUser();
+        if (!user) throw new Error("Not authenticated");
         setUserId(user.$id);
 
         const res = await fetch(`/api/tasks?userId=${user.$id}`);

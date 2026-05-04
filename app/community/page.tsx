@@ -4,14 +4,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ChatWindow from "../components/ChatWindow";
-import authservice from "../appwrite/auth";
-import type { Models } from "appwrite";
+import authservice, { type AuthUser } from "../appwrite/auth";
 import Navbar from "../components/Navbar";
 
 export default function CommunityPage() {
   const router = useRouter();
-  const [session, setSession] =
-    useState<Models.User<Models.Preferences> | null>(null);
+  const [session, setSession] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
