@@ -7,4 +7,8 @@ const client = new Client()
 const account = new Account(client);
 const databases = new Databases(client);
 
+// ✅ helpers
+export const getAppwriteClient = () => client;
+export const getAppwriteDatabases = () => databases;
+
 export { client, account, databases, ID, Query };

@@ -1,47 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ClanService } from "@/lib/clan";
+// Using the client-side import as requested.
+import { databases } from "@/lib/appwrite";
 
-interface RouteParams {
-  params: Promise<{
-    clanId: string;
-  }>;
-}
+const DATABASE_ID = process.env.NEXT_PUBLIC_DATABASE_ID as string;
+const CLANS_COLLECTION_ID = process.env
+  .NEXT_PUBLIC_CLANS_COLLECTION_ID as string;
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+// GET information for a specific clan
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { clanId: string } }
+) {
   try {
-    const { clanId } = await params;
-    const clan = ClanService.getClanById(clanId);
-    if (!clan) {
-      return NextResponse.json({ error: "Clan not found" }, { status: 404 });
-    }
-    return NextResponse.json({ clan });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 400 }
-    );
-  }
-}
+    const { clanId } = params;
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { clanId } = await params;
-    const body = await request.json();
-    const { updates, userId } = body;
-
-    if (!userId) {
+    if (!clanId) {
       return NextResponse.json(
-        { error: "UserId is required" },
+        { message: "Clan ID is required" },
         { status: 400 }
       );
     }
 
-    const clan = ClanService.updateClan(clanId, updates, userId);
-    return NextResponse.json({ clan });
-  } catch (error) {
+    // ⚠️ May fail if your collection does not allow read access
+    const clanData = await databases.getDocument(
+      DATABASE_ID,
+      CLANS_COLLECTION_ID,
+      clanId
+    );
+
+    return NextResponse.json(clanData);
+  } catch (error: unknown) {
+    const errMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 400 }
+      { message: "Failed to fetch clan data", error: errMessage },
+      { status: 500 }
     );
   }
 }
